@@ -75,6 +75,7 @@ When superseding an ADR:
 | [002](002-no-tanstack-query.md) | No TanStack Query | Accepted | 2026-01 |
 | [003](003-espn-unofficial-api.md) | ESPN Unofficial API | Accepted | 2026-01 |
 | [004](004-openf1-api.md) | OpenF1 for Formula 1 | Accepted | 2026-01 |
+| [005](005-react-best-practices.md) | Adopt Vercel React Best Practices | Accepted | 2026-01 |
 
 ## Contributing
 
