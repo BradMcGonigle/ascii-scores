@@ -1,5 +1,6 @@
 import type { Game } from "@/lib/types";
 import { formatTime, getStatusClass, getStatusText } from "@/lib/utils/format";
+import { GameStats } from "./GameStats";
 import { PeriodScores } from "./PeriodScores";
 
 interface GameCardProps {
@@ -170,6 +171,25 @@ export function GameCard({ game }: GameCardProps) {
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
             <div className="flex-1 px-2 py-1">
               <PeriodScores game={game} borderClass={border.textClass} />
+            </div>
+            <span className={border.textClass} aria-hidden="true">{border.side}</span>
+          </div>
+        </>
+      )}
+
+      {/* Game stats for live/final games */}
+      {(game.status === "live" || game.status === "final") && game.stats && (
+        <>
+          <BorderLine
+            left={border.corners.ml}
+            right={border.corners.mr}
+            fill={border.horizontal}
+            className={border.textClass}
+          />
+          <div className="flex items-center">
+            <span className={border.textClass} aria-hidden="true">{border.side}</span>
+            <div className="flex-1 px-2 py-0.5">
+              <GameStats game={game} />
             </div>
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
           </div>

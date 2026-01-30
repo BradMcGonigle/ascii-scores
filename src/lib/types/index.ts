@@ -35,6 +35,16 @@ export interface PeriodScores {
 }
 
 /**
+ * Game statistics for display (sport-specific key stats)
+ */
+export interface GameStats {
+  /** Home team stats */
+  home: Record<string, string | number>;
+  /** Away team stats */
+  away: Record<string, string | number>;
+}
+
+/**
  * Normalized team data across all sports
  */
 export interface Team {
@@ -65,6 +75,8 @@ export interface Game {
   detail?: string;
   /** Period/quarter/inning scores */
   periodScores?: PeriodScores;
+  /** Game statistics (sport-specific) */
+  stats?: GameStats;
 }
 
 /**
