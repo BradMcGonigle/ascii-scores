@@ -7,6 +7,59 @@ interface LeagueScoreboardProps {
 }
 
 /**
+ * Section header component with decorative ASCII styling
+ */
+function SectionHeader({
+  title,
+  count,
+  variant,
+}: {
+  title: string;
+  count: number;
+  variant: "live" | "scheduled" | "final";
+}) {
+  const styles = {
+    live: {
+      color: "text-terminal-green",
+      glow: "glow-green",
+      icon: "●",
+      border: "═",
+      corners: { left: "╔", right: "╗" },
+    },
+    scheduled: {
+      color: "text-terminal-yellow",
+      glow: "glow-amber",
+      icon: "◈",
+      border: "━",
+      corners: { left: "┏", right: "┓" },
+    },
+    final: {
+      color: "text-terminal-muted",
+      glow: "",
+      icon: "◇",
+      border: "─",
+      corners: { left: "┌", right: "┐" },
+    },
+  };
+
+  const style = styles[variant];
+
+  return (
+    <h2 className={`font-mono ${style.color} mb-4`}>
+      <span className="text-terminal-border">{style.corners.left}</span>
+      <span className={style.color}>{style.border.repeat(3)}</span>
+      <span className={`${style.glow} mx-2`}>
+        {variant === "live" && <span className="glow-pulse mr-1">{style.icon}</span>}
+        {variant !== "live" && <span className="mr-1">{style.icon}</span>}
+        {title.toUpperCase()} ({count})
+      </span>
+      <span className={style.color}>{style.border.repeat(3)}</span>
+      <span className="text-terminal-border">{style.corners.right}</span>
+    </h2>
+  );
+}
+
+/**
  * Displays a scoreboard for a league with all games
  */
 export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
@@ -14,19 +67,30 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
 
   if (scoreboard.games.length === 0) {
     return (
-      <div className="font-mono text-center py-8">
-        <div className="text-terminal-border" aria-hidden="true">
-          ╔════════════════════════════════════════╗
+      <div className="font-mono text-center py-12">
+        <div className="inline-block">
+          <div className="text-terminal-border" aria-hidden="true">
+            ╔══════════════════════════════════════════════╗
+          </div>
+          <div className="text-terminal-border" aria-hidden="true">
+            ║{"░".repeat(46)}║
+          </div>
+          <div>
+            <span className="text-terminal-border" aria-hidden="true">║</span>
+            <span className="text-terminal-muted px-4">
+              {"      "}No {league.name} games scheduled today{"      "}
+            </span>
+            <span className="text-terminal-border" aria-hidden="true">║</span>
+          </div>
+          <div className="text-terminal-border" aria-hidden="true">
+            ║{"░".repeat(46)}║
+          </div>
+          <div className="text-terminal-border" aria-hidden="true">
+            ╚══════════════════════════════════════════════╝
+          </div>
         </div>
-        <div>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-          <span className="text-terminal-muted px-4">
-            {"    "}No {league.name} games scheduled today{"    "}
-          </span>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-        </div>
-        <div className="text-terminal-border" aria-hidden="true">
-          ╚════════════════════════════════════════╝
+        <div className="mt-4 text-terminal-muted text-xs">
+          <span className="text-terminal-cyan">{">"}</span> Check back later for game updates
         </div>
       </div>
     );
@@ -38,13 +102,11 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
   const finalGames = scoreboard.games.filter((g) => g.status === "final");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Live games section */}
       {liveGames.length > 0 && (
-        <section aria-label="Live games">
-          <h2 className="font-mono text-terminal-green mb-4">
-            ═══ LIVE ({liveGames.length}) ═══
-          </h2>
+        <section aria-label="Live games" className="relative">
+          <SectionHeader title="LIVE" count={liveGames.length} variant="live" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {liveGames.map((game) => (
               <GameCard key={game.id} game={game} />
@@ -56,9 +118,7 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
       {/* Scheduled games section */}
       {scheduledGames.length > 0 && (
         <section aria-label="Scheduled games">
-          <h2 className="font-mono text-terminal-yellow mb-4">
-            ═══ SCHEDULED ({scheduledGames.length}) ═══
-          </h2>
+          <SectionHeader title="SCHEDULED" count={scheduledGames.length} variant="scheduled" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {scheduledGames.map((game) => (
               <GameCard key={game.id} game={game} />
@@ -70,9 +130,7 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
       {/* Final games section */}
       {finalGames.length > 0 && (
         <section aria-label="Final games">
-          <h2 className="font-mono text-terminal-muted mb-4">
-            ═══ FINAL ({finalGames.length}) ═══
-          </h2>
+          <SectionHeader title="FINAL" count={finalGames.length} variant="final" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {finalGames.map((game) => (
               <GameCard key={game.id} game={game} />
@@ -81,9 +139,21 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
         </section>
       )}
 
-      {/* Last updated */}
-      <div className="text-terminal-muted text-sm font-mono text-center pt-4 border-t border-terminal-border">
-        Last updated: {scoreboard.lastUpdated.toLocaleTimeString()}
+      {/* Last updated with enhanced styling */}
+      <div className="font-mono text-center pt-6">
+        <div className="inline-block">
+          <div className="text-terminal-border text-xs" aria-hidden="true">
+            ├──────────────────────────────────┤
+          </div>
+          <div className="text-terminal-muted text-sm py-2">
+            <span className="text-terminal-cyan mr-2">◆</span>
+            Last synced: {scoreboard.lastUpdated.toLocaleTimeString()}
+            <span className="text-terminal-green ml-2">●</span>
+          </div>
+          <div className="text-terminal-border text-xs" aria-hidden="true">
+            └──────────────────────────────────┘
+          </div>
+        </div>
       </div>
     </div>
   );

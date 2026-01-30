@@ -65,6 +65,29 @@ import { useRouter } from 'next/navigation';
 - Keep ASCII art monospace-friendly
 - Provide text alternatives for accessibility
 
+#### Available ASCII Components
+
+| Component | Purpose |
+|-----------|---------|
+| `AsciiBox` | Content container with multiple border styles (single, double, rounded, heavy) |
+| `AsciiTable` | Data table with ASCII borders and column alignment |
+| `AsciiLogo` / `AsciiLogoCompact` | Site branding in ASCII art |
+| `AsciiSportIcon` | Sport emoji icons for each league (compact, default, boxed variants) |
+| `AsciiDecorations` | Dividers, frames, status indicators, progress bars, cursors |
+
+#### CSS Utilities for Retro Effects
+
+| Class | Effect |
+|-------|--------|
+| `glow-green` / `glow-amber` / `glow-blue` | Phosphor text glow effects |
+| `glow-pulse` | Animated pulsing glow |
+| `text-glow` / `text-glow-strong` | Subtle text shadow glow |
+| `retro-card` | Card with gradient background and hover glow |
+| `matrix-bg` | Subtle grid pattern background |
+| `cursor-blink` | Blinking block cursor after element |
+
+The site uses CRT-style effects (scanlines, vignette) applied globally via `body::before` and `body::after` pseudo-elements.
+
 ## Directory Structure
 
 ```
