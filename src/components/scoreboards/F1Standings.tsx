@@ -13,7 +13,8 @@ export function F1StandingsDisplay({ standings }: F1StandingsProps) {
   const statusClass = getStatusClass(session.status);
 
   return (
-    <div className="font-mono">
+    <div className="font-mono overflow-x-auto">
+      <div className="inline-block min-w-fit">
       {/* Session header */}
       <div className="mb-4">
         <div className="text-terminal-border" aria-hidden="true">
@@ -107,6 +108,7 @@ export function F1StandingsDisplay({ standings }: F1StandingsProps) {
       {/* Last updated */}
       <div className="text-terminal-muted text-sm text-center pt-4">
         Last updated: {standings.lastUpdated.toLocaleTimeString()}
+      </div>
       </div>
     </div>
   );

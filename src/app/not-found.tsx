@@ -6,10 +6,11 @@ export default function NotFound() {
   return (
     <>
       <Header />
-      <main className="flex-1 flex items-center justify-center">
-        <div className="font-mono text-center">
-          <pre className="text-terminal-red mb-8">
-            {`
+      <main className="flex-1 flex items-center justify-center px-4">
+        <div className="font-mono text-center w-full max-w-2xl">
+          <div className="overflow-x-auto">
+            <pre className="text-terminal-red mb-8 text-xs sm:text-sm md:text-base inline-block">
+              {`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
 ║   ██╗  ██╗ ██████╗ ██╗  ██╗                              ║
@@ -23,7 +24,8 @@ export default function NotFound() {
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
 `.trim()}
-          </pre>
+            </pre>
+          </div>
           <p className="text-terminal-muted mb-6">
             The page you&apos;re looking for doesn&apos;t exist.
           </p>

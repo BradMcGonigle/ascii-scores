@@ -1,10 +1,38 @@
 /**
  * ASCII art logo for the application
+ * Shows stacked version on mobile, full version on larger screens
  */
 export function AsciiLogo({ className = "" }: { className?: string }) {
   return (
-    <pre className={`text-terminal-green ${className}`} aria-label="ASCII Scores">
-      {`
+    <div className={className}>
+      {/* Mobile: stacked logo */}
+      <pre
+        className="text-terminal-green md:hidden"
+        aria-label="ASCII Scores"
+      >
+        {`
+ █████╗ ███████╗ ██████╗██╗██╗
+██╔══██╗██╔════╝██╔════╝██║██║
+███████║███████╗██║     ██║██║
+██╔══██║╚════██║██║     ██║██║
+██║  ██║███████║╚██████╗██║██║
+╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝╚═╝
+
+███████╗ ██████╗ ██████╗ ██████╗ ███████╗███████╗
+██╔════╝██╔════╝██╔═══██╗██╔══██╗██╔════╝██╔════╝
+███████╗██║     ██║   ██║██████╔╝█████╗  ███████╗
+╚════██║██║     ██║   ██║██╔══██╗██╔══╝  ╚════██║
+███████║╚██████╗╚██████╔╝██║  ██║███████╗███████║
+╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝
+`.trim()}
+      </pre>
+
+      {/* Desktop: full horizontal logo */}
+      <pre
+        className="text-terminal-green hidden md:block"
+        aria-label="ASCII Scores"
+      >
+        {`
  █████╗ ███████╗ ██████╗██╗██╗    ███████╗ ██████╗ ██████╗ ██████╗ ███████╗███████╗
 ██╔══██╗██╔════╝██╔════╝██║██║    ██╔════╝██╔════╝██╔═══██╗██╔══██╗██╔════╝██╔════╝
 ███████║███████╗██║     ██║██║    ███████╗██║     ██║   ██║██████╔╝█████╗  ███████╗
@@ -12,7 +40,8 @@ export function AsciiLogo({ className = "" }: { className?: string }) {
 ██║  ██║███████║╚██████╗██║██║    ███████║╚██████╗╚██████╔╝██║  ██║███████╗███████║
 ╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝╚═╝    ╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝
 `.trim()}
-    </pre>
+      </pre>
+    </div>
   );
 }
 
