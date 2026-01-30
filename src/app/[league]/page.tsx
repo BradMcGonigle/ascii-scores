@@ -87,19 +87,21 @@ async function ESPNContent({ league }: { league: Exclude<League, "f1"> }) {
   } catch (error) {
     console.error(`Failed to fetch ${league} scoreboard:`, error);
     return (
-      <div className="font-mono text-center py-8 text-terminal-red">
-        <div className="text-terminal-border" aria-hidden="true">
-          ╔══════════════════════════════════════════╗
-        </div>
-        <div>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-          <span className="px-4">
-            {"  "}Error loading scoreboard. Try again.{"  "}
-          </span>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-        </div>
-        <div className="text-terminal-border" aria-hidden="true">
-          ╚══════════════════════════════════════════╝
+      <div className="overflow-x-auto">
+        <div className="font-mono text-center py-8 text-terminal-red inline-block min-w-full">
+          <div className="text-terminal-border" aria-hidden="true">
+            ╔══════════════════════════════════════════╗
+          </div>
+          <div>
+            <span className="text-terminal-border" aria-hidden="true">║</span>
+            <span className="px-4">
+              {"  "}Error loading scoreboard. Try again.{"  "}
+            </span>
+            <span className="text-terminal-border" aria-hidden="true">║</span>
+          </div>
+          <div className="text-terminal-border" aria-hidden="true">
+            ╚══════════════════════════════════════════╝
+          </div>
         </div>
       </div>
     );
@@ -115,19 +117,21 @@ async function F1Content() {
 
     if (!standings) {
       return (
-        <div className="font-mono text-center py-8">
-          <div className="text-terminal-border" aria-hidden="true">
-            ╔═══════════════════════════════════════════════╗
-          </div>
-          <div>
-            <span className="text-terminal-border" aria-hidden="true">║</span>
-            <span className="text-terminal-muted px-4">
-              {"  "}No active F1 session at this time{"  "}
-            </span>
-            <span className="text-terminal-border" aria-hidden="true">║</span>
-          </div>
-          <div className="text-terminal-border" aria-hidden="true">
-            ╚═══════════════════════════════════════════════╝
+        <div className="overflow-x-auto">
+          <div className="font-mono text-center py-8 inline-block min-w-full">
+            <div className="text-terminal-border" aria-hidden="true">
+              ╔═══════════════════════════════════════════════╗
+            </div>
+            <div>
+              <span className="text-terminal-border" aria-hidden="true">║</span>
+              <span className="text-terminal-muted px-4">
+                {"  "}No active F1 session at this time{"  "}
+              </span>
+              <span className="text-terminal-border" aria-hidden="true">║</span>
+            </div>
+            <div className="text-terminal-border" aria-hidden="true">
+              ╚═══════════════════════════════════════════════╝
+            </div>
           </div>
         </div>
       );
@@ -137,19 +141,21 @@ async function F1Content() {
   } catch (error) {
     console.error("Failed to fetch F1 standings:", error);
     return (
-      <div className="font-mono text-center py-8 text-terminal-red">
-        <div className="text-terminal-border" aria-hidden="true">
-          ╔══════════════════════════════════════════╗
-        </div>
-        <div>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-          <span className="px-4">
-            {"  "}Error loading F1 data. Try again.{"  "}
-          </span>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-        </div>
-        <div className="text-terminal-border" aria-hidden="true">
-          ╚══════════════════════════════════════════╝
+      <div className="overflow-x-auto">
+        <div className="font-mono text-center py-8 text-terminal-red inline-block min-w-full">
+          <div className="text-terminal-border" aria-hidden="true">
+            ╔══════════════════════════════════════════╗
+          </div>
+          <div>
+            <span className="text-terminal-border" aria-hidden="true">║</span>
+            <span className="px-4">
+              {"  "}Error loading F1 data. Try again.{"  "}
+            </span>
+            <span className="text-terminal-border" aria-hidden="true">║</span>
+          </div>
+          <div className="text-terminal-border" aria-hidden="true">
+            ╚══════════════════════════════════════════╝
+          </div>
         </div>
       </div>
     );
