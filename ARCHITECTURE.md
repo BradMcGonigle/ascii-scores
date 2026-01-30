@@ -59,7 +59,7 @@ GET /race_control               # Flags, messages
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              CLIENT BROWSER                                  │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                     ASCII RENDERER (React/Preact)                    │   │
+│  │                     ASCII RENDERER (React 19)                        │   │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │   │
 │  │  │   NHL    │ │   NFL    │ │   NBA    │ │   MLB    │ │   MLS    │  │   │
 │  │  │Scoreboard│ │Scoreboard│ │Scoreboard│ │Scoreboard│ │Scoreboard│  │   │
@@ -76,7 +76,7 @@ GET /race_control               # Flags, messages
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                            EDGE / API LAYER                                  │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                    Next.js / Cloudflare Workers                      │   │
+│  │                    Next.js 16.1 + Turbopack                          │   │
 │  │                                                                       │   │
 │  │   ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐    │   │
 │  │   │  API Routes │    │   Caching   │    │  Rate Limit Handler │    │   │
@@ -105,24 +105,28 @@ GET /race_control               # Flags, messages
 
 ## Technology Stack
 
-### Recommended Stack
-
 | Layer | Technology | Rationale |
 |-------|------------|-----------|
-| **Framework** | Next.js 14+ (App Router) | Server components, API routes, edge runtime |
+| **Framework** | Next.js 16.1 (App Router) | Server components, `"use cache"` directive, Turbopack |
 | **Language** | TypeScript | Type safety for API responses |
-| **Styling** | Tailwind CSS + CSS Variables | Monospace fonts, ASCII theming |
-| **State** | React Query (TanStack Query) | Caching, refetching, stale-while-revalidate |
-| **Hosting** | Vercel / Cloudflare Pages | Edge functions, global CDN |
-| **Cache** | Vercel KV / Upstash Redis | Optional: persistent cache layer |
+| **Styling** | Tailwind CSS v4 | Monospace fonts, ASCII theming |
+| **Data Fetching** | Server Components + `"use cache"` | Built-in caching, no external libraries needed |
+| **Client Polling** | `useEffect` + `router.refresh()` | Simple, native React patterns |
+| **Hosting** | Vercel | Edge functions, global CDN, native Next.js support |
 
-### Alternative Lightweight Stack
+### Why No TanStack Query?
 
-| Layer | Technology | Rationale |
-|-------|------------|-----------|
-| **Framework** | Astro + Preact | Minimal JS, fast static generation |
-| **API** | Cloudflare Workers | Edge-first, generous free tier |
-| **State** | Nanostores | Lightweight reactive state |
+Next.js 16 provides everything we need out of the box:
+
+| Need | Next.js 16 Solution |
+|------|---------------------|
+| Server caching | `"use cache"` directive on components/functions |
+| Time-based revalidation | `cacheLife()` configuration |
+| Cache invalidation | `revalidateTag()` / `revalidatePath()` |
+| Stale-while-revalidate | Built into fetch with `next: { revalidate }` |
+| Client refresh | `router.refresh()` preserves client state |
+
+This app is **read-only** with simple polling - no complex mutations or optimistic updates that would justify adding TanStack Query.
 
 ---
 
@@ -339,13 +343,13 @@ const TEAM_LOGOS: Record<string, string[]> = {
 
 ---
 
-## API Route Implementation
+## Data Fetching Implementation
 
-### ESPN Proxy Route
+### Cached Data Functions (Next.js 16 "use cache")
 
 ```typescript
-// app/api/espn/[league]/route.ts
-import { NextResponse } from 'next/server';
+// lib/api/espn.ts
+import { cacheLife } from 'next/cache';
 
 const LEAGUE_MAP = {
   nhl: 'hockey/nhl',
@@ -355,43 +359,85 @@ const LEAGUE_MAP = {
   mls: 'soccer/usa.1',
 } as const;
 
-export async function GET(
-  request: Request,
-  { params }: { params: { league: keyof typeof LEAGUE_MAP } }
-) {
-  const league = LEAGUE_MAP[params.league];
-  if (!league) {
-    return NextResponse.json({ error: 'Invalid league' }, { status: 400 });
-  }
+export type League = keyof typeof LEAGUE_MAP;
 
-  const url = `https://site.api.espn.com/apis/site/v2/sports/${league}/scoreboard`;
+export async function getScoreboard(league: League) {
+  "use cache";
+  cacheLife("seconds", 30); // Cache for 30 seconds
 
-  const response = await fetch(url, {
-    next: { revalidate: 30 }, // Cache for 30 seconds
-  });
+  const path = LEAGUE_MAP[league];
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard`;
 
+  const response = await fetch(url);
   const data = await response.json();
 
-  // Transform to normalized format
-  const normalized = normalizeESPNData(data, params.league);
-
-  return NextResponse.json(normalized);
+  return normalizeESPNData(data, league);
 }
 ```
 
-### OpenF1 Proxy Route
+```typescript
+// lib/api/openf1.ts
+import { cacheLife } from 'next/cache';
+
+export async function getF1Sessions() {
+  "use cache";
+  cacheLife("minutes", 5); // Cache for 5 minutes
+
+  const response = await fetch('https://api.openf1.org/v1/sessions?year=2026');
+  return response.json();
+}
+
+export async function getF1Positions(sessionKey: string) {
+  "use cache";
+  cacheLife("seconds", 10); // Cache for 10 seconds during live sessions
+
+  const response = await fetch(
+    `https://api.openf1.org/v1/position?session_key=${sessionKey}`
+  );
+  return response.json();
+}
+```
+
+### Server Component Usage
 
 ```typescript
-// app/api/f1/sessions/route.ts
-export async function GET() {
-  const url = 'https://api.openf1.org/v1/sessions?year=2025';
+// app/[league]/page.tsx
+import { getScoreboard, type League } from '@/lib/api/espn';
+import { Scoreboard } from '@/components/scoreboards/Scoreboard';
 
-  const response = await fetch(url, {
-    next: { revalidate: 300 }, // Cache for 5 minutes
-  });
+export default async function LeaguePage({
+  params,
+}: {
+  params: Promise<{ league: League }>;
+}) {
+  const { league } = await params;
+  const games = await getScoreboard(league);
 
-  const data = await response.json();
-  return NextResponse.json(data);
+  return <Scoreboard league={league} games={games} />;
+}
+```
+
+### Client-Side Polling
+
+```typescript
+// components/ScoreboardRefresh.tsx
+"use client";
+
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export function ScoreboardRefresh({ intervalMs = 30000 }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh(); // Re-fetches server components, preserves client state
+    }, intervalMs);
+
+    return () => clearInterval(interval);
+  }, [router, intervalMs]);
+
+  return null;
 }
 ```
 
@@ -469,7 +515,7 @@ export async function GET() {
 ## Development Phases
 
 ### Phase 1: Foundation
-- [ ] Project setup (Next.js, TypeScript, Tailwind)
+- [ ] Project setup (Next.js 16.1, TypeScript, Tailwind v4)
 - [ ] ASCII rendering utilities
 - [ ] ESPN API integration (one league)
 - [ ] Basic scoreboard component
@@ -501,8 +547,7 @@ ascii-scores/
 ├── README.md
 ├── ARCHITECTURE.md          # This document
 ├── package.json
-├── next.config.js
-├── tailwind.config.js
+├── next.config.ts           # Next.js 16 config (TypeScript)
 ├── tsconfig.json
 │
 ├── public/
@@ -511,9 +556,13 @@ ascii-scores/
 │
 ├── src/
 │   ├── app/                 # Next.js App Router
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── globals.css      # Tailwind v4 (CSS-first config)
+│   │   └── [league]/
+│   │       └── page.tsx
 │   ├── components/          # React components
-│   ├── lib/                 # Utilities & API clients
-│   └── styles/              # Global styles
+│   └── lib/                 # Utilities & API clients
 │
 └── tests/
     ├── api/                 # API integration tests
