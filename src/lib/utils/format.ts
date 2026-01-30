@@ -142,6 +142,18 @@ export function isToday(date: Date): boolean {
 }
 
 /**
+ * Check if a date is in the past (before today)
+ * Used to determine caching strategy - past dates can be cached indefinitely
+ */
+export function isDateInPast(date: Date): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const compareDate = new Date(date);
+  compareDate.setHours(0, 0, 0, 0);
+  return compareDate < today;
+}
+
+/**
  * Get a relative date label (Today, Yesterday, Tomorrow, or formatted date)
  */
 export function getRelativeDateLabel(date: Date): string {
