@@ -76,12 +76,12 @@
 
 @keyframes glow-pulse {
   0%, 100% {
-    text-shadow: 0 0 4px currentColor, 0 0 8px currentColor;
+    text-shadow: 0 0 2px currentColor;
     filter: brightness(1);
   }
   50% {
-    text-shadow: 0 0 8px currentColor, 0 0 16px currentColor, 0 0 24px currentColor;
-    filter: brightness(1.1);
+    text-shadow: 0 0 4px currentColor, 0 0 8px currentColor;
+    filter: brightness(1.05);
   }
 }
 
@@ -194,23 +194,20 @@
     color: var(--color-terminal-yellow);
   }
 
-  /* Phosphor glow effect */
+  /* Phosphor glow effect - subtle */
   .glow-green {
-    text-shadow: 0 0 5px var(--color-glow-green),
-                 0 0 10px var(--color-glow-green),
-                 0 0 20px var(--color-glow-green);
+    text-shadow: 0 0 3px var(--color-glow-green),
+                 0 0 6px var(--color-glow-green);
   }
 
   .glow-amber {
-    text-shadow: 0 0 5px var(--color-glow-amber),
-                 0 0 10px var(--color-glow-amber),
-                 0 0 20px var(--color-glow-amber);
+    text-shadow: 0 0 3px var(--color-glow-amber),
+                 0 0 6px var(--color-glow-amber);
   }
 
   .glow-blue {
-    text-shadow: 0 0 5px var(--color-glow-blue),
-                 0 0 10px var(--color-glow-blue),
-                 0 0 20px var(--color-glow-blue);
+    text-shadow: 0 0 3px var(--color-glow-blue),
+                 0 0 6px var(--color-glow-blue);
   }
 
   .glow-pulse {
@@ -242,16 +239,15 @@
     animation: rgb-shift 4s infinite;
   }
 
-  /* Retro text effects */
+  /* Retro text effects - subtle */
   .text-glow {
-    text-shadow: 0 0 10px currentColor;
+    text-shadow: 0 0 4px currentColor;
   }
 
   .text-glow-strong {
-    text-shadow: 0 0 5px currentColor,
-                 0 0 10px currentColor,
-                 0 0 20px currentColor,
-                 0 0 40px currentColor;
+    text-shadow: 0 0 3px currentColor,
+                 0 0 6px currentColor,
+                 0 0 10px currentColor;
   }
 
   /* Terminal prompt styling */

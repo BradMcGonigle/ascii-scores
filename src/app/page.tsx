@@ -36,7 +36,7 @@ export default function HomePage() {
               ║░░░░░░░░░░║
             </div>
 
-            <AsciiLogo className="mx-auto text-xs sm:text-sm md:text-base glow-green" />
+            <AsciiLogo className="mx-auto text-xs sm:text-sm md:text-base" />
 
             {/* Tagline with typing effect styling */}
             <div className="mt-6 inline-block">
@@ -158,7 +158,7 @@ export default function HomePage() {
                 <div className="text-terminal-border text-xs mb-4" aria-hidden="true">
                   ┌─────────────────────────┐
                 </div>
-                <div className="text-terminal-green text-3xl mb-3 glow-green glow-pulse">
+                <div className="text-terminal-green text-2xl mb-3">
                   {"<"} LIVE {">"}
                 </div>
                 <div className="text-terminal-green text-xs mb-4">
@@ -177,7 +177,7 @@ export default function HomePage() {
                 <div className="text-terminal-border text-xs mb-4" aria-hidden="true">
                   ╔═════════════════════════╗
                 </div>
-                <div className="text-terminal-yellow text-3xl mb-3 glow-amber">
+                <div className="text-terminal-yellow text-2xl mb-3">
                   █ ASCII █
                 </div>
                 <div className="text-terminal-yellow text-xs mb-4">
@@ -196,7 +196,7 @@ export default function HomePage() {
                 <div className="text-terminal-border text-xs mb-4" aria-hidden="true">
                   ┏━━━━━━━━━━━━━━━━━━━━━━━━━┓
                 </div>
-                <div className="text-terminal-cyan text-3xl mb-3 glow-blue">
+                <div className="text-terminal-cyan text-2xl mb-3">
                   [ 6 LEAGUES ]
                 </div>
                 <div className="text-terminal-cyan text-xs mb-4">

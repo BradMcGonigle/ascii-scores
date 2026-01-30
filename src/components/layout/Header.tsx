@@ -4,7 +4,7 @@ import { Navigation } from "./Navigation";
 
 export function Header() {
   return (
-    <header className="border-b border-terminal-border bg-terminal-bg relative overflow-hidden">
+    <header className="border-b border-terminal-border bg-terminal-bg relative">
       {/* Terminal-style top bar */}
       <div className="bg-terminal-border/30 border-b border-terminal-border px-4 py-1 hidden sm:block">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
