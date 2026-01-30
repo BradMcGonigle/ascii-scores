@@ -7,16 +7,21 @@
     "Roboto Mono", "Source Code Pro", "Menlo", "Consolas", monospace;
 
   /* Color palette for terminal-like aesthetic */
-  --color-terminal-bg: #0d1117;
-  --color-terminal-fg: #c9d1d9;
-  --color-terminal-green: #3fb950;
-  --color-terminal-red: #f85149;
-  --color-terminal-yellow: #d29922;
-  --color-terminal-blue: #58a6ff;
-  --color-terminal-cyan: #39c5cf;
-  --color-terminal-magenta: #bc8cff;
-  --color-terminal-border: #30363d;
-  --color-terminal-muted: #8b949e;
+  --color-terminal-bg: #0a0e14;
+  --color-terminal-fg: #b3b1ad;
+  --color-terminal-green: #00ff41;
+  --color-terminal-red: #ff2e4a;
+  --color-terminal-yellow: #ffb627;
+  --color-terminal-blue: #00d4ff;
+  --color-terminal-cyan: #00ffcc;
+  --color-terminal-magenta: #ff00ff;
+  --color-terminal-border: #1a1f29;
+  --color-terminal-muted: #5c6370;
+
+  /* Phosphor glow colors */
+  --color-glow-green: #00ff41;
+  --color-glow-amber: #ffb000;
+  --color-glow-blue: #00d4ff;
 
   /* League-specific colors */
   --color-nhl: #041e42;
@@ -25,6 +30,86 @@
   --color-mlb: #002d72;
   --color-mls: #80b918;
   --color-f1: #e10600;
+
+  /* Animation timings */
+  --animate-blink: blink 1s step-end infinite;
+  --animate-flicker: flicker 0.15s infinite;
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
+  --animate-typing: typing 3.5s steps(40, end);
+}
+
+/* Keyframe animations for retro effects */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes flicker {
+  0% { opacity: 0.97; }
+  5% { opacity: 0.95; }
+  10% { opacity: 0.97; }
+  15% { opacity: 0.94; }
+  20% { opacity: 0.98; }
+  25% { opacity: 0.96; }
+  30% { opacity: 0.97; }
+  35% { opacity: 0.95; }
+  40% { opacity: 0.98; }
+  45% { opacity: 0.96; }
+  50% { opacity: 0.97; }
+  55% { opacity: 0.95; }
+  60% { opacity: 0.98; }
+  65% { opacity: 0.96; }
+  70% { opacity: 0.97; }
+  75% { opacity: 0.94; }
+  80% { opacity: 0.98; }
+  85% { opacity: 0.96; }
+  90% { opacity: 0.97; }
+  95% { opacity: 0.95; }
+  100% { opacity: 0.98; }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    text-shadow: 0 0 4px currentColor, 0 0 8px currentColor;
+    filter: brightness(1);
+  }
+  50% {
+    text-shadow: 0 0 8px currentColor, 0 0 16px currentColor, 0 0 24px currentColor;
+    filter: brightness(1.1);
+  }
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes rgb-shift {
+  0% { text-shadow: -1px 0 #ff0000, 1px 0 #00ffff; }
+  25% { text-shadow: 1px 0 #ff0000, -1px 0 #00ffff; }
+  50% { text-shadow: -1px 0 #00ffff, 1px 0 #ff0000; }
+  75% { text-shadow: 1px 0 #00ffff, -1px 0 #ff0000; }
+  100% { text-shadow: -1px 0 #ff0000, 1px 0 #00ffff; }
 }
 
 /* Base styles for ASCII aesthetic */
@@ -37,6 +122,45 @@
 
   body {
     min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* CRT screen overlay effect */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15) 0px,
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+  }
+
+  /* Subtle vignette effect */
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 999;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      transparent 60%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
   }
 
   /* Ensure monospace rendering for ASCII art */
@@ -68,5 +192,130 @@
 
   .text-scheduled {
     color: var(--color-terminal-yellow);
+  }
+
+  /* Phosphor glow effect */
+  .glow-green {
+    text-shadow: 0 0 5px var(--color-glow-green),
+                 0 0 10px var(--color-glow-green),
+                 0 0 20px var(--color-glow-green);
+  }
+
+  .glow-amber {
+    text-shadow: 0 0 5px var(--color-glow-amber),
+                 0 0 10px var(--color-glow-amber),
+                 0 0 20px var(--color-glow-amber);
+  }
+
+  .glow-blue {
+    text-shadow: 0 0 5px var(--color-glow-blue),
+                 0 0 10px var(--color-glow-blue),
+                 0 0 20px var(--color-glow-blue);
+  }
+
+  .glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  /* Blinking cursor */
+  .cursor-blink::after {
+    content: "█";
+    animation: cursor-blink 1s step-end infinite;
+  }
+
+  .cursor-blink-underscore::after {
+    content: "_";
+    animation: cursor-blink 1s step-end infinite;
+  }
+
+  /* Glitch effect */
+  .glitch {
+    animation: glitch 0.3s infinite;
+  }
+
+  .glitch-hover:hover {
+    animation: glitch 0.3s infinite;
+  }
+
+  /* RGB chromatic aberration effect */
+  .rgb-shift {
+    animation: rgb-shift 4s infinite;
+  }
+
+  /* Retro text effects */
+  .text-glow {
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .text-glow-strong {
+    text-shadow: 0 0 5px currentColor,
+                 0 0 10px currentColor,
+                 0 0 20px currentColor,
+                 0 0 40px currentColor;
+  }
+
+  /* Terminal prompt styling */
+  .terminal-prompt::before {
+    content: "> ";
+    color: var(--color-terminal-green);
+  }
+
+  .terminal-prompt-dollar::before {
+    content: "$ ";
+    color: var(--color-terminal-green);
+  }
+
+  /* ASCII art border glow */
+  .border-glow {
+    box-shadow: 0 0 10px var(--color-terminal-border),
+                inset 0 0 10px rgba(0, 255, 65, 0.1);
+  }
+
+  /* Flickering effect for CRT simulation */
+  .flicker {
+    animation: flicker 0.15s infinite;
+  }
+
+  /* Live indicator pulsing dot */
+  .live-indicator::before {
+    content: "●";
+    color: var(--color-terminal-green);
+    animation: glow-pulse 1s ease-in-out infinite;
+    margin-right: 0.5rem;
+  }
+
+  /* Matrix-style rain effect (for backgrounds) */
+  .matrix-bg {
+    background-image: linear-gradient(
+      0deg,
+      transparent 24%,
+      rgba(0, 255, 65, 0.05) 25%,
+      rgba(0, 255, 65, 0.05) 26%,
+      transparent 27%,
+      transparent 74%,
+      rgba(0, 255, 65, 0.05) 75%,
+      rgba(0, 255, 65, 0.05) 76%,
+      transparent 77%,
+      transparent
+    );
+    background-size: 50px 50px;
+  }
+
+  /* Retro card styling */
+  .retro-card {
+    background: linear-gradient(
+      135deg,
+      rgba(26, 31, 41, 0.8) 0%,
+      rgba(10, 14, 20, 0.9) 100%
+    );
+    border: 1px solid var(--color-terminal-border);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .retro-card:hover {
+    box-shadow: 0 0 30px rgba(0, 255, 65, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-color: var(--color-terminal-green);
   }
 }
