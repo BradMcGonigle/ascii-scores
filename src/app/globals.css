@@ -6,22 +6,22 @@
   --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", "Inconsolata",
     "Roboto Mono", "Source Code Pro", "Menlo", "Consolas", monospace;
 
-  /* Color palette for terminal-like aesthetic */
-  --color-terminal-bg: #0a0e14;
-  --color-terminal-fg: #b3b1ad;
-  --color-terminal-green: #00ff41;
-  --color-terminal-red: #ff2e4a;
-  --color-terminal-yellow: #ffb627;
-  --color-terminal-blue: #00d4ff;
-  --color-terminal-cyan: #00ffcc;
-  --color-terminal-magenta: #ff00ff;
-  --color-terminal-border: #1a1f29;
-  --color-terminal-muted: #5c6370;
+  /* Terminal colors - these will be overridden by theme-specific values */
+  --color-terminal-bg: var(--theme-bg);
+  --color-terminal-fg: var(--theme-fg);
+  --color-terminal-green: var(--theme-green);
+  --color-terminal-red: var(--theme-red);
+  --color-terminal-yellow: var(--theme-yellow);
+  --color-terminal-blue: var(--theme-blue);
+  --color-terminal-cyan: var(--theme-cyan);
+  --color-terminal-magenta: var(--theme-magenta);
+  --color-terminal-border: var(--theme-border);
+  --color-terminal-muted: var(--theme-muted);
 
   /* Phosphor glow colors */
-  --color-glow-green: #00ff41;
-  --color-glow-amber: #ffb000;
-  --color-glow-blue: #00d4ff;
+  --color-glow-green: var(--theme-glow-green);
+  --color-glow-amber: var(--theme-glow-amber);
+  --color-glow-blue: var(--theme-glow-blue);
 
   /* League-specific colors */
   --color-nhl: #041e42;
@@ -37,6 +37,45 @@
   --animate-scanline: scanline 8s linear infinite;
   --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
   --animate-typing: typing 3.5s steps(40, end);
+}
+
+/* Dark theme (default) */
+:root,
+[data-theme="dark"] {
+  --theme-bg: #0a0e14;
+  --theme-fg: #b3b1ad;
+  --theme-green: #00ff41;
+  --theme-red: #ff2e4a;
+  --theme-yellow: #ffb627;
+  --theme-blue: #00d4ff;
+  --theme-cyan: #00ffcc;
+  --theme-magenta: #ff00ff;
+  --theme-border: #1a1f29;
+  --theme-muted: #5c6370;
+  --theme-glow-green: #00ff41;
+  --theme-glow-amber: #ffb000;
+  --theme-glow-blue: #00d4ff;
+  --theme-scanline-opacity: 0.15;
+  --theme-vignette-opacity: 0.4;
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --theme-bg: #f5f5f0;
+  --theme-fg: #2d3748;
+  --theme-green: #059669;
+  --theme-red: #dc2626;
+  --theme-yellow: #d97706;
+  --theme-blue: #0284c7;
+  --theme-cyan: #0891b2;
+  --theme-magenta: #c026d3;
+  --theme-border: #d1d5db;
+  --theme-muted: #6b7280;
+  --theme-glow-green: #059669;
+  --theme-glow-amber: #d97706;
+  --theme-glow-blue: #0284c7;
+  --theme-scanline-opacity: 0.03;
+  --theme-vignette-opacity: 0.1;
 }
 
 /* Keyframe animations for retro effects */
@@ -126,7 +165,7 @@
     overflow-x: hidden;
   }
 
-  /* CRT screen overlay effect */
+  /* CRT screen overlay effect - uses theme variable for opacity */
   body::before {
     content: "";
     position: fixed;
@@ -138,14 +177,14 @@
     z-index: 1000;
     background: repeating-linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.15) 0px,
-      rgba(0, 0, 0, 0.15) 1px,
+      rgba(0, 0, 0, var(--theme-scanline-opacity)) 0px,
+      rgba(0, 0, 0, var(--theme-scanline-opacity)) 1px,
       transparent 1px,
       transparent 2px
     );
   }
 
-  /* Subtle vignette effect */
+  /* Subtle vignette effect - uses theme variable for opacity */
   body::after {
     content: "";
     position: fixed;
@@ -159,7 +198,7 @@
       ellipse at center,
       transparent 0%,
       transparent 60%,
-      rgba(0, 0, 0, 0.4) 100%
+      rgba(0, 0, 0, var(--theme-vignette-opacity)) 100%
     );
   }
 
