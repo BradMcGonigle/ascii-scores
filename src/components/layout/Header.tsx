@@ -37,7 +37,13 @@ export function Header() {
               <AsciiCursor variant="block" className="hidden sm:inline opacity-70" />
             </div>
           </Link>
-          <Navigation />
+          <div className="flex items-center gap-2">
+            {/* Theme selector for mobile (hidden on sm+ where it shows in top bar) */}
+            <div className="sm:hidden">
+              <ThemeSelector />
+            </div>
+            <Navigation />
+          </div>
         </div>
       </div>
 
