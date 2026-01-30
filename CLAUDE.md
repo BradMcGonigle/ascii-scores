@@ -37,13 +37,14 @@ See `ARCHITECTURE.md` for detailed architecture documentation including:
 
 ### Data Fetching
 
-Use Next.js 16 `"use cache"` directive for server-side caching:
+Use Next.js fetch with `revalidate` for server-side caching:
 
 ```typescript
 export async function getScoreboard(league: League) {
-  "use cache";
-  cacheLife("seconds", 30);
-  // fetch logic
+  const response = await fetch(url, {
+    next: { revalidate: 30 }, // Cache for 30 seconds
+  });
+  // parse and return data
 }
 ```
 
@@ -94,6 +95,7 @@ pnpm test         # Run tests
 - Prefer server components; use `"use client"` only when necessary
 - Keep components focused and single-purpose
 - Follow conventional commits for commit messages
+- **Always run checks before committing**: `pnpm lint && pnpm typecheck`
 
 ## External APIs
 

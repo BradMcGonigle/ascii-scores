@@ -1,0 +1,159 @@
+import type { Game, GameStatus, League, Scoreboard, Team } from "@/lib/types";
+
+const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
+
+/**
+ * ESPN sport paths for each league
+ */
+const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1">, string> = {
+  nhl: "hockey/nhl",
+  nfl: "football/nfl",
+  nba: "basketball/nba",
+  mlb: "baseball/mlb",
+  mls: "soccer/usa.1",
+};
+
+/**
+ * ESPN API response types (simplified)
+ */
+interface ESPNCompetitor {
+  id: string;
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    displayName: string;
+    logo?: string;
+    color?: string;
+  };
+  score?: string;
+  homeAway: "home" | "away";
+}
+
+interface ESPNStatus {
+  type: {
+    name: string;
+    state: string;
+    completed: boolean;
+    description: string;
+    detail: string;
+    shortDetail: string;
+  };
+  period?: number;
+  displayClock?: string;
+}
+
+interface ESPNEvent {
+  id: string;
+  date: string;
+  name: string;
+  competitions: Array<{
+    id: string;
+    venue?: { fullName: string };
+    broadcasts?: Array<{ names: string[] }>;
+    competitors: ESPNCompetitor[];
+    status: ESPNStatus;
+  }>;
+}
+
+interface ESPNScoreboardResponse {
+  events: ESPNEvent[];
+}
+
+/**
+ * Map ESPN status to our GameStatus type
+ */
+function mapStatus(status: ESPNStatus): GameStatus {
+  const state = status.type.state.toLowerCase();
+  const name = status.type.name.toLowerCase();
+
+  if (state === "in") return "live";
+  if (state === "post" || status.type.completed) return "final";
+  if (name === "postponed") return "postponed";
+  if (name === "delayed") return "delayed";
+  return "scheduled";
+}
+
+/**
+ * Map ESPN competitor to our Team type
+ */
+function mapTeam(competitor: ESPNCompetitor): Team {
+  return {
+    id: competitor.team.id,
+    name: competitor.team.name,
+    abbreviation: competitor.team.abbreviation,
+    displayName: competitor.team.displayName,
+    logo: competitor.team.logo,
+    color: competitor.team.color,
+  };
+}
+
+/**
+ * Map ESPN event to our Game type
+ */
+function mapEvent(event: ESPNEvent, league: League): Game {
+  const competition = event.competitions[0];
+  const homeCompetitor = competition.competitors.find(
+    (c) => c.homeAway === "home"
+  )!;
+  const awayCompetitor = competition.competitors.find(
+    (c) => c.homeAway === "away"
+  )!;
+  const status = competition.status;
+
+  return {
+    id: event.id,
+    league,
+    status: mapStatus(status),
+    startTime: new Date(event.date),
+    venue: competition.venue?.fullName,
+    broadcast: competition.broadcasts?.[0]?.names?.[0],
+    homeTeam: mapTeam(homeCompetitor),
+    awayTeam: mapTeam(awayCompetitor),
+    homeScore: parseInt(homeCompetitor.score ?? "0", 10),
+    awayScore: parseInt(awayCompetitor.score ?? "0", 10),
+    period: status.period?.toString(),
+    clock: status.displayClock,
+    detail: status.type.shortDetail,
+  };
+}
+
+/**
+ * Fetch scoreboard data for a league from ESPN
+ */
+export async function getESPNScoreboard(
+  league: Exclude<League, "f1">
+): Promise<Scoreboard> {
+  const sportPath = LEAGUE_SPORT_MAP[league];
+  const url = `${ESPN_BASE_URL}/${sportPath}/scoreboard`;
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+    },
+    next: {
+      revalidate: 30, // Cache for 30 seconds
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`ESPN API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data: ESPNScoreboardResponse = await response.json();
+
+  const games = data.events.map((event) => mapEvent(event, league));
+
+  return {
+    league,
+    games,
+    lastUpdated: new Date(),
+  };
+}
+
+/**
+ * Check if any games are currently live for a league
+ */
+export function hasLiveGames(scoreboard: Scoreboard): boolean {
+  return scoreboard.games.some((game) => game.status === "live");
+}
