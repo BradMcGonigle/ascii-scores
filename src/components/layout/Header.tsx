@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AsciiLogoCompact, AsciiCursor } from "@/components/ascii";
 import { Navigation } from "./Navigation";
+import { ThemeSelector } from "./ThemeSelector";
 
 export function Header() {
   return (
@@ -14,11 +15,14 @@ export function Header() {
             <span className="text-terminal-green">●</span>
             <span className="text-terminal-muted ml-2">ascii-scores — bash</span>
           </div>
-          <div className="text-xs font-mono text-terminal-muted">
-            <span className="text-terminal-green">user@scores</span>
-            <span className="text-terminal-muted">:</span>
-            <span className="text-terminal-blue">~</span>
-            <span className="text-terminal-muted">$</span>
+          <div className="flex items-center gap-4 text-xs font-mono text-terminal-muted">
+            <ThemeSelector />
+            <div>
+              <span className="text-terminal-green">user@scores</span>
+              <span className="text-terminal-muted">:</span>
+              <span className="text-terminal-blue">~</span>
+              <span className="text-terminal-muted">$</span>
+            </div>
           </div>
         </div>
       </div>
@@ -33,7 +37,13 @@ export function Header() {
               <AsciiCursor variant="block" className="hidden sm:inline opacity-70" />
             </div>
           </Link>
-          <Navigation />
+          <div className="flex items-center gap-2">
+            {/* Theme selector for mobile (hidden on sm+ where it shows in top bar) */}
+            <div className="sm:hidden">
+              <ThemeSelector />
+            </div>
+            <Navigation />
+          </div>
         </div>
       </div>
 
