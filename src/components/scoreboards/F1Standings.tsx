@@ -14,7 +14,7 @@ export function F1StandingsDisplay({ standings }: F1StandingsProps) {
 
   return (
     <div className="font-mono overflow-x-auto">
-      <div className="inline-block min-w-fit">
+      <div className="w-full">
       {/* Session header */}
       <div className="mb-4">
         <div className="text-terminal-border" aria-hidden="true">
