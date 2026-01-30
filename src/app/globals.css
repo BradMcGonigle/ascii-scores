@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* ASCII Scores Theme Configuration */
+@theme {
+  /* Monospace font for ASCII art */
+  --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", "Inconsolata",
+    "Roboto Mono", "Source Code Pro", "Menlo", "Consolas", monospace;
+
+  /* Color palette for terminal-like aesthetic */
+  --color-terminal-bg: #0d1117;
+  --color-terminal-fg: #c9d1d9;
+  --color-terminal-green: #3fb950;
+  --color-terminal-red: #f85149;
+  --color-terminal-yellow: #d29922;
+  --color-terminal-blue: #58a6ff;
+  --color-terminal-cyan: #39c5cf;
+  --color-terminal-magenta: #bc8cff;
+  --color-terminal-border: #30363d;
+  --color-terminal-muted: #8b949e;
+
+  /* League-specific colors */
+  --color-nhl: #041e42;
+  --color-nfl: #013369;
+  --color-nba: #1d428a;
+  --color-mlb: #002d72;
+  --color-mls: #80b918;
+  --color-f1: #e10600;
+}
+
+/* Base styles for ASCII aesthetic */
+@layer base {
+  html {
+    font-family: var(--font-mono);
+    background-color: var(--color-terminal-bg);
+    color: var(--color-terminal-fg);
+  }
+
+  body {
+    min-height: 100vh;
+  }
+
+  /* Ensure monospace rendering for ASCII art */
+  pre,
+  code,
+  .ascii {
+    font-family: var(--font-mono);
+    font-variant-ligatures: none;
+    white-space: pre;
+    line-height: 1.2;
+  }
+}
+
+/* ASCII box-drawing utilities */
+@layer utilities {
+  .ascii-box {
+    font-family: var(--font-mono);
+    white-space: pre;
+    line-height: 1.2;
+  }
+
+  .text-live {
+    color: var(--color-terminal-green);
+  }
+
+  .text-final {
+    color: var(--color-terminal-muted);
+  }
+
+  .text-scheduled {
+    color: var(--color-terminal-yellow);
+  }
+}
