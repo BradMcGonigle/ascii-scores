@@ -4,18 +4,23 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LeagueScoreboard } from "@/components/scoreboards/LeagueScoreboard";
 import { F1StandingsDisplay } from "@/components/scoreboards/F1Standings";
+import { F1SessionsList } from "@/components/scoreboards/F1SessionsList";
 import { GolfLeaderboardClient } from "@/components/scoreboards/GolfLeaderboardClient";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { DateNavigation } from "@/components/scoreboards/DateNavigation";
 import { LeagueJsonLd } from "@/components/seo";
 import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
-import { getF1Standings } from "@/lib/api/openf1";
+import { getF1Standings, getDatesWithF1Sessions, getF1SessionsForDate } from "@/lib/api/openf1";
 import { getPGALeaderboard } from "@/lib/api/pga";
 import { LEAGUES, type League } from "@/lib/types";
 import { addDays, parseDateFromAPI } from "@/lib/utils/format";
 
 const MAX_DAYS_PAST = 5;
 const MAX_DAYS_FUTURE = 5;
+
+// F1 needs a longer range due to race weekends being spread out
+const F1_MAX_DAYS_PAST = 30;
+const F1_MAX_DAYS_FUTURE = 14;
 
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
@@ -76,7 +81,11 @@ export async function generateMetadata({ params }: LeaguePageProps) {
  * Validate and parse the date parameter
  * Returns the validated date or null if invalid/out of range
  */
-function validateDate(dateStr: string | undefined): Date | null {
+function validateDate(
+  dateStr: string | undefined,
+  daysBack: number = MAX_DAYS_PAST,
+  daysForward: number = MAX_DAYS_FUTURE
+): Date | null {
   if (!dateStr) return null;
 
   const parsed = parseDateFromAPI(dateStr);
@@ -84,8 +93,8 @@ function validateDate(dateStr: string | undefined): Date | null {
 
   // Check if date is within allowed range
   const today = new Date();
-  const minDate = addDays(today, -MAX_DAYS_PAST);
-  const maxDate = addDays(today, MAX_DAYS_FUTURE);
+  const minDate = addDays(today, -daysBack);
+  const maxDate = addDays(today, daysForward);
 
   // Reset time components for comparison
   const normalizedParsed = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
@@ -110,12 +119,15 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
   const league = LEAGUES[leagueId as League];
 
-  // Parse and validate date parameter
-  const selectedDate = validateDate(dateParam);
+  // Parse and validate date parameter with league-specific ranges
+  const isF1 = leagueId === "f1";
+  const selectedDate = isF1
+    ? validateDate(dateParam, F1_MAX_DAYS_PAST, F1_MAX_DAYS_FUTURE)
+    : validateDate(dateParam);
 
-  // For ESPN leagues, determine if we should show date navigation
-  // F1 and PGA don't use the standard date-based scoreboard navigation
-  const isESPNLeague = leagueId !== "f1" && leagueId !== "pga";
+  // Determine if we should show date navigation
+  // PGA doesn't use date-based navigation, but F1 and ESPN leagues do
+  const showDateNavigation = leagueId !== "pga";
 
   return (
     <>
@@ -143,18 +155,22 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
             <RefreshButton />
           </div>
 
-          {/* Date navigation for ESPN leagues */}
-          {isESPNLeague && (
+          {/* Date navigation */}
+          {showDateNavigation && (
             <div className="mb-8">
               <Suspense fallback={<DateNavigationSkeleton />}>
-                <DateNavigationWrapper league={leagueId as Exclude<League, "f1" | "pga">} />
+                {isF1 ? (
+                  <F1DateNavigationWrapper />
+                ) : (
+                  <DateNavigationWrapper league={leagueId as Exclude<League, "f1" | "pga">} />
+                )}
               </Suspense>
             </div>
           )}
 
           {/* Scoreboard content */}
           {leagueId === "f1" ? (
-            <F1Content />
+            <F1Content date={selectedDate ?? undefined} />
           ) : leagueId === "pga" ? (
             <PGAContent />
           ) : (
@@ -171,7 +187,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 }
 
 /**
- * Server component wrapper that fetches dates with games
+ * Server component wrapper that fetches dates with games (ESPN leagues)
  */
 async function DateNavigationWrapper({
   league,
@@ -180,6 +196,14 @@ async function DateNavigationWrapper({
 }) {
   const datesWithGames = await getDatesWithGames(league, MAX_DAYS_PAST, MAX_DAYS_FUTURE);
   return <DateNavigation league={league} datesWithGames={datesWithGames} />;
+}
+
+/**
+ * Server component wrapper that fetches dates with F1 sessions
+ */
+async function F1DateNavigationWrapper() {
+  const datesWithSessions = await getDatesWithF1Sessions(F1_MAX_DAYS_PAST, F1_MAX_DAYS_FUTURE);
+  return <DateNavigation league="f1" datesWithGames={datesWithSessions} />;
 }
 
 /**
@@ -244,9 +268,23 @@ async function ESPNContent({
 
 /**
  * F1 standings content
+ * When a specific date is provided, shows all sessions for that date
+ * Otherwise shows the most recent session (live or completed)
  */
-async function F1Content() {
+async function F1Content({ date }: { date?: Date }) {
   try {
+    // If a specific date is provided, show all sessions for that date
+    if (date) {
+      const sessions = await getF1SessionsForDate(date);
+      return (
+        <F1SessionsList
+          sessions={sessions}
+          lastUpdated={new Date()}
+        />
+      );
+    }
+
+    // Default: show the most recent/live session
     const standings = await getF1Standings();
 
     if (!standings) {
