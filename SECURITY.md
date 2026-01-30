@@ -6,7 +6,7 @@ If you discover a security vulnerability in ASCII Scores, please report it respo
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Instead, please email security concerns to: [your-email@example.com]
+Instead, please email security concerns to: [brad@bradmcgonigle.com]
 
 ### What to Include
 
