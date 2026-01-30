@@ -1,0 +1,9 @@
+# Default owner for everything in the repo
+* @BradMcGonigle
+
+# Documentation
+*.md @BradMcGonigle
+docs/ @BradMcGonigle
+
+# GitHub configuration
+.github/ @BradMcGonigle
