@@ -178,7 +178,7 @@ export default function HomePage() {
                   ╔═════════════════════════╗
                 </div>
                 <div className="text-terminal-yellow text-3xl mb-3 glow-amber">
-                  {"█"} ASCII {"█"}
+                  █ ASCII █
                 </div>
                 <div className="text-terminal-yellow text-xs mb-4">
                   ░▒▓█ RETRO STYLE █▓▒░
@@ -197,7 +197,7 @@ export default function HomePage() {
                   ┏━━━━━━━━━━━━━━━━━━━━━━━━━┓
                 </div>
                 <div className="text-terminal-cyan text-3xl mb-3 glow-blue">
-                  {"["} 6 LEAGUES {"]"}
+                  [ 6 LEAGUES ]
                 </div>
                 <div className="text-terminal-cyan text-xs mb-4">
                   ◇ NHL ◇ NFL ◇ NBA ◇ MLB ◇ MLS ◇ F1 ◇

@@ -125,6 +125,7 @@ This section captures important context that doesn't fit in formal ADRs - discus
 - **Architecture planned** around Next.js 16's new caching primitives
 - **Decision to avoid TanStack Query** - evaluated but determined Next.js 16 covers our read-only use case
 - **Adopted Vercel React Best Practices** - enhanced ESLint with jsx-a11y plugin, documented patterns in CLAUDE.md (ADR-005)
+- **Enhanced ASCII art styling** - added CRT effects (scanlines, vignette, phosphor glow), sport icons, and retro terminal aesthetic to differentiate from other sports score sites
 
 ---
 

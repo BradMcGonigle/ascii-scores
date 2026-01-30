@@ -104,18 +104,18 @@ export function AsciiSectionHeader({
     case "glitch":
       return (
         <div className={`font-mono glitch-hover ${className}`} aria-label={title}>
-          <span className="text-terminal-muted">{"["}</span>
+          <span className="text-terminal-muted">[</span>
           <span className="text-terminal-cyan rgb-shift">{upperTitle}</span>
-          <span className="text-terminal-muted">{"]"}</span>
+          <span className="text-terminal-muted">]</span>
         </div>
       );
 
     default:
       return (
         <div className={`font-mono ${className}`} aria-label={title}>
-          <span className="text-terminal-border">{"═══"} </span>
+          <span className="text-terminal-border">═══ </span>
           <span className="text-terminal-cyan">{upperTitle}</span>
-          <span className="text-terminal-border"> {"═══"}</span>
+          <span className="text-terminal-border"> ═══</span>
         </div>
       );
   }
