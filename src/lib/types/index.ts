@@ -1,7 +1,7 @@
 /**
  * Supported leagues
  */
-export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "f1";
+export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "f1" | "pga";
 
 /**
  * Game status types
@@ -139,6 +139,75 @@ export interface F1Standings {
 }
 
 /**
+ * Golf tournament status
+ */
+export type GolfTournamentStatus = "scheduled" | "in_progress" | "completed" | "canceled";
+
+/**
+ * Golf player/competitor data
+ */
+export interface GolfPlayer {
+  /** Player's unique identifier */
+  id: string;
+  /** Player's display name */
+  name: string;
+  /** Player's country flag/code */
+  country?: string;
+  /** Current position (1, 2, T3, etc.) */
+  position: string;
+  /** Score to par (e.g., -5, E, +2) */
+  scoreToPar: string;
+  /** Score to par as number for sorting */
+  scoreToParNum: number;
+  /** Today's round score to par */
+  today?: string;
+  /** Thru holes for current round (e.g., "F", "12", "B9") */
+  thru?: string;
+  /** Individual round scores */
+  rounds: number[];
+  /** Total strokes */
+  totalStrokes?: number;
+  /** Player status (active, cut, withdrawn, disqualified) */
+  status: "active" | "cut" | "wd" | "dq";
+}
+
+/**
+ * Golf tournament data
+ */
+export interface GolfTournament {
+  /** Tournament ID */
+  id: string;
+  /** Tournament name */
+  name: string;
+  /** Tournament status */
+  status: GolfTournamentStatus;
+  /** Start date */
+  startDate: Date;
+  /** End date */
+  endDate?: Date;
+  /** Course/venue name */
+  venue: string;
+  /** Location (city, state/country) */
+  location?: string;
+  /** Current round (1-4) */
+  currentRound?: number;
+  /** Total rounds */
+  totalRounds: number;
+  /** Prize purse */
+  purse?: string;
+  /** Leaderboard of players */
+  players: GolfPlayer[];
+}
+
+/**
+ * Golf leaderboard standings
+ */
+export interface GolfLeaderboard {
+  tournament: GolfTournament | null;
+  lastUpdated: Date;
+}
+
+/**
  * League display configuration
  */
 export interface LeagueConfig {
@@ -146,7 +215,7 @@ export interface LeagueConfig {
   name: string;
   fullName: string;
   color: string;
-  sport: "hockey" | "football" | "basketball" | "baseball" | "soccer" | "racing";
+  sport: "hockey" | "football" | "basketball" | "baseball" | "soccer" | "racing" | "golf";
 }
 
 /**
@@ -194,5 +263,12 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Formula 1",
     color: "f1",
     sport: "racing",
+  },
+  pga: {
+    id: "pga",
+    name: "PGA",
+    fullName: "PGA Tour",
+    color: "pga",
+    sport: "golf",
   },
 };

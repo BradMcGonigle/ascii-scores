@@ -4,9 +4,9 @@ import { addDays, formatDateForAPI } from "@/lib/utils/format";
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
 
 /**
- * ESPN sport paths for each league
+ * ESPN sport paths for each league (excluding F1 and PGA which have their own API clients)
  */
-const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1">, string> = {
+const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
   nhl: "hockey/nhl",
   nfl: "football/nfl",
   nba: "basketball/nba",
@@ -160,7 +160,7 @@ function mapPeriodScores(
  * Key stats to extract for each league
  * Maps ESPN stat names to display labels
  */
-const LEAGUE_KEY_STATS: Record<Exclude<League, "f1">, string[]> = {
+const LEAGUE_KEY_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
   nhl: ["shotsOnGoal", "powerPlayGoals", "powerPlayOpportunities"],
   nfl: ["totalYards", "turnovers", "passingYards", "rushingYards"],
   nba: ["rebounds", "assists", "fieldGoalPct"],
@@ -173,7 +173,7 @@ const LEAGUE_KEY_STATS: Record<Exclude<League, "f1">, string[]> = {
  */
 function extractStats(
   statistics: ESPNStatistic[] | undefined,
-  league: Exclude<League, "f1">
+  league: Exclude<League, "f1" | "pga">
 ): Record<string, string | number> {
   if (!statistics || statistics.length === 0) return {};
 
@@ -197,7 +197,7 @@ function mapGameStats(
   awayCompetitor: ESPNCompetitor,
   league: League
 ): GameStats | undefined {
-  if (league === "f1") return undefined;
+  if (league === "f1" || league === "pga") return undefined;
 
   const homeStats = extractStats(homeCompetitor.statistics, league);
   const awayStats = extractStats(awayCompetitor.statistics, league);
@@ -248,7 +248,7 @@ function mapEvent(event: ESPNEvent, league: League): Game {
  * @param date - Optional date to fetch scores for (defaults to today)
  */
 export async function getESPNScoreboard(
-  league: Exclude<League, "f1">,
+  league: Exclude<League, "f1" | "pga">,
   date?: Date
 ): Promise<Scoreboard> {
   const sportPath = LEAGUE_SPORT_MAP[league];
@@ -299,7 +299,7 @@ export function hasLiveGames(scoreboard: Scoreboard): boolean {
  * @param daysForward - Number of days in the future to check
  */
 export async function getDatesWithGames(
-  league: Exclude<League, "f1">,
+  league: Exclude<League, "f1" | "pga">,
   daysBack: number = 5,
   daysForward: number = 5
 ): Promise<string[]> {

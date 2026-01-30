@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AsciiLogo, AsciiSportIcon } from "@/components/ascii";
 import { LEAGUES, type League } from "@/lib/types";
 
-const LEAGUE_ORDER: League[] = ["nhl", "nfl", "nba", "mlb", "mls", "f1"];
+const LEAGUE_ORDER: League[] = ["nhl", "nfl", "nba", "mlb", "mls", "f1", "pga"];
 
 // League-specific accent colors for hover effects
 const LEAGUE_COLORS: Record<League, string> = {
@@ -14,6 +14,7 @@ const LEAGUE_COLORS: Record<League, string> = {
   mlb: "group-hover:text-terminal-blue group-hover:border-terminal-blue",
   mls: "group-hover:text-terminal-green group-hover:border-terminal-green",
   f1: "group-hover:text-terminal-red group-hover:border-terminal-red",
+  pga: "group-hover:text-terminal-green group-hover:border-terminal-green",
 };
 
 export default function HomePage() {

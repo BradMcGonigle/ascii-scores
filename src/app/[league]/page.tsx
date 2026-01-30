@@ -4,10 +4,12 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LeagueScoreboard } from "@/components/scoreboards/LeagueScoreboard";
 import { F1StandingsDisplay } from "@/components/scoreboards/F1Standings";
+import { GolfLeaderboardDisplay } from "@/components/scoreboards/GolfLeaderboard";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { DateNavigation } from "@/components/scoreboards/DateNavigation";
 import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
 import { getF1Standings } from "@/lib/api/openf1";
+import { getPGALeaderboard } from "@/lib/api/pga";
 import { LEAGUES, type League } from "@/lib/types";
 import { addDays, parseDateFromAPI } from "@/lib/utils/format";
 
@@ -81,7 +83,8 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
   const selectedDate = validateDate(dateParam);
 
   // For ESPN leagues, determine if we should show date navigation
-  const isESPNLeague = leagueId !== "f1";
+  // F1 and PGA don't use the standard date-based scoreboard navigation
+  const isESPNLeague = leagueId !== "f1" && leagueId !== "pga";
 
   return (
     <>
@@ -109,7 +112,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
           {isESPNLeague && (
             <div className="mb-8">
               <Suspense fallback={<DateNavigationSkeleton />}>
-                <DateNavigationWrapper league={leagueId as Exclude<League, "f1">} />
+                <DateNavigationWrapper league={leagueId as Exclude<League, "f1" | "pga">} />
               </Suspense>
             </div>
           )}
@@ -117,9 +120,11 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
           {/* Scoreboard content */}
           {leagueId === "f1" ? (
             <F1Content />
+          ) : leagueId === "pga" ? (
+            <PGAContent />
           ) : (
             <ESPNContent
-              league={leagueId as Exclude<League, "f1">}
+              league={leagueId as Exclude<League, "f1" | "pga">}
               date={selectedDate ?? undefined}
             />
           )}
@@ -136,7 +141,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 async function DateNavigationWrapper({
   league,
 }: {
-  league: Exclude<League, "f1">;
+  league: Exclude<League, "f1" | "pga">;
 }) {
   const datesWithGames = await getDatesWithGames(league, MAX_DAYS_PAST, MAX_DAYS_FUTURE);
   return <DateNavigation league={league} datesWithGames={datesWithGames} />;
@@ -172,7 +177,7 @@ async function ESPNContent({
   league,
   date,
 }: {
-  league: Exclude<League, "f1">;
+  league: Exclude<League, "f1" | "pga">;
   date?: Date;
 }) {
   try {
@@ -249,6 +254,38 @@ async function F1Content() {
           </div>
           <div className="text-terminal-border" aria-hidden="true">
             ╚══════════════════════════════════════════╝
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+/**
+ * PGA Tour leaderboard content
+ */
+async function PGAContent() {
+  try {
+    const leaderboard = await getPGALeaderboard();
+
+    return <GolfLeaderboardDisplay leaderboard={leaderboard} />;
+  } catch (error) {
+    console.error("Failed to fetch PGA leaderboard:", error);
+    return (
+      <div className="overflow-x-auto">
+        <div className="font-mono text-center py-8 text-terminal-red inline-block min-w-full">
+          <div className="text-terminal-border" aria-hidden="true">
+            ╔═══════════════════════════════════════════════╗
+          </div>
+          <div>
+            <span className="text-terminal-border" aria-hidden="true">║</span>
+            <span className="px-4">
+              {"  "}Error loading PGA data. Try again.{"  "}
+            </span>
+            <span className="text-terminal-border" aria-hidden="true">║</span>
+          </div>
+          <div className="text-terminal-border" aria-hidden="true">
+            ╚═══════════════════════════════════════════════╝
           </div>
         </div>
       </div>
