@@ -106,7 +106,7 @@ export function GameCard({ game }: GameCardProps) {
   const border = getBorderStyle(game.status);
 
   const isLive = game.status === "live";
-  const cardClass = isLive ? "retro-card border-terminal-green/50" : "retro-card";
+  const cardClass = isLive ? "retro-card border-terminal-green/70" : "retro-card";
 
   return (
     <div
@@ -125,8 +125,8 @@ export function GameCard({ game }: GameCardProps) {
       {/* Status line */}
       <div className="flex items-center">
         <span className={border.textClass} aria-hidden="true">{border.side}</span>
-        <div className={`flex-1 px-2 py-0.5 ${statusClass} ${isLive ? "glow-pulse" : ""}`}>
-          {isLive && <span className="inline-block mr-1">●</span>}
+        <div className={`flex-1 px-2 py-0.5 ${statusClass}`}>
+          {isLive && <span className="inline-block mr-1 text-terminal-green">●</span>}
           {statusText}
         </div>
         <span className={border.textClass} aria-hidden="true">{border.side}</span>
