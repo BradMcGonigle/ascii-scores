@@ -26,8 +26,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-terminal-bg text-terminal-fg antialiased overflow-x-hidden">
-        <div className="flex min-h-screen flex-col overflow-x-hidden">
+      <body className="min-h-screen bg-terminal-bg text-terminal-fg antialiased">
+        <div className="flex min-h-screen flex-col">
           {children}
         </div>
       </body>
