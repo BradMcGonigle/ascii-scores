@@ -97,6 +97,158 @@ pnpm test         # Run tests
 - Follow conventional commits for commit messages
 - **Always run checks before committing**: `pnpm lint && pnpm typecheck`
 
+## React Best Practices
+
+This project follows [Vercel's React Best Practices](https://vercel.com/blog/introducing-react-best-practices). These patterns are critical for performance and maintainability.
+
+### Critical: Eliminating Waterfalls
+
+Waterfalls are the #1 performance killer. Always parallelize independent operations.
+
+```typescript
+// ❌ BAD: Sequential fetches (waterfall)
+const sessions = await fetchSessions();
+const positions = await fetchPositions(sessions[0].id);
+const drivers = await fetchDrivers(sessions[0].id);
+
+// ✅ GOOD: Parallel fetches with Promise.all
+const [positionsResponse, driversResponse] = await Promise.all([
+  fetch(`/position?session_key=${sessionKey}`),
+  fetch(`/drivers?session_key=${sessionKey}`),
+]);
+```
+
+**Guidelines:**
+- Use `Promise.all()` for independent async operations
+- Defer `await` until the value is actually needed
+- Use Suspense boundaries to render wrapper UI while data loads
+
+### Critical: Bundle Size Optimization
+
+```typescript
+// ❌ BAD: Barrel file imports (can load thousands of unused exports)
+import { Button, Input, Modal } from "@/components";
+
+// ✅ GOOD: Direct imports from source files
+import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
+```
+
+**Guidelines:**
+- Avoid barrel files (index.ts re-exports) for large component libraries
+- Use `next/dynamic` for heavy components (editors, charts, maps)
+- Preload components based on user intent (hover, focus)
+
+### High: Server Component Patterns
+
+```typescript
+// ✅ GOOD: Server component with data fetching
+export default async function LeaguePage({ params }: Props) {
+  const scoreboard = await getESPNScoreboard(league);
+  return <LeagueScoreboard scoreboard={scoreboard} />;
+}
+
+// ✅ GOOD: Parallel data fetching in server components
+async function Dashboard() {
+  const [scores, standings] = await Promise.all([
+    getScores(),
+    getStandings(),
+  ]);
+  return <>{/* render both */}</>;
+}
+```
+
+**Guidelines:**
+- Default to server components; only use `"use client"` when necessary
+- Use `React.cache()` to deduplicate requests within a single render
+- Only pass fields that clients actually use at RSC boundaries
+
+### Medium: Re-render Optimization
+
+```typescript
+// ❌ BAD: Derived state stored in useState
+const [fullName, setFullName] = useState(`${first} ${last}`);
+useEffect(() => {
+  setFullName(`${first} ${last}`);
+}, [first, last]);
+
+// ✅ GOOD: Calculate during render
+const fullName = `${first} ${last}`;
+```
+
+```typescript
+// ❌ BAD: Unstable references in deps
+useEffect(() => {
+  fetchData(options); // options is recreated each render
+}, [options]);
+
+// ✅ GOOD: Stable callback with useCallback
+const handleRefresh = useCallback(() => {
+  startTransition(() => router.refresh());
+}, [router]);
+```
+
+**Guidelines:**
+- Calculate derived values during render, not in effects
+- Use `useCallback` for stable function references in deps
+- Use `useTransition` for non-urgent updates to maintain responsiveness
+- Use `useRef` for values that shouldn't trigger re-renders
+
+### Medium: Client-Side Patterns
+
+```typescript
+// ✅ GOOD: useTransition for non-blocking updates
+const [isPending, startTransition] = useTransition();
+
+const handleRefresh = () => {
+  startTransition(() => {
+    router.refresh();
+  });
+};
+
+// ✅ GOOD: Functional setState to avoid stale closures
+setCount(prev => prev + 1);
+```
+
+**Guidelines:**
+- Use `router.refresh()` to revalidate server components
+- Wrap non-urgent updates in `startTransition`
+- Use functional updates to avoid stale closure bugs
+- Keep client components minimal and focused
+
+### Low-Medium: JavaScript Performance
+
+```typescript
+// ❌ BAD: O(n²) repeated array searches
+items.forEach(item => {
+  const match = allItems.find(i => i.id === item.id);
+});
+
+// ✅ GOOD: O(n) with Map lookup
+const itemMap = new Map(allItems.map(i => [i.id, i]));
+items.forEach(item => {
+  const match = itemMap.get(item.id);
+});
+```
+
+**Guidelines:**
+- Use `Map`/`Set` for O(1) lookups instead of repeated array searches
+- Combine multiple array iterations into single passes
+- Cache expensive computations and property access in hot paths
+
+### Quick Reference: When to Use Each Pattern
+
+| Scenario | Pattern |
+|----------|---------|
+| Multiple independent API calls | `Promise.all()` |
+| Heavy component (editor, chart) | `next/dynamic` |
+| Stable function reference | `useCallback` |
+| Non-blocking UI update | `useTransition` |
+| Value that shouldn't trigger re-render | `useRef` |
+| Lookup by ID in large arrays | `Map` or `Set` |
+| Server-side data with caching | `fetch` with `revalidate` |
+| Revalidate server components | `router.refresh()` |
+
 ## External APIs
 
 ### ESPN API (Unofficial)

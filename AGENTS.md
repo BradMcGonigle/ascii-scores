@@ -53,6 +53,7 @@ All significant architectural and technical decisions are documented in `docs/de
 | [002 - No TanStack Query](docs/decisions/002-no-tanstack-query.md) | Accepted | Rely on Next.js caching instead of external state library |
 | [003 - ESPN Unofficial API](docs/decisions/003-espn-unofficial-api.md) | Accepted | Use ESPN's hidden API with aggressive caching |
 | [004 - OpenF1 for Formula 1](docs/decisions/004-openf1-api.md) | Accepted | Use community OpenF1 API for F1 data |
+| [005 - React Best Practices](docs/decisions/005-react-best-practices.md) | Accepted | Adopt Vercel's React best practices and enhanced ESLint rules |
 
 ## Development Context
 
@@ -123,6 +124,7 @@ This section captures important context that doesn't fit in formal ADRs - discus
 - **Project initiated** with focus on ASCII aesthetic and minimal dependencies
 - **Architecture planned** around Next.js 16's new caching primitives
 - **Decision to avoid TanStack Query** - evaluated but determined Next.js 16 covers our read-only use case
+- **Adopted Vercel React Best Practices** - enhanced ESLint with jsx-a11y plugin, documented patterns in CLAUDE.md (ADR-005)
 
 ---
 
