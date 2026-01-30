@@ -1,5 +1,6 @@
 import type { Game } from "@/lib/types";
 import { formatTime, getStatusClass, getStatusText } from "@/lib/utils/format";
+import { PeriodScores } from "./PeriodScores";
 
 interface GameCardProps {
   game: Game;
@@ -155,6 +156,25 @@ export function GameCard({ game }: GameCardProps) {
         side={border.side}
         sideClass={border.textClass}
       />
+
+      {/* Period scores for live/final games */}
+      {(game.status === "live" || game.status === "final") && game.periodScores && (
+        <>
+          <BorderLine
+            left={border.corners.ml}
+            right={border.corners.mr}
+            fill={border.horizontal}
+            className={border.textClass}
+          />
+          <div className="flex items-center">
+            <span className={border.textClass} aria-hidden="true">{border.side}</span>
+            <div className="flex-1 px-2 py-1">
+              <PeriodScores game={game} borderClass={border.textClass} />
+            </div>
+            <span className={border.textClass} aria-hidden="true">{border.side}</span>
+          </div>
+        </>
+      )}
 
       {/* Time/Venue line for scheduled games */}
       {game.status === "scheduled" && (

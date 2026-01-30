@@ -9,6 +9,32 @@ export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "f1";
 export type GameStatus = "scheduled" | "live" | "final" | "postponed" | "delayed";
 
 /**
+ * Period/quarter/inning score data
+ */
+export interface PeriodScore {
+  /** Period number (1-indexed) */
+  period: number;
+  /** Score for this period */
+  score: number;
+}
+
+/**
+ * Period scores for both teams
+ */
+export interface PeriodScores {
+  /** Home team period scores */
+  home: PeriodScore[];
+  /** Away team period scores */
+  away: PeriodScore[];
+  /** MLB-specific: hits */
+  homeHits?: number;
+  awayHits?: number;
+  /** MLB-specific: errors */
+  homeErrors?: number;
+  awayErrors?: number;
+}
+
+/**
  * Normalized team data across all sports
  */
 export interface Team {
@@ -37,6 +63,8 @@ export interface Game {
   period?: string;
   clock?: string;
   detail?: string;
+  /** Period/quarter/inning scores */
+  periodScores?: PeriodScores;
 }
 
 /**

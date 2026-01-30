@@ -1,4 +1,4 @@
-import type { Game, GameStatus, League, Scoreboard, Team } from "@/lib/types";
+import type { Game, GameStatus, League, PeriodScore, PeriodScores, Scoreboard, Team } from "@/lib/types";
 import { addDays, formatDateForAPI } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
@@ -17,6 +17,10 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1">, string> = {
 /**
  * ESPN API response types (simplified)
  */
+interface ESPNLinescore {
+  value: number;
+}
+
 interface ESPNCompetitor {
   id: string;
   team: {
@@ -29,6 +33,11 @@ interface ESPNCompetitor {
   };
   score?: string;
   homeAway: "home" | "away";
+  linescores?: ESPNLinescore[];
+  /** MLB-specific: hits */
+  hits?: number;
+  /** MLB-specific: errors */
+  errors?: number;
 }
 
 interface ESPNStatus {
@@ -90,6 +99,57 @@ function mapTeam(competitor: ESPNCompetitor): Team {
 }
 
 /**
+ * Map ESPN linescores to our PeriodScore array
+ */
+function mapLinescores(linescores?: ESPNLinescore[]): PeriodScore[] {
+  if (!linescores || linescores.length === 0) return [];
+  return linescores.map((ls, index) => ({
+    period: index + 1,
+    score: ls.value,
+  }));
+}
+
+/**
+ * Map ESPN competitors to PeriodScores
+ */
+function mapPeriodScores(
+  homeCompetitor: ESPNCompetitor,
+  awayCompetitor: ESPNCompetitor,
+  league: League
+): PeriodScores | undefined {
+  const homeLinescores = mapLinescores(homeCompetitor.linescores);
+  const awayLinescores = mapLinescores(awayCompetitor.linescores);
+
+  // Only return period scores if we have data
+  if (homeLinescores.length === 0 && awayLinescores.length === 0) {
+    return undefined;
+  }
+
+  const periodScores: PeriodScores = {
+    home: homeLinescores,
+    away: awayLinescores,
+  };
+
+  // Add MLB-specific stats
+  if (league === "mlb") {
+    if (homeCompetitor.hits !== undefined) {
+      periodScores.homeHits = homeCompetitor.hits;
+    }
+    if (awayCompetitor.hits !== undefined) {
+      periodScores.awayHits = awayCompetitor.hits;
+    }
+    if (homeCompetitor.errors !== undefined) {
+      periodScores.homeErrors = homeCompetitor.errors;
+    }
+    if (awayCompetitor.errors !== undefined) {
+      periodScores.awayErrors = awayCompetitor.errors;
+    }
+  }
+
+  return periodScores;
+}
+
+/**
  * Map ESPN event to our Game type
  */
 function mapEvent(event: ESPNEvent, league: League): Game {
@@ -116,6 +176,7 @@ function mapEvent(event: ESPNEvent, league: League): Game {
     period: status.period?.toString(),
     clock: status.displayClock,
     detail: status.type.shortDetail,
+    periodScores: mapPeriodScores(homeCompetitor, awayCompetitor, league),
   };
 }
 
