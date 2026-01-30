@@ -1,5 +1,5 @@
 import type { Game, GameStatus, League, Scoreboard, Team } from "@/lib/types";
-import { formatDateForAPI } from "@/lib/utils/format";
+import { addDays, formatDateForAPI } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
 
@@ -166,4 +166,52 @@ export async function getESPNScoreboard(
  */
 export function hasLiveGames(scoreboard: Scoreboard): boolean {
   return scoreboard.games.some((game) => game.status === "live");
+}
+
+/**
+ * Fetch game counts for a range of dates to enable smart navigation
+ * Returns an array of date strings (YYYYMMDD) that have games
+ * @param league - The league to check
+ * @param daysBack - Number of days in the past to check
+ * @param daysForward - Number of days in the future to check
+ */
+export async function getDatesWithGames(
+  league: Exclude<League, "f1">,
+  daysBack: number = 5,
+  daysForward: number = 5
+): Promise<string[]> {
+  const today = new Date();
+  const dates: Date[] = [];
+
+  // Build array of dates to check
+  for (let i = -daysBack; i <= daysForward; i++) {
+    dates.push(addDays(today, i));
+  }
+
+  const sportPath = LEAGUE_SPORT_MAP[league];
+
+  // Fetch all dates in parallel
+  const results = await Promise.all(
+    dates.map(async (date) => {
+      const dateStr = formatDateForAPI(date);
+      const url = `${ESPN_BASE_URL}/${sportPath}/scoreboard?dates=${dateStr}`;
+
+      try {
+        const response = await fetch(url, {
+          headers: { Accept: "application/json" },
+          next: { revalidate: 300 }, // Cache for 5 minutes (schedule doesn't change often)
+        });
+
+        if (!response.ok) return null;
+
+        const data: ESPNScoreboardResponse = await response.json();
+        return data.events.length > 0 ? dateStr : null;
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  // Filter out nulls and return dates that have games
+  return results.filter((date): date is string => date !== null);
 }

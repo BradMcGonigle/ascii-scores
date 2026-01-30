@@ -3,24 +3,46 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useTransition } from "react";
 import {
-  addDays,
   formatDateForAPI,
   getRelativeDateLabel,
   isToday,
   parseDateFromAPI,
 } from "@/lib/utils/format";
 
-const MAX_DAYS_PAST = 5;
-const MAX_DAYS_FUTURE = 5;
-
 interface DateNavigationProps {
   league: string;
+  datesWithGames: string[]; // Array of YYYYMMDD strings
+}
+
+/**
+ * Find the previous date with games from the current date
+ */
+function findPrevDateWithGames(
+  currentDateStr: string,
+  datesWithGames: string[]
+): string | null {
+  // Sort dates in descending order and find the first one before current
+  const sortedDates = [...datesWithGames].sort((a, b) => b.localeCompare(a));
+  return sortedDates.find((d) => d < currentDateStr) ?? null;
+}
+
+/**
+ * Find the next date with games from the current date
+ */
+function findNextDateWithGames(
+  currentDateStr: string,
+  datesWithGames: string[]
+): string | null {
+  // Sort dates in ascending order and find the first one after current
+  const sortedDates = [...datesWithGames].sort((a, b) => a.localeCompare(b));
+  return sortedDates.find((d) => d > currentDateStr) ?? null;
 }
 
 /**
  * Client component for navigating between dates on the scoreboard
+ * Uses smart navigation to skip to dates that have games
  */
-export function DateNavigation({ league }: DateNavigationProps) {
+export function DateNavigation({ league, datesWithGames }: DateNavigationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -30,48 +52,65 @@ export function DateNavigation({ league }: DateNavigationProps) {
   const currentDate = useMemo(() => {
     return dateParam ? parseDateFromAPI(dateParam) ?? new Date() : new Date();
   }, [dateParam]);
-  const today = new Date();
 
-  // Calculate date boundaries
-  const minDate = addDays(today, -MAX_DAYS_PAST);
-  const maxDate = addDays(today, MAX_DAYS_FUTURE);
+  const currentDateStr = formatDateForAPI(currentDate);
+  const todayStr = formatDateForAPI(new Date());
+
+  // Find prev/next dates with games
+  const prevDateWithGames = useMemo(
+    () => findPrevDateWithGames(currentDateStr, datesWithGames),
+    [currentDateStr, datesWithGames]
+  );
+  const nextDateWithGames = useMemo(
+    () => findNextDateWithGames(currentDateStr, datesWithGames),
+    [currentDateStr, datesWithGames]
+  );
 
   // Check if we can navigate in each direction
-  const canGoPrev = currentDate > minDate;
-  const canGoNext = currentDate < maxDate;
+  const canGoPrev = prevDateWithGames !== null;
+  const canGoNext = nextDateWithGames !== null;
   const isCurrentlyToday = isToday(currentDate);
+  const hasGamesToday = datesWithGames.includes(todayStr);
 
   const navigateToDate = useCallback(
-    (date: Date) => {
+    (dateStr: string) => {
       startTransition(() => {
-        if (isToday(date)) {
+        if (dateStr === todayStr) {
           // Remove date param for today
           router.push(`/${league}`);
         } else {
-          router.push(`/${league}?date=${formatDateForAPI(date)}`);
+          router.push(`/${league}?date=${dateStr}`);
         }
       });
     },
-    [league, router]
+    [league, router, todayStr]
   );
 
   const handlePrevious = useCallback(() => {
-    if (canGoPrev) {
-      navigateToDate(addDays(currentDate, -1));
+    if (prevDateWithGames) {
+      navigateToDate(prevDateWithGames);
     }
-  }, [canGoPrev, currentDate, navigateToDate]);
+  }, [prevDateWithGames, navigateToDate]);
 
   const handleNext = useCallback(() => {
-    if (canGoNext) {
-      navigateToDate(addDays(currentDate, 1));
+    if (nextDateWithGames) {
+      navigateToDate(nextDateWithGames);
     }
-  }, [canGoNext, currentDate, navigateToDate]);
+  }, [nextDateWithGames, navigateToDate]);
 
   const handleToday = useCallback(() => {
     if (!isCurrentlyToday) {
-      navigateToDate(new Date());
+      navigateToDate(todayStr);
     }
-  }, [isCurrentlyToday, navigateToDate]);
+  }, [isCurrentlyToday, navigateToDate, todayStr]);
+
+  // Get label for prev/next buttons showing the target date
+  const prevLabel = prevDateWithGames
+    ? getRelativeDateLabel(parseDateFromAPI(prevDateWithGames)!)
+    : null;
+  const nextLabel = nextDateWithGames
+    ? getRelativeDateLabel(parseDateFromAPI(nextDateWithGames)!)
+    : null;
 
   return (
     <div className="font-mono text-sm">
@@ -86,7 +125,8 @@ export function DateNavigation({ league }: DateNavigationProps) {
               ? "border-terminal-border text-terminal-fg hover:border-terminal-cyan hover:text-terminal-cyan"
               : "border-terminal-muted text-terminal-muted cursor-not-allowed"
           }`}
-          aria-label="Previous day"
+          aria-label={prevLabel ? `Go to ${prevLabel}` : "No previous games"}
+          title={prevLabel ?? "No previous games"}
         >
           <span aria-hidden="true">◄</span> PREV
         </button>
@@ -109,14 +149,15 @@ export function DateNavigation({ league }: DateNavigationProps) {
               ? "border-terminal-border text-terminal-fg hover:border-terminal-cyan hover:text-terminal-cyan"
               : "border-terminal-muted text-terminal-muted cursor-not-allowed"
           }`}
-          aria-label="Next day"
+          aria-label={nextLabel ? `Go to ${nextLabel}` : "No upcoming games"}
+          title={nextLabel ?? "No upcoming games"}
         >
           NEXT <span aria-hidden="true">►</span>
         </button>
       </div>
 
-      {/* Today button (only show if not on today) */}
-      {!isCurrentlyToday && (
+      {/* Today button (only show if not on today and there are games today) */}
+      {!isCurrentlyToday && hasGamesToday && (
         <div className="flex justify-center mt-2">
           <button
             onClick={handleToday}
@@ -129,6 +170,22 @@ export function DateNavigation({ league }: DateNavigationProps) {
           >
             <span aria-hidden="true">●</span> JUMP TO TODAY
           </button>
+        </div>
+      )}
+
+      {/* Show hint about next game when no games today */}
+      {isCurrentlyToday && !datesWithGames.includes(currentDateStr) && nextDateWithGames && (
+        <div className="flex justify-center mt-2">
+          <span className="text-terminal-muted text-xs">
+            No games today. Next games:{" "}
+            <button
+              onClick={() => navigateToDate(nextDateWithGames)}
+              disabled={isPending}
+              className="text-terminal-cyan hover:underline"
+            >
+              {getRelativeDateLabel(parseDateFromAPI(nextDateWithGames)!)}
+            </button>
+          </span>
         </div>
       )}
     </div>
