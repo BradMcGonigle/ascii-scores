@@ -1,5 +1,5 @@
 import type { Game, GameStats, GameStatus, League, PeriodScore, PeriodScores, Scoreboard, Team } from "@/lib/types";
-import { addDays, formatDateForAPI } from "@/lib/utils/format";
+import { addDays, formatDateForAPI, isDateInPast } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
 
@@ -259,12 +259,17 @@ export async function getESPNScoreboard(
     ? `${baseUrl}?dates=${formatDateForAPI(date)}`
     : baseUrl;
 
+  // Determine caching strategy:
+  // - Past dates: cache indefinitely (games are final, won't change)
+  // - Today/future: revalidate every 30s for live updates
+  const isPastDate = date && isDateInPast(date);
+
   const response = await fetch(url, {
     headers: {
       Accept: "application/json",
     },
     next: {
-      revalidate: 30, // Cache for 30 seconds
+      revalidate: isPastDate ? false : 30,
     },
   });
 
@@ -319,10 +324,13 @@ export async function getDatesWithGames(
       const dateStr = formatDateForAPI(date);
       const url = `${ESPN_BASE_URL}/${sportPath}/scoreboard?dates=${dateStr}`;
 
+      // Past dates can be cached indefinitely, future/today revalidate every 5 min
+      const isPast = isDateInPast(date);
+
       try {
         const response = await fetch(url, {
           headers: { Accept: "application/json" },
-          next: { revalidate: 300 }, // Cache for 5 minutes (schedule doesn't change often)
+          next: { revalidate: isPast ? false : 300 },
         });
 
         if (!response.ok) return null;
