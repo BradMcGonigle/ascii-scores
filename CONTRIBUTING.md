@@ -116,6 +116,28 @@ pnpm test:watch
 pnpm test:coverage
 ```
 
+## Architecture Decision Records (ADRs)
+
+We document significant technical decisions in `docs/decisions/` using Architecture Decision Records. This helps everyone (including AI agents) understand why things are built a certain way.
+
+### When to Write an ADR
+
+Create an ADR when you:
+- Choose between multiple viable technical approaches
+- Add or remove a significant dependency
+- Establish patterns that affect multiple files
+- Make trade-offs with long-term implications
+
+### How to Create an ADR
+
+1. Copy `docs/decisions/000-template.md` to a new file
+2. Use the naming format: `NNN-short-title.md` (e.g., `005-use-redis-cache.md`)
+3. Fill in all sections thoroughly
+4. Update the table in `docs/decisions/README.md`
+5. Reference the ADR in your commit message and PR
+
+See `docs/decisions/README.md` for full guidelines and examples.
+
 ## Questions?
 
 Feel free to open an issue for any questions about contributing.
