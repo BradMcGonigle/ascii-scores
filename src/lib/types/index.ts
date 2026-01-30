@@ -139,6 +139,26 @@ export interface F1Standings {
 }
 
 /**
+ * F1 race weekend data (groups multiple sessions)
+ */
+export interface F1RaceWeekend {
+  /** Unique identifier (circuit + year) */
+  id: string;
+  /** Race weekend name (e.g., "Monaco Grand Prix") */
+  name: string;
+  /** Circuit short name */
+  circuitName: string;
+  /** Country */
+  country: string;
+  /** Start date of the weekend (first session) */
+  startDate: Date;
+  /** End date of the weekend (last session) */
+  endDate: Date;
+  /** Sessions in this weekend */
+  sessions: F1Session[];
+}
+
+/**
  * Golf tournament status
  */
 export type GolfTournamentStatus = "scheduled" | "in_progress" | "completed" | "canceled";

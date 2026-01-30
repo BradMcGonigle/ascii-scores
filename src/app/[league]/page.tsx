@@ -8,9 +8,10 @@ import { F1SessionsList } from "@/components/scoreboards/F1SessionsList";
 import { GolfLeaderboardClient } from "@/components/scoreboards/GolfLeaderboardClient";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { DateNavigation } from "@/components/scoreboards/DateNavigation";
+import { F1RaceWeekendNav } from "@/components/scoreboards/F1RaceWeekendNav";
 import { LeagueJsonLd } from "@/components/seo";
 import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
-import { getF1Standings, getDatesWithF1Sessions, getF1SessionsForDate } from "@/lib/api/openf1";
+import { getF1Standings, getF1RaceWeekends, getF1RaceWeekendSessions } from "@/lib/api/openf1";
 import { getPGALeaderboard } from "@/lib/api/pga";
 import { LEAGUES, type League } from "@/lib/types";
 import { addDays, parseDateFromAPI } from "@/lib/utils/format";
@@ -18,13 +19,9 @@ import { addDays, parseDateFromAPI } from "@/lib/utils/format";
 const MAX_DAYS_PAST = 5;
 const MAX_DAYS_FUTURE = 5;
 
-// F1 needs a longer range due to race weekends being spread out
-const F1_MAX_DAYS_PAST = 30;
-const F1_MAX_DAYS_FUTURE = 14;
-
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
-  searchParams: Promise<{ date?: string }>;
+  searchParams: Promise<{ date?: string; weekend?: string }>;
 }
 
 // Generate static params for all leagues
@@ -110,7 +107,7 @@ function validateDate(
 
 export default async function LeaguePage({ params, searchParams }: LeaguePageProps) {
   const { league: leagueId } = await params;
-  const { date: dateParam } = await searchParams;
+  const { date: dateParam, weekend: weekendParam } = await searchParams;
 
   // Validate league
   if (!Object.keys(LEAGUES).includes(leagueId)) {
@@ -119,15 +116,13 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
   const league = LEAGUES[leagueId as League];
 
-  // Parse and validate date parameter with league-specific ranges
+  // Parse and validate date parameter (for ESPN leagues only)
   const isF1 = leagueId === "f1";
-  const selectedDate = isF1
-    ? validateDate(dateParam, F1_MAX_DAYS_PAST, F1_MAX_DAYS_FUTURE)
-    : validateDate(dateParam);
+  const selectedDate = !isF1 ? validateDate(dateParam) : null;
 
-  // Determine if we should show date navigation
-  // PGA doesn't use date-based navigation, but F1 and ESPN leagues do
-  const showDateNavigation = leagueId !== "pga";
+  // Determine if we should show navigation
+  // PGA doesn't use navigation
+  const showNavigation = leagueId !== "pga";
 
   return (
     <>
@@ -155,12 +150,12 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
             <RefreshButton />
           </div>
 
-          {/* Date navigation */}
-          {showDateNavigation && (
+          {/* Navigation */}
+          {showNavigation && (
             <div className="mb-8">
               <Suspense fallback={<DateNavigationSkeleton />}>
                 {isF1 ? (
-                  <F1DateNavigationWrapper />
+                  <F1RaceWeekendNavWrapper />
                 ) : (
                   <DateNavigationWrapper league={leagueId as Exclude<League, "f1" | "pga">} />
                 )}
@@ -170,7 +165,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
           {/* Scoreboard content */}
           {leagueId === "f1" ? (
-            <F1Content date={selectedDate ?? undefined} />
+            <F1Content weekendId={weekendParam} />
           ) : leagueId === "pga" ? (
             <PGAContent />
           ) : (
@@ -199,11 +194,11 @@ async function DateNavigationWrapper({
 }
 
 /**
- * Server component wrapper that fetches dates with F1 sessions
+ * Server component wrapper that fetches F1 race weekends
  */
-async function F1DateNavigationWrapper() {
-  const datesWithSessions = await getDatesWithF1Sessions(F1_MAX_DAYS_PAST, F1_MAX_DAYS_FUTURE);
-  return <DateNavigation league="f1" datesWithGames={datesWithSessions} />;
+async function F1RaceWeekendNavWrapper() {
+  const weekends = await getF1RaceWeekends();
+  return <F1RaceWeekendNav weekends={weekends} />;
 }
 
 /**
@@ -268,14 +263,14 @@ async function ESPNContent({
 
 /**
  * F1 standings content
- * When a specific date is provided, shows all sessions for that date
+ * When a specific race weekend ID is provided, shows all sessions for that weekend
  * Otherwise shows the most recent session (live or completed)
  */
-async function F1Content({ date }: { date?: Date }) {
+async function F1Content({ weekendId }: { weekendId?: string }) {
   try {
-    // If a specific date is provided, show all sessions for that date
-    if (date) {
-      const sessions = await getF1SessionsForDate(date);
+    // If a specific weekend ID is provided, show all sessions for that weekend
+    if (weekendId) {
+      const sessions = await getF1RaceWeekendSessions(weekendId);
       return (
         <F1SessionsList
           sessions={sessions}
