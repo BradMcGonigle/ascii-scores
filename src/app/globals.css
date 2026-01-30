@@ -305,4 +305,86 @@
   .retro-card:hover {
     border-color: var(--color-terminal-muted);
   }
+
+  /* Visually hidden but accessible to screen readers */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Skip to content link */
+  .skip-to-content {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+    padding: 0.5rem 1rem;
+    background-color: var(--color-terminal-bg);
+    color: var(--color-terminal-green);
+    border: 2px solid var(--color-terminal-green);
+    z-index: 100;
+    transition: transform 0.2s ease;
+  }
+
+  .skip-to-content:focus {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Focus visible styles for keyboard navigation */
+@layer base {
+  /* Enhanced focus indicators for all interactive elements */
+  :focus-visible {
+    outline: 2px solid var(--color-terminal-green);
+    outline-offset: 2px;
+  }
+
+  /* Specific focus styles for buttons and links */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  [role="option"]:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid var(--color-terminal-green);
+    outline-offset: 2px;
+  }
+
+  /* High contrast focus for light theme */
+  [data-theme="light"] :focus-visible {
+    outline-color: var(--theme-blue);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .glow-pulse,
+  .cursor-blink,
+  .cursor-blink-underscore,
+  .glitch,
+  .glitch-hover,
+  .rgb-shift {
+    animation: none !important;
+  }
+
+  .cursor-blink::after,
+  .cursor-blink-underscore::after {
+    animation: none !important;
+    opacity: 1;
+  }
 }

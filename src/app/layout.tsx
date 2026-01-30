@@ -30,7 +30,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-terminal-bg text-terminal-fg antialiased">
         <ThemeProvider>
-          <div className="flex min-h-screen flex-col">{children}</div>
+          <a href="#main-content" className="skip-to-content font-mono">
+            [SKIP TO CONTENT]
+          </a>
+          <div className="flex min-h-screen flex-col" id="main-content" tabIndex={-1}>
+            {children}
+          </div>
         </ThemeProvider>
         <Analytics />
       </body>

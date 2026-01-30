@@ -26,6 +26,7 @@ function SectionHeader({
       icon: "●",
       border: "═",
       corners: { left: "╔", right: "╗" },
+      srLabel: "Live games in progress",
     },
     scheduled: {
       color: "text-terminal-yellow",
@@ -33,6 +34,7 @@ function SectionHeader({
       icon: "◈",
       border: "━",
       corners: { left: "┏", right: "┓" },
+      srLabel: "Upcoming scheduled games",
     },
     final: {
       color: "text-terminal-muted",
@@ -40,6 +42,7 @@ function SectionHeader({
       icon: "◇",
       border: "─",
       corners: { left: "┌", right: "┐" },
+      srLabel: "Completed games",
     },
   };
 
@@ -47,15 +50,18 @@ function SectionHeader({
 
   return (
     <h2 className={`font-mono ${style.color} mb-4`}>
-      <span className="text-terminal-border">{style.corners.left}</span>
-      <span className={style.color}>{style.border.repeat(3)}</span>
-      <span className={`${style.glow} mx-2`}>
-        {variant === "live" && <span className="glow-pulse mr-1">{style.icon}</span>}
-        {variant !== "live" && <span className="mr-1">{style.icon}</span>}
-        {title.toUpperCase()} ({count})
+      <span className="sr-only">{style.srLabel}: {count} {count === 1 ? 'game' : 'games'}</span>
+      <span aria-hidden="true">
+        <span className="text-terminal-border">{style.corners.left}</span>
+        <span className={style.color}>{style.border.repeat(3)}</span>
+        <span className={`${style.glow} mx-2`}>
+          {variant === "live" && <span className="glow-pulse mr-1">{style.icon}</span>}
+          {variant !== "live" && <span className="mr-1">{style.icon}</span>}
+          {title.toUpperCase()} ({count})
+        </span>
+        <span className={style.color}>{style.border.repeat(3)}</span>
+        <span className="text-terminal-border">{style.corners.right}</span>
       </span>
-      <span className={style.color}>{style.border.repeat(3)}</span>
-      <span className="text-terminal-border">{style.corners.right}</span>
     </h2>
   );
 }
@@ -154,15 +160,17 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
       )}
 
       {/* Last updated with enhanced styling */}
-      <div className="font-mono text-center pt-6">
+      <div className="font-mono text-center pt-6" role="status" aria-live="polite">
         <div className="inline-block">
           <div className="text-terminal-border text-xs" aria-hidden="true">
             ├──────────────────────────────────┤
           </div>
           <div className="text-terminal-muted text-sm py-2">
-            <span className="text-terminal-cyan mr-2">◆</span>
+            <span className="text-terminal-cyan mr-2" aria-hidden="true">◆</span>
+            <span className="sr-only">Data </span>
             Last synced: {scoreboard.lastUpdated.toLocaleTimeString()}
-            <span className="text-terminal-green ml-2">●</span>
+            <span className="text-terminal-green ml-2" aria-hidden="true">●</span>
+            <span className="sr-only"> - Connection active</span>
           </div>
           <div className="text-terminal-border text-xs" aria-hidden="true">
             └──────────────────────────────────┘
