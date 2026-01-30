@@ -13,7 +13,7 @@ export function Header({ activeLeague }: HeaderProps) {
       {/* Terminal-style top bar */}
       <div className="bg-terminal-border/30 border-b border-terminal-border px-4 py-1 hidden sm:block">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-2 text-xs font-mono">
+          <div className="flex items-center gap-2 text-xs font-mono" aria-hidden="true">
             <span className="text-terminal-red">●</span>
             <span className="text-terminal-yellow">●</span>
             <span className="text-terminal-green">●</span>
@@ -21,7 +21,7 @@ export function Header({ activeLeague }: HeaderProps) {
           </div>
           <div className="flex items-center gap-4 text-xs font-mono text-terminal-muted">
             <ThemeSelector />
-            <div>
+            <div aria-hidden="true">
               <span className="text-terminal-green">user@scores</span>
               <span className="text-terminal-muted">:</span>
               <span className="text-terminal-blue">~</span>
@@ -34,9 +34,13 @@ export function Header({ activeLeague }: HeaderProps) {
       {/* Main header content */}
       <div className="mx-auto max-w-7xl px-4 py-3">
         <div className="flex items-center justify-between">
-          <Link href="/" className="group hover:opacity-80 transition-opacity">
+          <Link
+            href="/"
+            className="group hover:opacity-80 transition-opacity"
+            aria-label="ASCII Scores - Go to homepage"
+          >
             <div className="flex items-center gap-2">
-              <span className="text-terminal-green font-mono hidden sm:inline">{">"}</span>
+              <span className="text-terminal-green font-mono hidden sm:inline" aria-hidden="true">{">"}</span>
               <AsciiLogoCompact className="text-glow group-hover:glow-green transition-all" />
               <AsciiCursor variant="block" className="hidden sm:inline opacity-70" />
             </div>

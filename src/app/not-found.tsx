@@ -8,7 +8,8 @@ export default function NotFound() {
       <Header />
       <main className="flex-1 flex items-center justify-center px-4">
         <div className="font-mono text-center w-full max-w-2xl">
-          <div className="overflow-x-auto">
+          <h1 className="sr-only">404 - Page Not Found</h1>
+          <div className="overflow-x-auto" aria-hidden="true">
             <pre className="text-terminal-red mb-8 text-xs sm:text-sm md:text-base inline-block">
               {`
 ╔═══════════════════════════════════════════════════════════╗

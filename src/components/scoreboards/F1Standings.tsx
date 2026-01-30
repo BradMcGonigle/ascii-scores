@@ -61,36 +61,47 @@ export function F1StandingsDisplay({ standings }: F1StandingsProps) {
 
         {/* Driver rows */}
         {session.drivers.length > 0 ? (
-          session.drivers.map((driver) => (
-            <div key={driver.driverNumber} role="row">
-              <span className="text-terminal-border" aria-hidden="true">║</span>
-              <span role="cell" className={driver.position <= 3 ? "text-terminal-green" : ""}>
-                {padString(driver.position.toString(), 4, "right")}
-              </span>
-              <span className="text-terminal-border" aria-hidden="true">│</span>
-              <span role="cell">{padString(driver.driverCode, 6)}</span>
-              <span className="text-terminal-border" aria-hidden="true">│</span>
-              <span role="cell" className="text-terminal-muted">
-                {padString(driver.teamName, 25)}
-              </span>
-              <span className="text-terminal-border" aria-hidden="true">│</span>
-              <span role="cell">{padString(driver.gap ?? "-", 10)}</span>
-              <span className="text-terminal-border" aria-hidden="true">│</span>
-              <span
-                role="cell"
-                className={
-                  driver.status === "pit"
-                    ? "text-terminal-yellow"
-                    : driver.status === "out"
-                    ? "text-terminal-red"
-                    : ""
-                }
-              >
-                {padString(driver.status.toUpperCase(), 6)}
-              </span>
-              <span className="text-terminal-border" aria-hidden="true">║</span>
-            </div>
-          ))
+          session.drivers.map((driver) => {
+            const positionLabel = driver.position <= 3 ? ` (podium position)` : '';
+            const statusLabel = driver.status === "pit"
+              ? " - In pit lane"
+              : driver.status === "out"
+              ? " - Out of session"
+              : " - On track";
+
+            return (
+              <div key={driver.driverNumber} role="row">
+                <span className="text-terminal-border" aria-hidden="true">║</span>
+                <span role="cell" className={driver.position <= 3 ? "text-terminal-green" : ""}>
+                  <span className="sr-only">Position {driver.position}{positionLabel}</span>
+                  <span aria-hidden="true">{padString(driver.position.toString(), 4, "right")}</span>
+                </span>
+                <span className="text-terminal-border" aria-hidden="true">│</span>
+                <span role="cell">{padString(driver.driverCode, 6)}</span>
+                <span className="text-terminal-border" aria-hidden="true">│</span>
+                <span role="cell" className="text-terminal-muted">
+                  {padString(driver.teamName, 25)}
+                </span>
+                <span className="text-terminal-border" aria-hidden="true">│</span>
+                <span role="cell">{padString(driver.gap ?? "-", 10)}</span>
+                <span className="text-terminal-border" aria-hidden="true">│</span>
+                <span
+                  role="cell"
+                  className={
+                    driver.status === "pit"
+                      ? "text-terminal-yellow"
+                      : driver.status === "out"
+                      ? "text-terminal-red"
+                      : ""
+                  }
+                >
+                  <span className="sr-only">{statusLabel}</span>
+                  <span aria-hidden="true">{padString(driver.status.toUpperCase(), 6)}</span>
+                </span>
+                <span className="text-terminal-border" aria-hidden="true">║</span>
+              </div>
+            );
+          })
         ) : (
           <div role="row" className="text-terminal-muted">
             <span className="text-terminal-border" aria-hidden="true">║</span>
