@@ -224,65 +224,77 @@ function mapTournament(event: ESPNGolfEvent): GolfTournament {
 
 /**
  * Fetch current PGA Tour leaderboard from ESPN
+ * Tries the leaderboard endpoint first, then falls back to scoreboard
  */
 export async function getPGALeaderboard(): Promise<GolfLeaderboard> {
-  try {
-    const url = `${ESPN_BASE_URL}/golf/pga/scoreboard`;
+  // Try leaderboard endpoint first (more specific for golf)
+  const endpoints = [
+    `${ESPN_BASE_URL}/golf/pga/leaderboard`,
+    `${ESPN_BASE_URL}/golf/leaderboard`,
+    `${ESPN_BASE_URL}/golf/pga/scoreboard`,
+  ];
 
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-      },
-      next: {
-        revalidate: 60, // Cache for 60 seconds (golf moves slower than other sports)
-      },
-    });
+  for (const url of endpoints) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Mozilla/5.0 (compatible; AsciiScores/1.0)",
+        },
+        next: {
+          revalidate: 60, // Cache for 60 seconds (golf moves slower than other sports)
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`ESPN Golf API error: ${response.status} ${response.statusText}`);
-    }
+      if (!response.ok) {
+        console.warn(`ESPN Golf API returned ${response.status} for ${url}`);
+        continue;
+      }
 
-    const data: ESPNGolfScoreboardResponse = await response.json();
+      const data: ESPNGolfScoreboardResponse = await response.json();
 
-    // Find the current/most relevant tournament
-    // Prefer in-progress tournaments, then scheduled, then most recent completed
-    const events = data.events;
+      // Find the current/most relevant tournament
+      // Prefer in-progress tournaments, then scheduled, then most recent completed
+      const events = data.events;
 
-    if (!events || events.length === 0) {
+      if (!events || events.length === 0) {
+        console.warn(`No events found at ${url}`);
+        continue;
+      }
+
+      // Sort events by relevance: in_progress first, then by date
+      const sortedEvents = [...events].sort((a, b) => {
+        const aStatus = mapTournamentStatus(a);
+        const bStatus = mapTournamentStatus(b);
+
+        // In-progress tournaments first
+        if (aStatus === "in_progress" && bStatus !== "in_progress") return -1;
+        if (bStatus === "in_progress" && aStatus !== "in_progress") return 1;
+
+        // Then scheduled
+        if (aStatus === "scheduled" && bStatus === "completed") return -1;
+        if (bStatus === "scheduled" && aStatus === "completed") return 1;
+
+        // Then by date (most recent first)
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+
+      const tournament = mapTournament(sortedEvents[0]);
+
       return {
-        tournament: null,
+        tournament,
         lastUpdated: new Date(),
       };
+    } catch (error) {
+      console.warn(`Failed to fetch from ${url}:`, error);
+      continue;
     }
-
-    // Sort events by relevance: in_progress first, then by date
-    const sortedEvents = [...events].sort((a, b) => {
-      const aStatus = mapTournamentStatus(a);
-      const bStatus = mapTournamentStatus(b);
-
-      // In-progress tournaments first
-      if (aStatus === "in_progress" && bStatus !== "in_progress") return -1;
-      if (bStatus === "in_progress" && aStatus !== "in_progress") return 1;
-
-      // Then scheduled
-      if (aStatus === "scheduled" && bStatus === "completed") return -1;
-      if (bStatus === "scheduled" && aStatus === "completed") return 1;
-
-      // Then by date (most recent first)
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    });
-
-    const tournament = mapTournament(sortedEvents[0]);
-
-    return {
-      tournament,
-      lastUpdated: new Date(),
-    };
-  } catch (error) {
-    console.error("Failed to fetch PGA leaderboard:", error);
-    return {
-      tournament: null,
-      lastUpdated: new Date(),
-    };
   }
+
+  // All endpoints failed
+  console.error("All ESPN Golf API endpoints failed");
+  return {
+    tournament: null,
+    lastUpdated: new Date(),
+  };
 }
