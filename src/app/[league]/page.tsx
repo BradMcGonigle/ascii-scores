@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LeagueScoreboard } from "@/components/scoreboards/LeagueScoreboard";
 import { F1StandingsDisplay } from "@/components/scoreboards/F1Standings";
-import { GolfLeaderboardDisplay } from "@/components/scoreboards/GolfLeaderboard";
+import { GolfLeaderboardClient } from "@/components/scoreboards/GolfLeaderboardClient";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { DateNavigation } from "@/components/scoreboards/DateNavigation";
 import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
@@ -268,7 +268,7 @@ async function PGAContent() {
   try {
     const leaderboard = await getPGALeaderboard();
 
-    return <GolfLeaderboardDisplay leaderboard={leaderboard} />;
+    return <GolfLeaderboardClient leaderboard={leaderboard} />;
   } catch (error) {
     console.error("Failed to fetch PGA leaderboard:", error);
     return (
