@@ -1,4 +1,5 @@
 import type { Game, GameStatus, League, Scoreboard, Team } from "@/lib/types";
+import { formatDateForAPI } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
 
@@ -120,12 +121,20 @@ function mapEvent(event: ESPNEvent, league: League): Game {
 
 /**
  * Fetch scoreboard data for a league from ESPN
+ * @param league - The league to fetch scores for
+ * @param date - Optional date to fetch scores for (defaults to today)
  */
 export async function getESPNScoreboard(
-  league: Exclude<League, "f1">
+  league: Exclude<League, "f1">,
+  date?: Date
 ): Promise<Scoreboard> {
   const sportPath = LEAGUE_SPORT_MAP[league];
-  const url = `${ESPN_BASE_URL}/${sportPath}/scoreboard`;
+  const baseUrl = `${ESPN_BASE_URL}/${sportPath}/scoreboard`;
+
+  // Add date parameter if provided
+  const url = date
+    ? `${baseUrl}?dates=${formatDateForAPI(date)}`
+    : baseUrl;
 
   const response = await fetch(url, {
     headers: {
@@ -148,6 +157,7 @@ export async function getESPNScoreboard(
     league,
     games,
     lastUpdated: new Date(),
+    date: date ?? new Date(),
   };
 }
 

@@ -92,3 +92,66 @@ export function truncate(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
   return str.slice(0, maxLength - 1) + "…";
 }
+
+/**
+ * Format a date as YYYYMMDD for ESPN API
+ */
+export function formatDateForAPI(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+/**
+ * Parse a YYYYMMDD string back to a Date
+ */
+export function parseDateFromAPI(dateStr: string): Date | null {
+  if (!/^\d{8}$/.test(dateStr)) return null;
+  const year = parseInt(dateStr.slice(0, 4), 10);
+  const month = parseInt(dateStr.slice(4, 6), 10) - 1;
+  const day = parseInt(dateStr.slice(6, 8), 10);
+  return new Date(year, month, day);
+}
+
+/**
+ * Get a date offset by a number of days
+ */
+export function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+/**
+ * Check if two dates are the same calendar day
+ */
+export function isSameDay(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
+/**
+ * Check if a date is today
+ */
+export function isToday(date: Date): boolean {
+  return isSameDay(date, new Date());
+}
+
+/**
+ * Get a relative date label (Today, Yesterday, Tomorrow, or formatted date)
+ */
+export function getRelativeDateLabel(date: Date): string {
+  const today = new Date();
+  const yesterday = addDays(today, -1);
+  const tomorrow = addDays(today, 1);
+
+  if (isSameDay(date, today)) return "Today";
+  if (isSameDay(date, yesterday)) return "Yesterday";
+  if (isSameDay(date, tomorrow)) return "Tomorrow";
+
+  return formatDate(date);
+}
