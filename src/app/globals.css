@@ -55,14 +55,8 @@
   --theme-glow-green: #00ff41;
   --theme-glow-amber: #ffb000;
   --theme-glow-blue: #00d4ff;
-  --theme-scanline-opacity: 0.15;
-  --theme-vignette-opacity: 0.4;
   /* Card styling */
-  --theme-card-bg-start: rgba(26, 31, 41, 0.8);
-  --theme-card-bg-end: rgba(10, 14, 20, 0.9);
-  --theme-card-shadow: rgba(0, 0, 0, 0.5);
-  --theme-card-inset: rgba(255, 255, 255, 0.05);
-  --theme-card-hover-glow: rgba(0, 255, 65, 0.1);
+  --theme-card-bg: rgba(26, 31, 41, 0.5);
   --theme-pattern-color: rgba(0, 255, 65, 0.05);
 }
 
@@ -81,14 +75,8 @@
   --theme-glow-green: #059669;
   --theme-glow-amber: #d97706;
   --theme-glow-blue: #0284c7;
-  --theme-scanline-opacity: 0.03;
-  --theme-vignette-opacity: 0.1;
   /* Card styling */
-  --theme-card-bg-start: rgba(255, 255, 255, 0.9);
-  --theme-card-bg-end: rgba(245, 245, 240, 0.95);
-  --theme-card-shadow: rgba(0, 0, 0, 0.1);
-  --theme-card-inset: rgba(255, 255, 255, 0.5);
-  --theme-card-hover-glow: rgba(5, 150, 105, 0.15);
+  --theme-card-bg: rgba(255, 255, 255, 0.8);
   --theme-pattern-color: rgba(5, 150, 105, 0.03);
 }
 
@@ -179,43 +167,6 @@
     overflow-x: hidden;
   }
 
-  /* CRT screen overlay effect - uses theme variable for opacity */
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1000;
-    background: repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, var(--theme-scanline-opacity)) 0px,
-      rgba(0, 0, 0, var(--theme-scanline-opacity)) 1px,
-      transparent 1px,
-      transparent 2px
-    );
-  }
-
-  /* Subtle vignette effect - uses theme variable for opacity */
-  body::after {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 999;
-    background: radial-gradient(
-      ellipse at center,
-      transparent 0%,
-      transparent 60%,
-      rgba(0, 0, 0, var(--theme-vignette-opacity)) 100%
-    );
-  }
-
   /* Ensure monospace rendering for ASCII art */
   pre,
   code,
@@ -247,24 +198,27 @@
     color: var(--color-terminal-yellow);
   }
 
-  /* Phosphor glow effect - subtle */
+  /* Subtle text emphasis */
   .glow-green {
-    text-shadow: 0 0 3px var(--color-glow-green),
-                 0 0 6px var(--color-glow-green);
+    color: var(--color-glow-green);
   }
 
   .glow-amber {
-    text-shadow: 0 0 3px var(--color-glow-amber),
-                 0 0 6px var(--color-glow-amber);
+    color: var(--color-glow-amber);
   }
 
   .glow-blue {
-    text-shadow: 0 0 3px var(--color-glow-blue),
-                 0 0 6px var(--color-glow-blue);
+    color: var(--color-glow-blue);
   }
 
   .glow-pulse {
-    animation: glow-pulse 2s ease-in-out infinite;
+    /* Subtle brightness pulse instead of heavy glow */
+    animation: subtle-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes subtle-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
   }
 
   /* Blinking cursor */
@@ -292,15 +246,13 @@
     animation: rgb-shift 4s infinite;
   }
 
-  /* Retro text effects - subtle */
+  /* Text emphasis - clean without heavy glow */
   .text-glow {
-    text-shadow: 0 0 4px currentColor;
+    font-weight: bold;
   }
 
   .text-glow-strong {
-    text-shadow: 0 0 3px currentColor,
-                 0 0 6px currentColor,
-                 0 0 10px currentColor;
+    font-weight: bold;
   }
 
   /* Terminal prompt styling */
@@ -314,22 +266,15 @@
     color: var(--color-terminal-green);
   }
 
-  /* ASCII art border glow */
+  /* ASCII art border emphasis */
   .border-glow {
-    box-shadow: 0 0 10px var(--color-terminal-border),
-                inset 0 0 10px var(--theme-card-hover-glow);
+    border-color: var(--color-terminal-muted);
   }
 
-  /* Flickering effect for CRT simulation */
-  .flicker {
-    animation: flicker 0.15s infinite;
-  }
-
-  /* Live indicator pulsing dot */
+  /* Live indicator dot */
   .live-indicator::before {
     content: "●";
     color: var(--color-terminal-green);
-    animation: glow-pulse 1s ease-in-out infinite;
     margin-right: 0.5rem;
   }
 
@@ -350,21 +295,14 @@
     background-size: 50px 50px;
   }
 
-  /* Retro card styling */
+  /* Clean card styling - ASCII focused */
   .retro-card {
-    background: linear-gradient(
-      135deg,
-      var(--theme-card-bg-start) 0%,
-      var(--theme-card-bg-end) 100%
-    );
+    background: var(--theme-card-bg);
     border: 1px solid var(--color-terminal-border);
-    box-shadow: 0 0 20px var(--theme-card-shadow),
-                inset 0 1px 0 var(--theme-card-inset);
+    border-radius: 0;
   }
 
   .retro-card:hover {
-    box-shadow: 0 0 30px var(--theme-card-hover-glow),
-                inset 0 1px 0 var(--theme-card-inset);
-    border-color: var(--color-terminal-green);
+    border-color: var(--color-terminal-muted);
   }
 }

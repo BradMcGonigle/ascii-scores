@@ -1,5 +1,7 @@
 import type { Game } from "@/lib/types";
 import { formatTime, getStatusClass, getStatusText } from "@/lib/utils/format";
+import { GameStats } from "./GameStats";
+import { PeriodScores } from "./PeriodScores";
 
 interface GameCardProps {
   game: Game;
@@ -104,7 +106,7 @@ export function GameCard({ game }: GameCardProps) {
   const border = getBorderStyle(game.status);
 
   const isLive = game.status === "live";
-  const cardClass = isLive ? "retro-card border-terminal-green/50" : "retro-card";
+  const cardClass = isLive ? "retro-card border-terminal-green/70" : "retro-card";
 
   return (
     <div
@@ -123,8 +125,8 @@ export function GameCard({ game }: GameCardProps) {
       {/* Status line */}
       <div className="flex items-center">
         <span className={border.textClass} aria-hidden="true">{border.side}</span>
-        <div className={`flex-1 px-2 py-0.5 ${statusClass} ${isLive ? "glow-pulse" : ""}`}>
-          {isLive && <span className="inline-block mr-1">●</span>}
+        <div className={`flex-1 px-2 py-0.5 ${statusClass}`}>
+          {isLive && <span className="inline-block mr-1 text-terminal-green">●</span>}
           {statusText}
         </div>
         <span className={border.textClass} aria-hidden="true">{border.side}</span>
@@ -155,6 +157,44 @@ export function GameCard({ game }: GameCardProps) {
         side={border.side}
         sideClass={border.textClass}
       />
+
+      {/* Period scores for live/final games */}
+      {(game.status === "live" || game.status === "final") && game.periodScores && (
+        <>
+          <BorderLine
+            left={border.corners.ml}
+            right={border.corners.mr}
+            fill={border.horizontal}
+            className={border.textClass}
+          />
+          <div className="flex items-center">
+            <span className={border.textClass} aria-hidden="true">{border.side}</span>
+            <div className="flex-1 px-2 py-1">
+              <PeriodScores game={game} borderClass={border.textClass} />
+            </div>
+            <span className={border.textClass} aria-hidden="true">{border.side}</span>
+          </div>
+        </>
+      )}
+
+      {/* Game stats for live/final games */}
+      {(game.status === "live" || game.status === "final") && game.stats && (
+        <>
+          <BorderLine
+            left={border.corners.ml}
+            right={border.corners.mr}
+            fill={border.horizontal}
+            className={border.textClass}
+          />
+          <div className="flex items-center">
+            <span className={border.textClass} aria-hidden="true">{border.side}</span>
+            <div className="flex-1 px-2 py-0.5">
+              <GameStats game={game} />
+            </div>
+            <span className={border.textClass} aria-hidden="true">{border.side}</span>
+          </div>
+        </>
+      )}
 
       {/* Time/Venue line for scheduled games */}
       {game.status === "scheduled" && (

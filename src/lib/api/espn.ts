@@ -1,4 +1,4 @@
-import type { Game, GameStatus, League, Scoreboard, Team } from "@/lib/types";
+import type { Game, GameStats, GameStatus, League, PeriodScore, PeriodScores, Scoreboard, Team } from "@/lib/types";
 import { addDays, formatDateForAPI } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
@@ -17,6 +17,16 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1">, string> = {
 /**
  * ESPN API response types (simplified)
  */
+interface ESPNLinescore {
+  value: number;
+}
+
+interface ESPNStatistic {
+  name: string;
+  abbreviation: string;
+  displayValue: string;
+}
+
 interface ESPNCompetitor {
   id: string;
   team: {
@@ -29,6 +39,12 @@ interface ESPNCompetitor {
   };
   score?: string;
   homeAway: "home" | "away";
+  linescores?: ESPNLinescore[];
+  statistics?: ESPNStatistic[];
+  /** MLB-specific: hits */
+  hits?: number;
+  /** MLB-specific: errors */
+  errors?: number;
 }
 
 interface ESPNStatus {
@@ -90,6 +106,111 @@ function mapTeam(competitor: ESPNCompetitor): Team {
 }
 
 /**
+ * Map ESPN linescores to our PeriodScore array
+ */
+function mapLinescores(linescores?: ESPNLinescore[]): PeriodScore[] {
+  if (!linescores || linescores.length === 0) return [];
+  return linescores.map((ls, index) => ({
+    period: index + 1,
+    score: ls.value,
+  }));
+}
+
+/**
+ * Map ESPN competitors to PeriodScores
+ */
+function mapPeriodScores(
+  homeCompetitor: ESPNCompetitor,
+  awayCompetitor: ESPNCompetitor,
+  league: League
+): PeriodScores | undefined {
+  const homeLinescores = mapLinescores(homeCompetitor.linescores);
+  const awayLinescores = mapLinescores(awayCompetitor.linescores);
+
+  // Only return period scores if we have data
+  if (homeLinescores.length === 0 && awayLinescores.length === 0) {
+    return undefined;
+  }
+
+  const periodScores: PeriodScores = {
+    home: homeLinescores,
+    away: awayLinescores,
+  };
+
+  // Add MLB-specific stats
+  if (league === "mlb") {
+    if (homeCompetitor.hits !== undefined) {
+      periodScores.homeHits = homeCompetitor.hits;
+    }
+    if (awayCompetitor.hits !== undefined) {
+      periodScores.awayHits = awayCompetitor.hits;
+    }
+    if (homeCompetitor.errors !== undefined) {
+      periodScores.homeErrors = homeCompetitor.errors;
+    }
+    if (awayCompetitor.errors !== undefined) {
+      periodScores.awayErrors = awayCompetitor.errors;
+    }
+  }
+
+  return periodScores;
+}
+
+/**
+ * Key stats to extract for each league
+ * Maps ESPN stat names to display labels
+ */
+const LEAGUE_KEY_STATS: Record<Exclude<League, "f1">, string[]> = {
+  nhl: ["shotsOnGoal", "powerPlayGoals", "powerPlayOpportunities"],
+  nfl: ["totalYards", "turnovers", "passingYards", "rushingYards"],
+  nba: ["rebounds", "assists", "fieldGoalPct"],
+  mlb: ["hits", "strikeouts", "homeRuns"],
+  mls: ["possessionPct", "shotsOnTarget", "saves"],
+};
+
+/**
+ * Extract key statistics from ESPN competitor
+ */
+function extractStats(
+  statistics: ESPNStatistic[] | undefined,
+  league: Exclude<League, "f1">
+): Record<string, string | number> {
+  if (!statistics || statistics.length === 0) return {};
+
+  const keyStats = LEAGUE_KEY_STATS[league];
+  const result: Record<string, string | number> = {};
+
+  for (const stat of statistics) {
+    if (keyStats.includes(stat.name)) {
+      result[stat.abbreviation] = stat.displayValue;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Map ESPN competitors to GameStats
+ */
+function mapGameStats(
+  homeCompetitor: ESPNCompetitor,
+  awayCompetitor: ESPNCompetitor,
+  league: League
+): GameStats | undefined {
+  if (league === "f1") return undefined;
+
+  const homeStats = extractStats(homeCompetitor.statistics, league);
+  const awayStats = extractStats(awayCompetitor.statistics, league);
+
+  // Only return stats if we have data
+  if (Object.keys(homeStats).length === 0 && Object.keys(awayStats).length === 0) {
+    return undefined;
+  }
+
+  return { home: homeStats, away: awayStats };
+}
+
+/**
  * Map ESPN event to our Game type
  */
 function mapEvent(event: ESPNEvent, league: League): Game {
@@ -116,6 +237,8 @@ function mapEvent(event: ESPNEvent, league: League): Game {
     period: status.period?.toString(),
     clock: status.displayClock,
     detail: status.type.shortDetail,
+    periodScores: mapPeriodScores(homeCompetitor, awayCompetitor, league),
+    stats: mapGameStats(homeCompetitor, awayCompetitor, league),
   };
 }
 
