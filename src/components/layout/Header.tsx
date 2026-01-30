@@ -3,7 +3,11 @@ import { AsciiLogoCompact, AsciiCursor } from "@/components/ascii";
 import { Navigation } from "./Navigation";
 import { ThemeSelector } from "./ThemeSelector";
 
-export function Header() {
+interface HeaderProps {
+  activeLeague?: string;
+}
+
+export function Header({ activeLeague }: HeaderProps) {
   return (
     <header className="border-b border-terminal-border bg-terminal-bg relative">
       {/* Terminal-style top bar */}
@@ -42,7 +46,7 @@ export function Header() {
             <div className="sm:hidden">
               <ThemeSelector />
             </div>
-            <Navigation />
+            <Navigation activeLeague={activeLeague} />
           </div>
         </div>
       </div>

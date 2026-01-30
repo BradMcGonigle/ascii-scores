@@ -85,7 +85,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
   return (
     <>
-      <Header />
+      <Header activeLeague={leagueId} />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8">
           {/* Page header */}
