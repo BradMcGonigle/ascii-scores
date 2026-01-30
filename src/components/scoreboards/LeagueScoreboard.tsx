@@ -1,5 +1,6 @@
 import type { Scoreboard } from "@/lib/types";
 import { LEAGUES } from "@/lib/types";
+import { getRelativeDateLabel, isToday } from "@/lib/utils/format";
 import { GameCard } from "./GameCard";
 
 interface LeagueScoreboardProps {
@@ -64,8 +65,18 @@ function SectionHeader({
  */
 export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
   const league = LEAGUES[scoreboard.league];
+  const dateLabel = getRelativeDateLabel(scoreboard.date);
+  const isTodayDate = isToday(scoreboard.date);
 
   if (scoreboard.games.length === 0) {
+    const noGamesMessage = isTodayDate
+      ? `No ${league.name} games scheduled today`
+      : `No ${league.name} games on ${dateLabel}`;
+    const paddedMessage = noGamesMessage.padStart(
+      Math.floor((46 + noGamesMessage.length) / 2),
+      " "
+    ).padEnd(46, " ");
+
     return (
       <div className="font-mono text-center py-12">
         <div className="inline-block">
@@ -77,8 +88,8 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
           </div>
           <div>
             <span className="text-terminal-border" aria-hidden="true">║</span>
-            <span className="text-terminal-muted px-4">
-              {"      "}No {league.name} games scheduled today{"      "}
+            <span className="text-terminal-muted">
+              {paddedMessage}
             </span>
             <span className="text-terminal-border" aria-hidden="true">║</span>
           </div>
@@ -90,7 +101,10 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
           </div>
         </div>
         <div className="mt-4 text-terminal-muted text-xs">
-          <span className="text-terminal-cyan">{">"}</span> Check back later for game updates
+          <span className="text-terminal-cyan">{">"}</span>{" "}
+          {isTodayDate
+            ? "Check back later for game updates"
+            : "Use navigation to browse other dates"}
         </div>
       </div>
     );

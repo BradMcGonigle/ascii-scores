@@ -87,6 +87,7 @@ export interface Scoreboard {
   league: League;
   games: Game[];
   lastUpdated: Date;
+  date: Date;
 }
 
 /**

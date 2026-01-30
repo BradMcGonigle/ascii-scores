@@ -1,15 +1,22 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LeagueScoreboard } from "@/components/scoreboards/LeagueScoreboard";
 import { F1StandingsDisplay } from "@/components/scoreboards/F1Standings";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
-import { getESPNScoreboard } from "@/lib/api/espn";
+import { DateNavigation } from "@/components/scoreboards/DateNavigation";
+import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
 import { getF1Standings } from "@/lib/api/openf1";
 import { LEAGUES, type League } from "@/lib/types";
+import { addDays, parseDateFromAPI } from "@/lib/utils/format";
+
+const MAX_DAYS_PAST = 5;
+const MAX_DAYS_FUTURE = 5;
 
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
+  searchParams: Promise<{ date?: string }>;
 }
 
 // Generate static params for all leagues
@@ -32,8 +39,36 @@ export async function generateMetadata({ params }: LeaguePageProps) {
   };
 }
 
-export default async function LeaguePage({ params }: LeaguePageProps) {
+/**
+ * Validate and parse the date parameter
+ * Returns the validated date or null if invalid/out of range
+ */
+function validateDate(dateStr: string | undefined): Date | null {
+  if (!dateStr) return null;
+
+  const parsed = parseDateFromAPI(dateStr);
+  if (!parsed) return null;
+
+  // Check if date is within allowed range
+  const today = new Date();
+  const minDate = addDays(today, -MAX_DAYS_PAST);
+  const maxDate = addDays(today, MAX_DAYS_FUTURE);
+
+  // Reset time components for comparison
+  const normalizedParsed = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+  const normalizedMin = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+  const normalizedMax = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+
+  if (normalizedParsed < normalizedMin || normalizedParsed > normalizedMax) {
+    return null;
+  }
+
+  return parsed;
+}
+
+export default async function LeaguePage({ params, searchParams }: LeaguePageProps) {
   const { league: leagueId } = await params;
+  const { date: dateParam } = await searchParams;
 
   // Validate league
   if (!Object.keys(LEAGUES).includes(leagueId)) {
@@ -42,13 +77,19 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
 
   const league = LEAGUES[leagueId as League];
 
+  // Parse and validate date parameter
+  const selectedDate = validateDate(dateParam);
+
+  // For ESPN leagues, determine if we should show date navigation
+  const isESPNLeague = leagueId !== "f1";
+
   return (
     <>
       <Header />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8">
           {/* Page header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h1 className="font-mono text-2xl text-terminal-fg">
                 <span className="text-terminal-border">[</span>
@@ -64,11 +105,23 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
             <RefreshButton />
           </div>
 
+          {/* Date navigation for ESPN leagues */}
+          {isESPNLeague && (
+            <div className="mb-8">
+              <Suspense fallback={<DateNavigationSkeleton />}>
+                <DateNavigationWrapper league={leagueId as Exclude<League, "f1">} />
+              </Suspense>
+            </div>
+          )}
+
           {/* Scoreboard content */}
           {leagueId === "f1" ? (
             <F1Content />
           ) : (
-            <ESPNContent league={leagueId as Exclude<League, "f1">} />
+            <ESPNContent
+              league={leagueId as Exclude<League, "f1">}
+              date={selectedDate ?? undefined}
+            />
           )}
         </div>
       </main>
@@ -78,11 +131,52 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
 }
 
 /**
+ * Server component wrapper that fetches dates with games
+ */
+async function DateNavigationWrapper({
+  league,
+}: {
+  league: Exclude<League, "f1">;
+}) {
+  const datesWithGames = await getDatesWithGames(league, MAX_DAYS_PAST, MAX_DAYS_FUTURE);
+  return <DateNavigation league={league} datesWithGames={datesWithGames} />;
+}
+
+/**
+ * Loading skeleton for date navigation
+ */
+function DateNavigationSkeleton() {
+  return (
+    <div className="font-mono text-sm">
+      <div className="flex items-center justify-center gap-2">
+        <div className="px-3 py-1 border border-terminal-muted text-terminal-muted">
+          ◄ PREV
+        </div>
+        <div className="px-4 py-1 min-w-[160px] text-center">
+          <span className="text-terminal-border">[</span>
+          <span className="mx-2 text-terminal-muted">Loading...</span>
+          <span className="text-terminal-border">]</span>
+        </div>
+        <div className="px-3 py-1 border border-terminal-muted text-terminal-muted">
+          NEXT ►
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * ESPN-based scoreboard content
  */
-async function ESPNContent({ league }: { league: Exclude<League, "f1"> }) {
+async function ESPNContent({
+  league,
+  date,
+}: {
+  league: Exclude<League, "f1">;
+  date?: Date;
+}) {
   try {
-    const scoreboard = await getESPNScoreboard(league);
+    const scoreboard = await getESPNScoreboard(league, date);
     return <LeagueScoreboard scoreboard={scoreboard} />;
   } catch (error) {
     console.error(`Failed to fetch ${league} scoreboard:`, error);
