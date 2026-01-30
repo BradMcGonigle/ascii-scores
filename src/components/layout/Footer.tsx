@@ -6,7 +6,7 @@ export function Footer() {
           <p>
             Data provided by ESPN &amp; OpenF1 | Not affiliated with any sports league
           </p>
-          <p className="text-terminal-border">
+          <p className="text-terminal-border hidden sm:block">
             ═══════════════════════════════════════════════════════════════
           </p>
           <p>
