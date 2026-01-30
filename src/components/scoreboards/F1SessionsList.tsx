@@ -59,7 +59,7 @@ function F1SessionCard({ session }: F1SessionCardProps) {
 
   return (
     <div className="font-mono overflow-x-auto">
-      <div className="inline-block min-w-fit">
+      <div className="w-full">
         {/* Session header */}
         <div className="mb-2">
           <div className="text-terminal-border" aria-hidden="true">

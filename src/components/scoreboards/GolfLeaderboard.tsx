@@ -106,7 +106,7 @@ export function GolfLeaderboardTable({
 
   return (
     <div className="overflow-x-auto">
-      <div className="inline-block min-w-fit">
+      <div className="w-full">
         {/* Tournament header */}
         <div className="mb-6">
           <div className="text-terminal-border text-sm" aria-hidden="true">
