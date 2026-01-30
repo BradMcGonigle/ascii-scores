@@ -14,7 +14,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-8">
           {/* Hero section with logo */}
           <div className="text-center mb-12">
-            <AsciiLogo className="mx-auto text-xs sm:text-sm md:text-base overflow-x-auto" />
+            <AsciiLogo className="mx-auto text-xs sm:text-sm md:text-base" />
             <p className="mt-4 text-terminal-muted font-mono">
               Real-time sports scores rendered in ASCII art
             </p>
@@ -23,7 +23,9 @@ export default function HomePage() {
           {/* League selection grid */}
           <section aria-label="Select a league">
             <h2 className="font-mono text-terminal-cyan text-center mb-8">
-              ═══════════════ SELECT A LEAGUE ═══════════════
+              <span className="hidden sm:inline">═══════════════ </span>
+              SELECT A LEAGUE
+              <span className="hidden sm:inline"> ═══════════════</span>
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {LEAGUE_ORDER.map((leagueId) => {
@@ -61,7 +63,9 @@ export default function HomePage() {
           {/* Features section */}
           <section className="mt-16" aria-label="Features">
             <h2 className="font-mono text-terminal-cyan text-center mb-8">
-              ═══════════════════ FEATURES ═══════════════════
+              <span className="hidden sm:inline">═══════════════════ </span>
+              FEATURES
+              <span className="hidden sm:inline"> ═══════════════════</span>
             </h2>
             <div className="grid md:grid-cols-3 gap-8 font-mono text-sm">
               <div className="text-center">
