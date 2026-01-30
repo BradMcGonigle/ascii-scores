@@ -7,6 +7,7 @@ import { F1StandingsDisplay } from "@/components/scoreboards/F1Standings";
 import { GolfLeaderboardClient } from "@/components/scoreboards/GolfLeaderboardClient";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { DateNavigation } from "@/components/scoreboards/DateNavigation";
+import { LeagueJsonLd } from "@/components/seo";
 import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
 import { getF1Standings } from "@/lib/api/openf1";
 import { getPGALeaderboard } from "@/lib/api/pga";
@@ -26,18 +27,48 @@ export function generateStaticParams() {
   return Object.keys(LEAGUES).map((league) => ({ league }));
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ascii-scores.vercel.app";
+
 // Generate metadata for each league page
 export async function generateMetadata({ params }: LeaguePageProps) {
   const { league: leagueId } = await params;
   const league = LEAGUES[leagueId as League];
 
   if (!league) {
-    return { title: "League Not Found - ASCII Scores" };
+    return { title: "League Not Found" };
   }
 
+  const title = `${league.name} Scores`;
+  const description = `Live ${league.fullName} scores and standings rendered in ASCII art style. Real-time updates with a retro terminal aesthetic.`;
+  const url = `${SITE_URL}/${leagueId}`;
+
   return {
-    title: `${league.name} Scores - ASCII Scores`,
-    description: `Live ${league.fullName} scores rendered in ASCII art style`,
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: `${league.name} Scores | ASCII Scores`,
+      description,
+      url,
+      siteName: "ASCII Scores",
+      type: "website",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: `${league.fullName} Live Scores - ASCII Scores`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${league.name} Scores | ASCII Scores`,
+      description,
+      images: ["/og-image.png"],
+    },
   };
 }
 
@@ -88,6 +119,10 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
   return (
     <>
+      <LeagueJsonLd
+        leagueName={`${league.name} Scores`}
+        leagueUrl={`${SITE_URL}/${leagueId}`}
+      />
       <Header activeLeague={leagueId} />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-8">

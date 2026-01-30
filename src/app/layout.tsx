@@ -1,24 +1,85 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/layout";
+import { RootJsonLd } from "@/components/seo";
 import "./globals.css";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ascii-scores.vercel.app";
+const SITE_NAME = "ASCII Scores";
+const SITE_DESCRIPTION = "Real-time sports scores for NHL, NFL, NBA, MLB, MLS, PGA, and Formula 1 rendered in ASCII art style. Live scoreboards with a retro terminal aesthetic.";
+
 export const metadata: Metadata = {
-  title: "ASCII Scores - Live Sports Scoreboards",
-  description:
-    "Real-time sports scores for NHL, NFL, NBA, MLB, MLS, and Formula 1 rendered in ASCII art style",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} - Live Sports Scoreboards`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
   keywords: [
-    "sports",
-    "scores",
-    "live",
-    "ASCII",
-    "NHL",
-    "NFL",
-    "NBA",
-    "MLB",
-    "MLS",
-    "F1",
+    "sports scores",
+    "live scores",
+    "ASCII art",
+    "NHL scores",
+    "NFL scores",
+    "NBA scores",
+    "MLB scores",
+    "MLS scores",
+    "F1 standings",
+    "PGA leaderboard",
+    "retro scoreboard",
+    "terminal style",
   ],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} - Live Sports Scoreboards`,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ASCII Scores - Live Sports Scoreboards in Retro Terminal Style",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} - Live Sports Scoreboards`,
+    description: SITE_DESCRIPTION,
+    images: ["/og-image.png"],
+    creator: "@asciiscores",
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
+  category: "sports",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -28,6 +89,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <RootJsonLd />
+      </head>
       <body className="min-h-screen bg-terminal-bg text-terminal-fg antialiased">
         <ThemeProvider>
           <a href="#main-content" className="skip-to-content font-mono">
