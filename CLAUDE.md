@@ -120,6 +120,45 @@ pnpm test         # Run tests
 - Follow conventional commits for commit messages
 - **Always run checks before committing**: `pnpm lint && pnpm typecheck`
 
+## Versioning
+
+This project uses [Semantic Versioning (semver)](https://semver.org/). **Agents must automatically update the version in `package.json` when making changes.**
+
+### Version Bump Rules
+
+| Commit Type | Version Bump | Example |
+|-------------|--------------|---------|
+| `feat:` | MINOR (0.X.0) | New feature, new page, new component |
+| `fix:` | PATCH (0.0.X) | Bug fix, correction |
+| `refactor:` | No bump | Code restructuring without behavior change |
+| `chore:` | No bump | Dependencies, tooling, configs |
+| `docs:` | No bump | Documentation only |
+| `style:` | No bump | Formatting, whitespace |
+| `test:` | No bump | Adding/updating tests |
+| `perf:` | PATCH (0.0.X) | Performance improvement |
+
+### How to Update Version
+
+1. Determine the highest-priority commit type in your PR (feat > fix > perf > others)
+2. Update `package.json` version accordingly:
+   - **MINOR bump**: Increment middle number, reset patch to 0 (e.g., 0.12.1 → 0.13.0)
+   - **PATCH bump**: Increment last number (e.g., 0.12.1 → 0.12.2)
+3. Include the version bump in your commit
+
+```bash
+# Example: After adding a new feature
+# Current version: 0.12.1
+# New version: 0.13.0
+
+# Update package.json, then commit with your changes
+```
+
+### Important Notes
+
+- Only bump version once per PR, based on the highest-priority change type
+- Breaking changes (when v1.0.0+) would bump MAJOR, but we're in 0.x development
+- The version in `package.json` is the source of truth
+
 ## React Best Practices
 
 This project follows [Vercel's React Best Practices](https://vercel.com/blog/introducing-react-best-practices). These patterns are critical for performance and maintainability.
