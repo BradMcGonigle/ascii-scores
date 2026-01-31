@@ -200,13 +200,7 @@ export function GameCard({ game }: GameCardProps) {
             fill={border.horizontal}
             className={border.textClass}
           />
-          <div className="flex items-center">
-            <span className={border.textClass} aria-hidden="true">{border.side}</span>
-            <div className="flex-1 px-2 py-1">
-              <PeriodScores game={game} borderClass={border.textClass} />
-            </div>
-            <span className={border.textClass} aria-hidden="true">{border.side}</span>
-          </div>
+          <PeriodScores game={game} borderClass={border.textClass} sideChar={border.side} />
         </>
       )}
 
