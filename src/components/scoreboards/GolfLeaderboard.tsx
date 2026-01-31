@@ -15,12 +15,17 @@ interface GolfLeaderboardTableProps {
 /**
  * Check if all active players have completed their round
  */
-function isRoundPlayComplete(players: GolfPlayer[]): boolean {
+function isRoundPlayComplete(players: GolfPlayer[], currentRound?: number): boolean {
+  if (!currentRound) return false;
   const activePlayers = players.filter((p) => p.status === "active");
   if (activePlayers.length === 0) return false;
 
-  // Round is complete if all active players have finished (thru === "F")
-  return activePlayers.every((p) => p.thru === "F");
+  // Round is complete if all active players have:
+  // 1. thru === "F" (finished today), OR
+  // 2. completed this round (have score in rounds array for current round)
+  return activePlayers.every(
+    (p) => p.thru === "F" || p.rounds.length >= currentRound
+  );
 }
 
 /**
@@ -118,7 +123,7 @@ export function GolfLeaderboardTable({
   lastUpdated,
 }: GolfLeaderboardTableProps) {
   const statusClass = getTournamentStatusClass(tournament.status);
-  const roundPlayComplete = isRoundPlayComplete(tournament.players);
+  const roundPlayComplete = isRoundPlayComplete(tournament.players, tournament.currentRound);
   const statusText = getTournamentStatusText(tournament.status, tournament.currentRound, roundPlayComplete);
 
   // Determine how many round columns to show based on selection
