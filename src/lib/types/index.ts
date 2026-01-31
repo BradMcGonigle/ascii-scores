@@ -54,6 +54,8 @@ export interface Team {
   displayName: string;
   logo?: string;
   color?: string;
+  /** Team record (e.g., "25-15") */
+  record?: string;
 }
 
 /**
@@ -65,6 +67,8 @@ export interface Game {
   status: GameStatus;
   startTime: Date;
   venue?: string;
+  /** Venue location (city, state) */
+  venueLocation?: string;
   broadcast?: string;
   homeTeam: Team;
   awayTeam: Team;

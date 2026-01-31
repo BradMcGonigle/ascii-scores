@@ -1,127 +1,215 @@
-import type { Game, GameStats as GameStatsType, League } from "@/lib/types";
+import type { Game, GameStats as GameStatsType, GameStatus, League } from "@/lib/types";
 
 interface GameStatsProps {
   game: Game;
 }
 
 /**
- * Get stat display labels for each league
+ * Helper to format a stat line
  */
-function getStatLabels(league: League): Record<string, string> {
+function formatStat(
+  stats: GameStatsType,
+  key: string,
+  label: string,
+  defaultValue: string = "-"
+): string | null {
+  const awayVal = stats.away[key];
+  const homeVal = stats.home[key];
+  if (awayVal !== undefined || homeVal !== undefined) {
+    return `${label}: ${awayVal ?? defaultValue}-${homeVal ?? defaultValue}`;
+  }
+  return null;
+}
+
+/**
+ * Format stats for live NHL games
+ */
+function formatNHLLiveStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const goals = formatStat(stats, "goals", "G");
+  if (goals) lines.push(goals);
+
+  const assists = formatStat(stats, "assists", "A");
+  if (assists) lines.push(assists);
+
+  const savePct = formatStat(stats, "savePct", "SV%");
+  if (savePct) lines.push(savePct);
+
+  return lines;
+}
+
+/**
+ * Format stats for final NHL games
+ */
+function formatNHLFinalStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const goals = formatStat(stats, "goals", "G");
+  if (goals) lines.push(goals);
+
+  const assists = formatStat(stats, "assists", "A");
+  if (assists) lines.push(assists);
+
+  const savePct = formatStat(stats, "savePct", "SV%");
+  if (savePct) lines.push(savePct);
+
+  return lines;
+}
+
+/**
+ * Format stats for live NBA games
+ */
+function formatNBALiveStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const fgPct = formatStat(stats, "fieldGoalPct", "FG%");
+  if (fgPct) lines.push(fgPct);
+
+  const ftPct = formatStat(stats, "freeThrowPct", "FT%");
+  if (ftPct) lines.push(ftPct);
+
+  const threePct = formatStat(stats, "threePointFieldGoalPct", "3P%");
+  if (threePct) lines.push(threePct);
+
+  return lines;
+}
+
+/**
+ * Format stats for final NBA games
+ */
+function formatNBAFinalStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const fgPct = formatStat(stats, "fieldGoalPct", "FG%");
+  if (fgPct) lines.push(fgPct);
+
+  const ftPct = formatStat(stats, "freeThrowPct", "FT%");
+  if (ftPct) lines.push(ftPct);
+
+  const threePct = formatStat(stats, "threePointFieldGoalPct", "3P%");
+  if (threePct) lines.push(threePct);
+
+  return lines;
+}
+
+/**
+ * Format stats for live NFL games
+ */
+function formatNFLLiveStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const yds = formatStat(stats, "totalYards", "YDS");
+  if (yds) lines.push(yds);
+
+  const to = formatStat(stats, "turnovers", "TO");
+  if (to) lines.push(to);
+
+  return lines;
+}
+
+/**
+ * Format stats for final NFL games
+ */
+function formatNFLFinalStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const yds = formatStat(stats, "totalYards", "YDS");
+  if (yds) lines.push(yds);
+
+  const to = formatStat(stats, "turnovers", "TO");
+  if (to) lines.push(to);
+
+  const poss = formatStat(stats, "possessionTime", "TOP");
+  if (poss) lines.push(poss);
+
+  return lines;
+}
+
+/**
+ * Format stats for MLB games
+ */
+function formatMLBStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const hits = formatStat(stats, "hits", "H");
+  if (hits) lines.push(hits);
+
+  return lines;
+}
+
+/**
+ * Format stats for MLS games
+ */
+function formatMLSStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const poss = formatStat(stats, "possessionPct", "POSS");
+  if (poss) lines.push(poss);
+
+  return lines;
+}
+
+/**
+ * Format stats for display based on league and game status
+ */
+function formatStatsDisplay(
+  stats: GameStatsType,
+  league: League,
+  status: GameStatus
+): string[] {
+  const isFinal = status === "final";
+
   switch (league) {
     case "nhl":
-      return {
-        SOG: "SOG",
-        PPG: "PP",
-        PPO: "PP",
-      };
-    case "nfl":
-      return {
-        TYDS: "YDS",
-        TO: "TO",
-        PYDS: "PASS",
-        RYDS: "RUSH",
-      };
+      return isFinal ? formatNHLFinalStats(stats) : formatNHLLiveStats(stats);
     case "nba":
-      return {
-        REB: "REB",
-        AST: "AST",
-        "FG%": "FG%",
-      };
+      return isFinal ? formatNBAFinalStats(stats) : formatNBALiveStats(stats);
+    case "nfl":
+      return isFinal ? formatNFLFinalStats(stats) : formatNFLLiveStats(stats);
     case "mlb":
-      return {
-        H: "H",
-        K: "K",
-        HR: "HR",
-      };
+      return formatMLBStats(stats);
     case "mls":
-      return {
-        POSS: "POSS",
-        SOT: "SOT",
-        SV: "SV",
-      };
+      return formatMLSStats(stats);
     default:
-      return {};
+      return [];
   }
 }
 
 /**
- * Format stats for display - shows most meaningful 1-2 stats
+ * Check if stats should use full-width layout
  */
-function formatStatsDisplay(
-  stats: GameStatsType,
-  league: League
-): string[] {
-  const labels = getStatLabels(league);
-  const statKeys = Object.keys(labels);
-  const lines: string[] = [];
-
-  // For NHL, show shots and power play in a nice format
-  if (league === "nhl") {
-    const awaySog = stats.away["SOG"] ?? "-";
-    const homeSog = stats.home["SOG"] ?? "-";
-    if (awaySog !== "-" || homeSog !== "-") {
-      lines.push(`SOG: ${awaySog}-${homeSog}`);
-    }
-  }
-  // For NFL, show total yards
-  else if (league === "nfl") {
-    const awayYds = stats.away["TYDS"] ?? stats.away["YDS"];
-    const homeYds = stats.home["TYDS"] ?? stats.home["YDS"];
-    if (awayYds || homeYds) {
-      lines.push(`YDS: ${awayYds ?? "-"}-${homeYds ?? "-"}`);
-    }
-    const awayTo = stats.away["TO"];
-    const homeTo = stats.home["TO"];
-    if (awayTo || homeTo) {
-      lines.push(`TO: ${awayTo ?? "0"}-${homeTo ?? "0"}`);
-    }
-  }
-  // For NBA, show rebounds and assists
-  else if (league === "nba") {
-    const awayReb = stats.away["REB"];
-    const homeReb = stats.home["REB"];
-    if (awayReb || homeReb) {
-      lines.push(`REB: ${awayReb ?? "-"}-${homeReb ?? "-"}`);
-    }
-  }
-  // For MLS, show possession
-  else if (league === "mls") {
-    const awayPoss = stats.away["POSS"];
-    const homePoss = stats.home["POSS"];
-    if (awayPoss || homePoss) {
-      lines.push(`POSS: ${awayPoss ?? "-"}-${homePoss ?? "-"}`);
-    }
-  }
-  // Generic format for other stats
-  else {
-    for (const key of statKeys.slice(0, 2)) {
-      const awayVal = stats.away[key];
-      const homeVal = stats.home[key];
-      if (awayVal !== undefined || homeVal !== undefined) {
-        lines.push(`${labels[key]}: ${awayVal ?? "-"}-${homeVal ?? "-"}`);
-      }
-    }
-  }
-
-  return lines;
+function shouldUseFullWidthLayout(league: League, status: GameStatus): boolean {
+  if (status !== "live" && status !== "final") return false;
+  return league === "nba" || league === "nhl";
 }
 
 /**
  * Game statistics component for displaying key stats
  */
 export function GameStats({ game }: GameStatsProps) {
-  const { stats, league } = game;
+  const { stats, league, status } = game;
 
   // Don't render if no stats available
   if (!stats || (Object.keys(stats.home).length === 0 && Object.keys(stats.away).length === 0)) {
     return null;
   }
 
-  const statLines = formatStatsDisplay(stats, league);
+  const statLines = formatStatsDisplay(stats, league, status);
 
   if (statLines.length === 0) {
     return null;
+  }
+
+  // Use full-width evenly spaced layout for certain combinations
+  if (shouldUseFullWidthLayout(league, status)) {
+    return (
+      <div className="font-mono text-xs text-terminal-muted flex justify-between">
+        {statLines.map((stat) => (
+          <span key={stat}>{stat}</span>
+        ))}
+      </div>
+    );
   }
 
   return (

@@ -1,6 +1,5 @@
 import type { Game, GameStatus } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
-import { LocalTime } from "@/components/LocalTime";
 import { GameStats } from "./GameStats";
 import { PeriodScores } from "./PeriodScores";
 
@@ -58,7 +57,7 @@ function BorderLine({
   return (
     <div className={`flex ${className}`} aria-hidden="true">
       <span>{left}</span>
-      <span className="flex-1 overflow-hidden">{fill.repeat(50)}</span>
+      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]">{fill.repeat(100)}</span>
       <span>{right}</span>
     </div>
   );
@@ -70,6 +69,7 @@ function BorderLine({
 function TeamRow({
   team,
   teamFullName,
+  record,
   score,
   isWinning,
   side,
@@ -78,15 +78,18 @@ function TeamRow({
 }: {
   team: string;
   teamFullName: string;
+  record?: string;
   score: number;
   isWinning: boolean;
   side: string;
   sideClass: string;
   gameStatus: GameStatus;
 }) {
-  const textClass = isWinning ? "text-terminal-green font-bold" : "text-terminal-fg";
-  const scoreClass = isWinning ? "text-terminal-green font-bold text-glow" : "text-terminal-fg";
-  const showWinIndicator = isWinning && (gameStatus === "live" || gameStatus === "final");
+  // Only highlight winning team and show indicator for final games
+  const showWinning = isWinning && gameStatus === "final";
+  const textClass = showWinning ? "text-terminal-green font-bold" : "text-terminal-fg";
+  const scoreClass = showWinning ? "text-terminal-green font-bold text-glow" : "text-terminal-fg";
+  const showWinIndicator = showWinning;
 
   return (
     <div className="flex items-center">
@@ -95,6 +98,11 @@ function TeamRow({
         <span className={textClass}>
           <span className="sr-only">{teamFullName}</span>
           <span aria-hidden="true">{team}</span>
+          {record && (
+            <span className="text-terminal-muted text-xs ml-2" aria-label={`Record: ${record}`}>
+              ({record})
+            </span>
+          )}
         </span>
         <div className="flex items-center gap-1">
           <span className={scoreClass}>{score}</span>
@@ -163,6 +171,7 @@ export function GameCard({ game }: GameCardProps) {
       <TeamRow
         team={game.awayTeam.abbreviation}
         teamFullName={game.awayTeam.displayName}
+        record={game.awayTeam.record}
         score={game.awayScore}
         isWinning={game.awayScore > game.homeScore}
         side={border.side}
@@ -174,6 +183,7 @@ export function GameCard({ game }: GameCardProps) {
       <TeamRow
         team={game.homeTeam.abbreviation}
         teamFullName={game.homeTeam.displayName}
+        record={game.homeTeam.record}
         score={game.homeScore}
         isWinning={game.homeScore > game.awayScore}
         side={border.side}
@@ -190,13 +200,7 @@ export function GameCard({ game }: GameCardProps) {
             fill={border.horizontal}
             className={border.textClass}
           />
-          <div className="flex items-center">
-            <span className={border.textClass} aria-hidden="true">{border.side}</span>
-            <div className="flex-1 px-2 py-1">
-              <PeriodScores game={game} borderClass={border.textClass} />
-            </div>
-            <span className={border.textClass} aria-hidden="true">{border.side}</span>
-          </div>
+          <PeriodScores game={game} borderClass={border.textClass} sideChar={border.side} />
         </>
       )}
 
@@ -219,8 +223,8 @@ export function GameCard({ game }: GameCardProps) {
         </>
       )}
 
-      {/* Time/Venue line for scheduled games */}
-      {game.status === "scheduled" && (
+      {/* Venue line for scheduled games */}
+      {game.status === "scheduled" && game.venue && (
         <>
           <BorderLine
             left={border.corners.ml}
@@ -230,10 +234,17 @@ export function GameCard({ game }: GameCardProps) {
           />
           <div className="flex items-center">
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
-            <div className="flex-1 px-2 py-0.5 text-terminal-muted">
-              <span className="text-terminal-yellow mr-1" aria-hidden="true">◈</span>
-              <span className="sr-only">Scheduled start time: </span>
-              <LocalTime date={game.startTime} />
+            <div className="flex-1 px-2 py-0.5 text-terminal-muted flex justify-between text-xs">
+              <span className="truncate">
+                <span className="sr-only">Venue: </span>
+                {game.venue}
+              </span>
+              {game.venueLocation && (
+                <span className="ml-2 shrink-0">
+                  <span className="sr-only">Location: </span>
+                  {game.venueLocation}
+                </span>
+              )}
             </div>
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
           </div>

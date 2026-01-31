@@ -27,6 +27,12 @@ interface ESPNStatistic {
   displayValue: string;
 }
 
+interface ESPNRecord {
+  name: string;
+  type: string;
+  summary: string;
+}
+
 interface ESPNCompetitor {
   id: string;
   team: {
@@ -41,6 +47,7 @@ interface ESPNCompetitor {
   homeAway: "home" | "away";
   linescores?: ESPNLinescore[];
   statistics?: ESPNStatistic[];
+  records?: ESPNRecord[];
   /** MLB-specific: hits */
   hits?: number;
   /** MLB-specific: errors */
@@ -60,13 +67,21 @@ interface ESPNStatus {
   displayClock?: string;
 }
 
+interface ESPNVenue {
+  fullName: string;
+  address?: {
+    city?: string;
+    state?: string;
+  };
+}
+
 interface ESPNEvent {
   id: string;
   date: string;
   name: string;
   competitions: Array<{
     id: string;
-    venue?: { fullName: string };
+    venue?: ESPNVenue;
     broadcasts?: Array<{ names: string[] }>;
     competitors: ESPNCompetitor[];
     status: ESPNStatus;
@@ -95,6 +110,10 @@ function mapStatus(status: ESPNStatus): GameStatus {
  * Map ESPN competitor to our Team type
  */
 function mapTeam(competitor: ESPNCompetitor): Team {
+  // Get overall record (type: "total" or first record)
+  const record = competitor.records?.find(r => r.type === "total")?.summary
+    ?? competitor.records?.[0]?.summary;
+
   return {
     id: competitor.team.id,
     name: competitor.team.name,
@@ -102,6 +121,7 @@ function mapTeam(competitor: ESPNCompetitor): Team {
     displayName: competitor.team.displayName,
     logo: competitor.team.logo,
     color: competitor.team.color,
+    record,
   };
 }
 
@@ -161,15 +181,16 @@ function mapPeriodScores(
  * Maps ESPN stat names to display labels
  */
 const LEAGUE_KEY_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
-  nhl: ["shotsOnGoal", "powerPlayGoals", "powerPlayOpportunities"],
-  nfl: ["totalYards", "turnovers", "passingYards", "rushingYards"],
-  nba: ["rebounds", "assists", "fieldGoalPct"],
+  nhl: ["shotsOnGoal", "powerPlayGoals", "powerPlayOpportunities", "goals", "assists", "savePct"],
+  nfl: ["totalYards", "turnovers", "passingYards", "rushingYards", "possessionTime"],
+  nba: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
   mlb: ["hits", "strikeouts", "homeRuns"],
   mls: ["possessionPct", "shotsOnTarget", "saves"],
 };
 
 /**
  * Extract key statistics from ESPN competitor
+ * Uses stat name as key for consistent access regardless of ESPN's abbreviations
  */
 function extractStats(
   statistics: ESPNStatistic[] | undefined,
@@ -182,7 +203,7 @@ function extractStats(
 
   for (const stat of statistics) {
     if (keyStats.includes(stat.name)) {
-      result[stat.abbreviation] = stat.displayValue;
+      result[stat.name] = stat.displayValue;
     }
   }
 
@@ -211,6 +232,21 @@ function mapGameStats(
 }
 
 /**
+ * Format venue location from city and state
+ */
+function formatVenueLocation(venue?: ESPNVenue): string | undefined {
+  const city = venue?.address?.city;
+  const state = venue?.address?.state;
+  if (city && state) {
+    return `${city}, ${state}`;
+  }
+  if (city) {
+    return city;
+  }
+  return undefined;
+}
+
+/**
  * Map ESPN event to our Game type
  */
 function mapEvent(event: ESPNEvent, league: League): Game {
@@ -229,6 +265,7 @@ function mapEvent(event: ESPNEvent, league: League): Game {
     status: mapStatus(status),
     startTime: new Date(event.date),
     venue: competition.venue?.fullName,
+    venueLocation: formatVenueLocation(competition.venue),
     broadcast: competition.broadcasts?.[0]?.names?.[0],
     homeTeam: mapTeam(homeCompetitor),
     awayTeam: mapTeam(awayCompetitor),

@@ -3,6 +3,7 @@ import type { Game, League, PeriodScores as PeriodScoresType } from "@/lib/types
 interface PeriodScoresProps {
   game: Game;
   borderClass: string;
+  sideChar?: string;
 }
 
 /**
@@ -74,105 +75,128 @@ function CompactPeriodScores({
   homeAbbr,
   awayAbbr,
   borderClass,
+  sideChar,
 }: {
   periodScores: PeriodScoresType;
   league: League;
   homeAbbr: string;
   awayAbbr: string;
   borderClass: string;
+  sideChar?: string;
 }) {
   const maxPeriods = Math.max(periodScores.home.length, periodScores.away.length);
   const labels = getPeriodLabels(league, maxPeriods);
   const colWidth = getColumnWidth(league);
   const isMLB = league === "mlb";
+  const isMLS = league === "mls";
+  // Only show T (total) column for MLB (shows R/H/E) and MLS
+  const showTotalColumn = isMLB || isMLS;
 
   // For MLB, show compact format if too many innings
   const showCompact = isMLB && maxPeriods > 9;
 
   return (
-    <div className="font-mono text-xs overflow-x-auto">
+    <div className="font-mono text-xs">
       {/* Header row */}
-      <div className={`flex ${borderClass}`}>
-        <span className="w-10 text-terminal-muted" />
-        {labels.slice(0, showCompact ? 9 : undefined).map((label) => (
-          <span
-            key={`header-${label}`}
-            className="text-terminal-muted text-center"
-            style={{ width: `${colWidth * 0.6}rem` }}
-          >
-            {label}
-          </span>
-        ))}
-        {showCompact && maxPeriods > 9 && (
-          <span className="text-terminal-muted text-center px-1">...</span>
-        )}
-        <span className="text-terminal-cyan text-center w-8">T</span>
-        {isMLB && (
-          <>
-            <span className="text-terminal-muted text-center w-6">H</span>
-            <span className="text-terminal-muted text-center w-6">E</span>
-          </>
-        )}
+      <div className="flex items-center">
+        {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
+        <div className="flex-1 flex items-center px-2 py-0.5">
+          <span className="w-10 text-terminal-muted" />
+          {labels.slice(0, showCompact ? 9 : undefined).map((label) => (
+            <span
+              key={`header-${label}`}
+              className="text-terminal-muted text-center"
+              style={{ width: `${colWidth * 0.6}rem` }}
+            >
+              {label}
+            </span>
+          ))}
+          {showCompact && maxPeriods > 9 && (
+            <span className="text-terminal-muted text-center px-1">...</span>
+          )}
+          {showTotalColumn && (
+            <span className="text-terminal-cyan text-center w-8">T</span>
+          )}
+          {isMLB && (
+            <>
+              <span className="text-terminal-muted text-center w-6">H</span>
+              <span className="text-terminal-muted text-center w-6">E</span>
+            </>
+          )}
+        </div>
+        {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
       </div>
 
       {/* Away team row */}
-      <div className="flex">
-        <span className="w-10 text-terminal-fg truncate">{awayAbbr}</span>
-        {periodScores.away.slice(0, showCompact ? 9 : undefined).map((ps) => (
-          <span
-            key={`away-${ps.period}`}
-            className="text-terminal-fg text-center"
-            style={{ width: `${colWidth * 0.6}rem` }}
-          >
-            {formatScore(ps.score, 1)}
-          </span>
-        ))}
-        {showCompact && maxPeriods > 9 && (
-          <span className="text-terminal-muted text-center px-1">...</span>
-        )}
-        <span className="text-terminal-fg font-bold text-center w-8">
-          {periodScores.away.reduce((sum, ps) => sum + ps.score, 0)}
-        </span>
-        {isMLB && (
-          <>
-            <span className="text-terminal-muted text-center w-6">
-              {periodScores.awayHits ?? "-"}
+      <div className="flex items-center">
+        {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
+        <div className="flex-1 flex items-center px-2 py-0.5">
+          <span className="w-10 text-terminal-fg truncate">{awayAbbr}</span>
+          {periodScores.away.slice(0, showCompact ? 9 : undefined).map((ps) => (
+            <span
+              key={`away-${ps.period}`}
+              className="text-terminal-fg text-center"
+              style={{ width: `${colWidth * 0.6}rem` }}
+            >
+              {formatScore(ps.score, 1)}
             </span>
-            <span className="text-terminal-muted text-center w-6">
-              {periodScores.awayErrors ?? "-"}
+          ))}
+          {showCompact && maxPeriods > 9 && (
+            <span className="text-terminal-muted text-center px-1">...</span>
+          )}
+          {showTotalColumn && (
+            <span className="text-terminal-fg font-bold text-center w-8">
+              {periodScores.away.reduce((sum, ps) => sum + ps.score, 0)}
             </span>
-          </>
-        )}
+          )}
+          {isMLB && (
+            <>
+              <span className="text-terminal-muted text-center w-6">
+                {periodScores.awayHits ?? "-"}
+              </span>
+              <span className="text-terminal-muted text-center w-6">
+                {periodScores.awayErrors ?? "-"}
+              </span>
+            </>
+          )}
+        </div>
+        {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
       </div>
 
       {/* Home team row */}
-      <div className="flex">
-        <span className="w-10 text-terminal-fg truncate">{homeAbbr}</span>
-        {periodScores.home.slice(0, showCompact ? 9 : undefined).map((ps) => (
-          <span
-            key={`home-${ps.period}`}
-            className="text-terminal-fg text-center"
-            style={{ width: `${colWidth * 0.6}rem` }}
-          >
-            {formatScore(ps.score, 1)}
-          </span>
-        ))}
-        {showCompact && maxPeriods > 9 && (
-          <span className="text-terminal-muted text-center px-1">...</span>
-        )}
-        <span className="text-terminal-fg font-bold text-center w-8">
-          {periodScores.home.reduce((sum, ps) => sum + ps.score, 0)}
-        </span>
-        {isMLB && (
-          <>
-            <span className="text-terminal-muted text-center w-6">
-              {periodScores.homeHits ?? "-"}
+      <div className="flex items-center">
+        {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
+        <div className="flex-1 flex items-center px-2 py-0.5">
+          <span className="w-10 text-terminal-fg truncate">{homeAbbr}</span>
+          {periodScores.home.slice(0, showCompact ? 9 : undefined).map((ps) => (
+            <span
+              key={`home-${ps.period}`}
+              className="text-terminal-fg text-center"
+              style={{ width: `${colWidth * 0.6}rem` }}
+            >
+              {formatScore(ps.score, 1)}
             </span>
-            <span className="text-terminal-muted text-center w-6">
-              {periodScores.homeErrors ?? "-"}
+          ))}
+          {showCompact && maxPeriods > 9 && (
+            <span className="text-terminal-muted text-center px-1">...</span>
+          )}
+          {showTotalColumn && (
+            <span className="text-terminal-fg font-bold text-center w-8">
+              {periodScores.home.reduce((sum, ps) => sum + ps.score, 0)}
             </span>
-          </>
-        )}
+          )}
+          {isMLB && (
+            <>
+              <span className="text-terminal-muted text-center w-6">
+                {periodScores.homeHits ?? "-"}
+              </span>
+              <span className="text-terminal-muted text-center w-6">
+                {periodScores.homeErrors ?? "-"}
+              </span>
+            </>
+          )}
+        </div>
+        {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
       </div>
     </div>
   );
@@ -181,7 +205,7 @@ function CompactPeriodScores({
 /**
  * Period scores component for displaying period/quarter/inning breakdown
  */
-export function PeriodScores({ game, borderClass }: PeriodScoresProps) {
+export function PeriodScores({ game, borderClass, sideChar }: PeriodScoresProps) {
   const { periodScores, league, homeTeam, awayTeam } = game;
 
   // Don't render if no period scores available
@@ -196,6 +220,7 @@ export function PeriodScores({ game, borderClass }: PeriodScoresProps) {
       homeAbbr={homeTeam.abbreviation}
       awayAbbr={awayTeam.abbreviation}
       borderClass={borderClass}
+      sideChar={sideChar}
     />
   );
 }
