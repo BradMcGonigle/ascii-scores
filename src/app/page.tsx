@@ -93,11 +93,11 @@ export default function HomePage() {
                   >
                     <div className={`retro-card p-6 transition-all duration-300 ${LEAGUE_COLORS[leagueId]}`}>
                       {/* ASCII block letter league name */}
-                      <div className="flex items-center justify-center py-4">
+                      <div className="flex items-center justify-center py-6">
                         <AsciiSportIcon
                           league={leagueId}
                           variant="large"
-                          className="text-[10px] leading-none group-hover:text-glow transition-all"
+                          className="text-2xl sm:text-3xl leading-tight group-hover:text-glow transition-all"
                         />
                       </div>
 
