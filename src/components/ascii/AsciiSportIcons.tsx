@@ -253,7 +253,7 @@ export function AsciiSportIcon({
 
   return (
     <pre
-      className={`font-mono text-terminal-fg leading-none ${className}`}
+      className={`font-mono text-terminal-fg whitespace-pre ${className}`}
       aria-label={`${league.toUpperCase()} icon`}
     >
       {icon.trim()}

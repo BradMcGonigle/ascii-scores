@@ -99,7 +99,7 @@ export default function HomePage() {
                         <AsciiSportIcon
                           league={leagueId}
                           variant="large"
-                          className="text-[10px] leading-none group-hover:text-glow transition-all"
+                          className="text-[11px] leading-[1.1] group-hover:text-glow transition-all"
                         />
                       </div>
 
