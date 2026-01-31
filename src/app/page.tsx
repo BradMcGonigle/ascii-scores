@@ -55,7 +55,7 @@ export default function HomePage() {
               </span>
               <span className="text-terminal-border">│</span>
               <span>
-                <span className="text-terminal-cyan">◆</span> 6 LEAGUES ACTIVE
+                <span className="text-terminal-cyan">◆</span> 7 LEAGUES ACTIVE
               </span>
               <span className="text-terminal-border">│</span>
               <span>
@@ -198,10 +198,10 @@ export default function HomePage() {
                   ┏━━━━━━━━━━━━━━━━━━━━━━━━━┓
                 </div>
                 <div className="text-terminal-cyan text-2xl mb-3">
-                  [ 6 LEAGUES ]
+                  [ 7 LEAGUES ]
                 </div>
                 <div className="text-terminal-cyan text-xs mb-4">
-                  ◇ NHL ◇ NFL ◇ NBA ◇ MLB ◇ MLS ◇ F1 ◇
+                  ◇ NHL ◇ NFL ◇ NBA ◇ MLB ◇ MLS ◇ F1 ◇ PGA ◇
                 </div>
                 <p className="text-terminal-muted text-xs leading-relaxed">
                   Complete coverage of major sports with dedicated scoreboards and standings
@@ -218,7 +218,7 @@ export default function HomePage() {
             <div className="inline-block text-terminal-muted text-xs">
               <span className="text-terminal-green">$</span>
               <span className="ml-2">./select-league.sh --league=</span>
-              <span className="text-terminal-cyan">[nhl|nfl|nba|mlb|mls|f1]</span>
+              <span className="text-terminal-cyan">[nhl|nfl|nba|mlb|mls|f1|pga]</span>
               <span className="text-terminal-green animate-pulse ml-1">█</span>
             </div>
           </div>
