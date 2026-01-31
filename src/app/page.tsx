@@ -82,7 +82,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {LEAGUE_ORDER.map((leagueId) => {
                 const league = LEAGUES[leagueId];
                 return (
@@ -92,31 +92,33 @@ export default function HomePage() {
                     className="group font-mono text-center"
                   >
                     <div className={`retro-card p-4 transition-all duration-300 ${LEAGUE_COLORS[leagueId]}`}>
-                      {/* Top border */}
-                      <div className="text-terminal-border group-hover:text-current transition-colors text-xs" aria-hidden="true">
-                        ╔═══════════╗
+                      {/* League name header */}
+                      <div className="text-terminal-border group-hover:text-current transition-colors text-xs mb-2" aria-hidden="true">
+                        ╔═══════════════════════╗
                       </div>
-
-                      {/* Sport icon */}
-                      <div className="py-2 text-2xl">
-                        <AsciiSportIcon league={leagueId} variant="compact" className="group-hover:text-glow transition-all" />
-                      </div>
-
-                      {/* League name with box */}
-                      <div className="text-xs text-terminal-border group-hover:text-current transition-colors" aria-hidden="true">
-                        ╠═══════════╣
-                      </div>
-                      <div className="py-2">
+                      <div className="flex items-center justify-center gap-2 mb-2">
                         <span className="text-terminal-border group-hover:text-current transition-colors" aria-hidden="true">║</span>
-                        <span className="text-xl font-bold text-terminal-fg px-2 group-hover:text-glow transition-all">
+                        <span className="text-lg font-bold text-terminal-fg group-hover:text-glow transition-all">
                           {league.name}
                         </span>
                         <span className="text-terminal-border group-hover:text-current transition-colors" aria-hidden="true">║</span>
                       </div>
+                      <div className="text-terminal-border group-hover:text-current transition-colors text-xs" aria-hidden="true">
+                        ╠═══════════════════════╣
+                      </div>
+
+                      {/* Sport icon - centered with fixed height */}
+                      <div className="min-h-[200px] flex items-center justify-center py-4">
+                        <AsciiSportIcon
+                          league={leagueId}
+                          variant="large"
+                          className="text-xs group-hover:text-glow transition-all"
+                        />
+                      </div>
 
                       {/* Bottom border */}
                       <div className="text-terminal-border group-hover:text-current transition-colors text-xs" aria-hidden="true">
-                        ╚═══════════╝
+                        ╚═══════════════════════╝
                       </div>
 
                       {/* Full name */}

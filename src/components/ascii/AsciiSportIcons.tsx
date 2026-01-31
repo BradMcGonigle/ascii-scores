@@ -61,6 +61,87 @@ const SPORT_ICONS_COMPACT: Record<League, string> = {
 };
 
 /**
+ * Large detailed ASCII art icons for homepage cards
+ */
+const SPORT_ICONS_LARGE: Record<League, string> = {
+  nhl: `
+            __
+           / /
+          / /
+         / /
+        / /
+       / /
+      /_/____
+     |______|
+        __
+       (__)`,
+  nfl: `
+      . _-"" ""-_ .
+    \` '\\\\--++++--//' \`
+   (    \`||      ||\`    )
+        .\\\\    //.
+         ' \`=..=' '`,
+  nba: `
+  ___________________
+ |___________________|
+  \\/\\/\\/\\/\\/\\/\\/\\/\\/\\/
+   \\/\\/\\/\\/\\/\\/\\/\\/\\/
+    \\/\\/\\/\\/\\/\\/\\/\\/
+     \\/\\/\\/\\/\\/\\/\\/
+      |\\/\\/\\/\\/\\/\\|
+      |\\/\\/\\/\\/\\/\\|
+      |\\/\\/\\/\\/\\/\\|`,
+  mlb: `
+        _.--._
+      .'  __  '.
+     / .c'  \`. \\
+    |  (    )  |
+    |   '--'   |
+     \\ ,____, /
+      '.____.'`,
+  mls: `
+           _____
+        ,-'|:::::'\`-.
+      ,':::|::::::::\`.>
+     /:::::|:::::;,-._\\
+    /::::::|::' / _____\\
+   /::  ___|  / /:::::::\\
+  |: ,-':::\\  \\ \\::::::::|
+  |:|:::::::| ,-. \\:' ::;/
+  |:\\::::::/ |:::|  \\::;/
+  |::\`:--'  /:::/ ,'::;'
+   \\:::\`--':::::\`-'::;'
+    \\::::::::::::::;'
+     \`.::::::::::,'
+       \`-::___:-'`,
+  f1: `
+   .===============.
+   |#| |#| |#| |#| |
+   | |#| |#| |#| |#|
+   |#| |#| |#| |#| |
+   | |#| |#| |#| |#|
+   |#| |#| |#| |#| |
+   '==============='
+          ||
+          ||
+          ||`,
+  pga: `
+     _. . . ._
+   .' .o'  o.' .
+  /o  o  .o'  o'\\
+ |'.o  'o.  o'.o|
+ |o.  o'  o  'o .|
+  \\ o  .o.'o'./
+   '._o__o_.'
+      \\   /
+       | |
+       | |
+       | |
+       | |
+        V`,
+};
+
+/**
  * ASCII art icons styled with box characters - large
  */
 const SPORT_ICONS_BOXED: Record<League, string> = {
@@ -123,7 +204,7 @@ const SPORT_ICONS_BOXED: Record<League, string> = {
 
 interface AsciiSportIconProps {
   league: League;
-  variant?: "default" | "compact" | "boxed";
+  variant?: "default" | "compact" | "boxed" | "large";
   className?: string;
 }
 
@@ -139,6 +220,7 @@ export function AsciiSportIcon({
     default: SPORT_ICONS,
     compact: SPORT_ICONS_COMPACT,
     boxed: SPORT_ICONS_BOXED,
+    large: SPORT_ICONS_LARGE,
   };
 
   const icon = icons[variant][league];
