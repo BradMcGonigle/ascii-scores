@@ -27,8 +27,7 @@ function formatStat(
 function formatNHLLiveStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  // Show shots on goal
-  const sog = formatStat(stats, "SOG", "SOG");
+  const sog = formatStat(stats, "shotsOnGoal", "SOG");
   if (sog) lines.push(sog);
 
   return lines;
@@ -40,8 +39,7 @@ function formatNHLLiveStats(stats: GameStatsType): string[] {
 function formatNHLFinalStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  // Show shots on goal
-  const sog = formatStat(stats, "SOG", "SOG");
+  const sog = formatStat(stats, "shotsOnGoal", "SOG");
   if (sog) lines.push(sog);
 
   return lines;
@@ -53,12 +51,10 @@ function formatNHLFinalStats(stats: GameStatsType): string[] {
 function formatNBALiveStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  // Show rebounds
-  const reb = formatStat(stats, "REB", "REB");
+  const reb = formatStat(stats, "rebounds", "REB");
   if (reb) lines.push(reb);
 
-  // Show fouls if available
-  const fouls = formatStat(stats, "FLS", "FLS") ?? formatStat(stats, "FOULS", "FLS");
+  const fouls = formatStat(stats, "fouls", "FLS");
   if (fouls) lines.push(fouls);
 
   return lines;
@@ -70,16 +66,13 @@ function formatNBALiveStats(stats: GameStatsType): string[] {
 function formatNBAFinalStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  // Show FG%
-  const fgPct = formatStat(stats, "FG%", "FG%");
+  const fgPct = formatStat(stats, "fieldGoalPct", "FG%");
   if (fgPct) lines.push(fgPct);
 
-  // Show turnovers (ESPN uses TOV for NBA turnovers)
-  const to = formatStat(stats, "TOV", "TO");
+  const to = formatStat(stats, "turnovers", "TO");
   if (to) lines.push(to);
 
-  // Show rebounds
-  const reb = formatStat(stats, "REB", "REB");
+  const reb = formatStat(stats, "rebounds", "REB");
   if (reb) lines.push(reb);
 
   return lines;
@@ -91,12 +84,10 @@ function formatNBAFinalStats(stats: GameStatsType): string[] {
 function formatNFLLiveStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  // Show total yards
-  const yds = formatStat(stats, "TYDS", "YDS");
+  const yds = formatStat(stats, "totalYards", "YDS");
   if (yds) lines.push(yds);
 
-  // Show turnovers
-  const to = formatStat(stats, "TO", "TO");
+  const to = formatStat(stats, "turnovers", "TO");
   if (to) lines.push(to);
 
   return lines;
@@ -108,16 +99,13 @@ function formatNFLLiveStats(stats: GameStatsType): string[] {
 function formatNFLFinalStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  // Show total yards
-  const yds = formatStat(stats, "TYDS", "YDS");
+  const yds = formatStat(stats, "totalYards", "YDS");
   if (yds) lines.push(yds);
 
-  // Show turnovers
-  const to = formatStat(stats, "TO", "TO");
+  const to = formatStat(stats, "turnovers", "TO");
   if (to) lines.push(to);
 
-  // Show possession time if available
-  const poss = formatStat(stats, "TOP", "TOP");
+  const poss = formatStat(stats, "possessionTime", "TOP");
   if (poss) lines.push(poss);
 
   return lines;
@@ -129,7 +117,7 @@ function formatNFLFinalStats(stats: GameStatsType): string[] {
 function formatMLBStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  const hits = formatStat(stats, "H", "H");
+  const hits = formatStat(stats, "hits", "H");
   if (hits) lines.push(hits);
 
   return lines;
@@ -141,7 +129,7 @@ function formatMLBStats(stats: GameStatsType): string[] {
 function formatMLSStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  const poss = formatStat(stats, "POSS", "POSS");
+  const poss = formatStat(stats, "possessionPct", "POSS");
   if (poss) lines.push(poss);
 
   return lines;

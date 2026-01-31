@@ -170,6 +170,7 @@ const LEAGUE_KEY_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
 
 /**
  * Extract key statistics from ESPN competitor
+ * Uses stat name as key for consistent access regardless of ESPN's abbreviations
  */
 function extractStats(
   statistics: ESPNStatistic[] | undefined,
@@ -182,7 +183,7 @@ function extractStats(
 
   for (const stat of statistics) {
     if (keyStats.includes(stat.name)) {
-      result[stat.abbreviation] = stat.displayValue;
+      result[stat.name] = stat.displayValue;
     }
   }
 
