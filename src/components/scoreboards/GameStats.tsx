@@ -69,11 +69,11 @@ function formatNBAFinalStats(stats: GameStatsType): string[] {
   const fgPct = formatStat(stats, "fieldGoalPct", "FG%");
   if (fgPct) lines.push(fgPct);
 
-  const to = formatStat(stats, "turnovers", "TO");
-  if (to) lines.push(to);
+  const ftPct = formatStat(stats, "freeThrowPct", "FT%");
+  if (ftPct) lines.push(ftPct);
 
-  const reb = formatStat(stats, "rebounds", "REB");
-  if (reb) lines.push(reb);
+  const threePct = formatStat(stats, "threePointFieldGoalPct", "3P%");
+  if (threePct) lines.push(threePct);
 
   return lines;
 }
@@ -162,6 +162,13 @@ function formatStatsDisplay(
 }
 
 /**
+ * Check if stats should use full-width layout
+ */
+function shouldUseFullWidthLayout(league: League, status: GameStatus): boolean {
+  return league === "nba" && status === "final";
+}
+
+/**
  * Game statistics component for displaying key stats
  */
 export function GameStats({ game }: GameStatsProps) {
@@ -176,6 +183,17 @@ export function GameStats({ game }: GameStatsProps) {
 
   if (statLines.length === 0) {
     return null;
+  }
+
+  // Use full-width evenly spaced layout for certain combinations
+  if (shouldUseFullWidthLayout(league, status)) {
+    return (
+      <div className="font-mono text-xs text-terminal-muted flex justify-between">
+        {statLines.map((stat) => (
+          <span key={stat}>{stat}</span>
+        ))}
+      </div>
+    );
   }
 
   return (
