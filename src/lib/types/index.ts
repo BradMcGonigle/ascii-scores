@@ -1,7 +1,7 @@
 /**
  * Supported leagues
  */
-export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "f1" | "pga";
+export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "ncaam" | "ncaaw" | "f1" | "pga";
 
 /**
  * Game status types
@@ -56,6 +56,8 @@ export interface Team {
   color?: string;
   /** Team record (e.g., "25-15") */
   record?: string;
+  /** Team ranking for college sports (e.g., 1-25 for top 25) */
+  rank?: number;
 }
 
 /**
@@ -280,6 +282,20 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Major League Soccer",
     color: "mls",
     sport: "soccer",
+  },
+  ncaam: {
+    id: "ncaam",
+    name: "NCAAM",
+    fullName: "NCAA Men's Basketball",
+    color: "ncaam",
+    sport: "basketball",
+  },
+  ncaaw: {
+    id: "ncaaw",
+    name: "NCAAW",
+    fullName: "NCAA Women's Basketball",
+    color: "ncaaw",
+    sport: "basketball",
   },
   f1: {
     id: "f1",

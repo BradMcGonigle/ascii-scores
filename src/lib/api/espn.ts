@@ -12,6 +12,8 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
   nba: "basketball/nba",
   mlb: "baseball/mlb",
   mls: "soccer/usa.1",
+  ncaam: "basketball/mens-college-basketball",
+  ncaaw: "basketball/womens-college-basketball",
 };
 
 /**
@@ -48,6 +50,10 @@ interface ESPNCompetitor {
   linescores?: ESPNLinescore[];
   statistics?: ESPNStatistic[];
   records?: ESPNRecord[];
+  /** College sports: team ranking (AP Top 25, etc.) */
+  curatedRank?: {
+    current: number;
+  };
   /** MLB-specific: hits */
   hits?: number;
   /** MLB-specific: errors */
@@ -114,6 +120,11 @@ function mapTeam(competitor: ESPNCompetitor): Team {
   const record = competitor.records?.find(r => r.type === "total")?.summary
     ?? competitor.records?.[0]?.summary;
 
+  // Get team ranking for college sports (only include if ranked, i.e., > 0)
+  const rank = competitor.curatedRank?.current && competitor.curatedRank.current > 0
+    ? competitor.curatedRank.current
+    : undefined;
+
   return {
     id: competitor.team.id,
     name: competitor.team.name,
@@ -122,6 +133,7 @@ function mapTeam(competitor: ESPNCompetitor): Team {
     logo: competitor.team.logo,
     color: competitor.team.color,
     record,
+    rank,
   };
 }
 
@@ -186,6 +198,8 @@ const LEAGUE_KEY_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
   nba: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
   mlb: ["hits", "strikeouts", "homeRuns"],
   mls: ["possessionPct", "shotsOnTarget", "saves"],
+  ncaam: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers"],
+  ncaaw: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers"],
 };
 
 /**
