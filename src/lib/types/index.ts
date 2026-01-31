@@ -286,14 +286,14 @@ export const LEAGUES: Record<League, LeagueConfig> = {
   ncaam: {
     id: "ncaam",
     name: "NCAAM",
-    fullName: "NCAA Men's Basketball",
+    fullName: "NCAA Men's Basketball Top 25",
     color: "ncaam",
     sport: "basketball",
   },
   ncaaw: {
     id: "ncaaw",
     name: "NCAAW",
-    fullName: "NCAA Women's Basketball",
+    fullName: "NCAA Women's Basketball Top 25",
     color: "ncaaw",
     sport: "basketball",
   },
