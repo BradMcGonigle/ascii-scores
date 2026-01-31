@@ -1,5 +1,5 @@
 import type { GolfLeaderboard, GolfPlayer, GolfTournament, GolfTournamentStatus } from "@/lib/types";
-import { padString, truncate } from "@/lib/utils/format";
+import { truncate } from "@/lib/utils/format";
 
 interface GolfLeaderboardProps {
   leaderboard: GolfLeaderboard;
@@ -8,6 +8,7 @@ interface GolfLeaderboardProps {
 interface GolfLeaderboardTableProps {
   tournament: GolfTournament;
   selectedRound: number;
+  isLiveView: boolean;
   lastUpdated: Date;
 }
 
@@ -113,6 +114,7 @@ function getRoundScoreClass(score: number | undefined, par: number = 72): string
 export function GolfLeaderboardTable({
   tournament,
   selectedRound,
+  isLiveView,
   lastUpdated,
 }: GolfLeaderboardTableProps) {
   const statusClass = getTournamentStatusClass(tournament.status);
@@ -121,46 +123,28 @@ export function GolfLeaderboardTable({
 
   // Determine how many round columns to show based on selection
   const completedRounds = Math.max(...tournament.players.map((p) => p.rounds.length), 0);
-  const showAllRounds = selectedRound === tournament.currentRound;
+
+  // Build venue string, hiding TBD
+  const venueText =
+    tournament.venue && tournament.venue !== "TBD"
+      ? `${tournament.venue}${tournament.location ? ` · ${tournament.location}` : ""}`
+      : tournament.location || null;
 
   return (
     <div className="overflow-x-auto">
       <div className="w-full">
         {/* Tournament header */}
-        <div className="mb-6">
-          <div className="text-terminal-border text-sm" aria-hidden="true">
-            ╔════════════════════════════════════════════════════════════════════════╗
+        <div className="mb-6 border border-terminal-border p-3">
+          <div className="text-terminal-fg font-bold text-center">
+            {tournament.name}
           </div>
-          <div className="text-sm">
-            <span className="text-terminal-border" aria-hidden="true">║ </span>
-            <span className="text-terminal-fg font-bold">
-              {padString(truncate(tournament.name, 72), 72, "center")}
-            </span>
-            <span className="text-terminal-border" aria-hidden="true"> ║</span>
-          </div>
-          <div className="text-sm">
-            <span className="text-terminal-border" aria-hidden="true">║ </span>
-            <span className="text-terminal-muted">
-              {padString(
-                truncate(
-                  `${tournament.venue}${tournament.location ? ` · ${tournament.location}` : ""}`,
-                  72
-                ),
-                72,
-                "center"
-              )}
-            </span>
-            <span className="text-terminal-border" aria-hidden="true"> ║</span>
-          </div>
-          <div className="text-sm">
-            <span className="text-terminal-border" aria-hidden="true">║ </span>
-            <span className={statusClass}>
-              {padString(statusText, 72, "center")}
-            </span>
-            <span className="text-terminal-border" aria-hidden="true"> ║</span>
-          </div>
-          <div className="text-terminal-border text-sm" aria-hidden="true">
-            ╚════════════════════════════════════════════════════════════════════════╝
+          {venueText && (
+            <div className="text-terminal-muted text-center text-sm">
+              {venueText}
+            </div>
+          )}
+          <div className={`${statusClass} text-center text-sm`}>
+            {statusText}
           </div>
         </div>
 
@@ -177,7 +161,7 @@ export function GolfLeaderboardTable({
             <span className="w-16 text-center border-r border-terminal-border" role="columnheader">
               TOTAL
             </span>
-            {showAllRounds ? (
+            {isLiveView ? (
               <>
                 <span className="w-14 text-center border-r border-terminal-border" role="columnheader">
                   TODAY
@@ -262,7 +246,7 @@ export function GolfLeaderboardTable({
                     <span aria-hidden="true">{player.scoreToPar}</span>
                   </span>
 
-                  {showAllRounds ? (
+                  {isLiveView ? (
                     <>
                       {/* Today's score */}
                       <span role="cell" className="w-14 text-center">
@@ -369,6 +353,7 @@ export function GolfLeaderboardDisplay({ leaderboard }: GolfLeaderboardProps) {
     <GolfLeaderboardTable
       tournament={tournament}
       selectedRound={tournament.currentRound ?? 1}
+      isLiveView={true}
       lastUpdated={leaderboard.lastUpdated}
     />
   );
