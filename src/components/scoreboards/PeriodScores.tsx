@@ -85,6 +85,9 @@ function CompactPeriodScores({
   const labels = getPeriodLabels(league, maxPeriods);
   const colWidth = getColumnWidth(league);
   const isMLB = league === "mlb";
+  const isMLS = league === "mls";
+  // Only show T (total) column for MLB (shows R/H/E) and MLS
+  const showTotalColumn = isMLB || isMLS;
 
   // For MLB, show compact format if too many innings
   const showCompact = isMLB && maxPeriods > 9;
@@ -106,7 +109,9 @@ function CompactPeriodScores({
         {showCompact && maxPeriods > 9 && (
           <span className="text-terminal-muted text-center px-1">...</span>
         )}
-        <span className="text-terminal-cyan text-center w-8">T</span>
+        {showTotalColumn && (
+          <span className="text-terminal-cyan text-center w-8">T</span>
+        )}
         {isMLB && (
           <>
             <span className="text-terminal-muted text-center w-6">H</span>
@@ -130,9 +135,11 @@ function CompactPeriodScores({
         {showCompact && maxPeriods > 9 && (
           <span className="text-terminal-muted text-center px-1">...</span>
         )}
-        <span className="text-terminal-fg font-bold text-center w-8">
-          {periodScores.away.reduce((sum, ps) => sum + ps.score, 0)}
-        </span>
+        {showTotalColumn && (
+          <span className="text-terminal-fg font-bold text-center w-8">
+            {periodScores.away.reduce((sum, ps) => sum + ps.score, 0)}
+          </span>
+        )}
         {isMLB && (
           <>
             <span className="text-terminal-muted text-center w-6">
@@ -160,9 +167,11 @@ function CompactPeriodScores({
         {showCompact && maxPeriods > 9 && (
           <span className="text-terminal-muted text-center px-1">...</span>
         )}
-        <span className="text-terminal-fg font-bold text-center w-8">
-          {periodScores.home.reduce((sum, ps) => sum + ps.score, 0)}
-        </span>
+        {showTotalColumn && (
+          <span className="text-terminal-fg font-bold text-center w-8">
+            {periodScores.home.reduce((sum, ps) => sum + ps.score, 0)}
+          </span>
+        )}
         {isMLB && (
           <>
             <span className="text-terminal-muted text-center w-6">

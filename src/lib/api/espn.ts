@@ -162,8 +162,8 @@ function mapPeriodScores(
  */
 const LEAGUE_KEY_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
   nhl: ["shotsOnGoal", "powerPlayGoals", "powerPlayOpportunities"],
-  nfl: ["totalYards", "turnovers", "passingYards", "rushingYards"],
-  nba: ["rebounds", "assists", "fieldGoalPct"],
+  nfl: ["totalYards", "turnovers", "passingYards", "rushingYards", "possessionTime"],
+  nba: ["rebounds", "assists", "fieldGoalPct", "turnovers", "fouls"],
   mlb: ["hits", "strikeouts", "homeRuns"],
   mls: ["possessionPct", "shotsOnTarget", "saves"],
 };

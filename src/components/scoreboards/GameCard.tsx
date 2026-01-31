@@ -1,6 +1,5 @@
 import type { Game, GameStatus } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
-import { LocalTime } from "@/components/LocalTime";
 import { GameStats } from "./GameStats";
 import { PeriodScores } from "./PeriodScores";
 
@@ -84,9 +83,11 @@ function TeamRow({
   sideClass: string;
   gameStatus: GameStatus;
 }) {
-  const textClass = isWinning ? "text-terminal-green font-bold" : "text-terminal-fg";
-  const scoreClass = isWinning ? "text-terminal-green font-bold text-glow" : "text-terminal-fg";
-  const showWinIndicator = isWinning && (gameStatus === "live" || gameStatus === "final");
+  // Only highlight winning team and show indicator for final games
+  const showWinning = isWinning && gameStatus === "final";
+  const textClass = showWinning ? "text-terminal-green font-bold" : "text-terminal-fg";
+  const scoreClass = showWinning ? "text-terminal-green font-bold text-glow" : "text-terminal-fg";
+  const showWinIndicator = showWinning;
 
   return (
     <div className="flex items-center">
@@ -219,8 +220,8 @@ export function GameCard({ game }: GameCardProps) {
         </>
       )}
 
-      {/* Time/Venue line for scheduled games */}
-      {game.status === "scheduled" && (
+      {/* Venue line for scheduled games */}
+      {game.status === "scheduled" && game.venue && (
         <>
           <BorderLine
             left={border.corners.ml}
@@ -230,10 +231,10 @@ export function GameCard({ game }: GameCardProps) {
           />
           <div className="flex items-center">
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
-            <div className="flex-1 px-2 py-0.5 text-terminal-muted">
+            <div className="flex-1 px-2 py-0.5 text-terminal-muted truncate">
               <span className="text-terminal-yellow mr-1" aria-hidden="true">◈</span>
-              <span className="sr-only">Scheduled start time: </span>
-              <LocalTime date={game.startTime} />
+              <span className="sr-only">Venue: </span>
+              <span className="text-xs">{game.venue}</span>
             </div>
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
           </div>

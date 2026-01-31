@@ -1,124 +1,190 @@
-import type { Game, GameStats as GameStatsType, League } from "@/lib/types";
+import type { Game, GameStats as GameStatsType, GameStatus, League } from "@/lib/types";
 
 interface GameStatsProps {
   game: Game;
 }
 
 /**
- * Get stat display labels for each league
+ * Helper to format a stat line
  */
-function getStatLabels(league: League): Record<string, string> {
-  switch (league) {
-    case "nhl":
-      return {
-        SOG: "SOG",
-        PPG: "PP",
-        PPO: "PP",
-      };
-    case "nfl":
-      return {
-        TYDS: "YDS",
-        TO: "TO",
-        PYDS: "PASS",
-        RYDS: "RUSH",
-      };
-    case "nba":
-      return {
-        REB: "REB",
-        AST: "AST",
-        "FG%": "FG%",
-      };
-    case "mlb":
-      return {
-        H: "H",
-        K: "K",
-        HR: "HR",
-      };
-    case "mls":
-      return {
-        POSS: "POSS",
-        SOT: "SOT",
-        SV: "SV",
-      };
-    default:
-      return {};
+function formatStat(
+  stats: GameStatsType,
+  key: string,
+  label: string,
+  defaultValue: string = "-"
+): string | null {
+  const awayVal = stats.away[key];
+  const homeVal = stats.home[key];
+  if (awayVal !== undefined || homeVal !== undefined) {
+    return `${label}: ${awayVal ?? defaultValue}-${homeVal ?? defaultValue}`;
   }
+  return null;
 }
 
 /**
- * Format stats for display - shows most meaningful 1-2 stats
+ * Format stats for live NHL games
+ */
+function formatNHLLiveStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  // Show shots on goal
+  const sog = formatStat(stats, "SOG", "SOG");
+  if (sog) lines.push(sog);
+
+  return lines;
+}
+
+/**
+ * Format stats for final NHL games
+ */
+function formatNHLFinalStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  // Show shots on goal
+  const sog = formatStat(stats, "SOG", "SOG");
+  if (sog) lines.push(sog);
+
+  return lines;
+}
+
+/**
+ * Format stats for live NBA games
+ */
+function formatNBALiveStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  // Show rebounds
+  const reb = formatStat(stats, "REB", "REB");
+  if (reb) lines.push(reb);
+
+  // Show fouls if available
+  const fouls = formatStat(stats, "FLS", "FLS") ?? formatStat(stats, "FOULS", "FLS");
+  if (fouls) lines.push(fouls);
+
+  return lines;
+}
+
+/**
+ * Format stats for final NBA games
+ */
+function formatNBAFinalStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  // Show FG%
+  const fgPct = formatStat(stats, "FG%", "FG%");
+  if (fgPct) lines.push(fgPct);
+
+  // Show turnovers
+  const to = formatStat(stats, "TO", "TO", "0");
+  if (to) lines.push(to);
+
+  // Show rebounds
+  const reb = formatStat(stats, "REB", "REB");
+  if (reb) lines.push(reb);
+
+  return lines;
+}
+
+/**
+ * Format stats for live NFL games
+ */
+function formatNFLLiveStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  // Show total yards
+  const yds = formatStat(stats, "TYDS", "YDS") ?? formatStat(stats, "YDS", "YDS");
+  if (yds) lines.push(yds);
+
+  // Show turnovers
+  const to = formatStat(stats, "TO", "TO", "0");
+  if (to) lines.push(to);
+
+  return lines;
+}
+
+/**
+ * Format stats for final NFL games
+ */
+function formatNFLFinalStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  // Show total yards
+  const yds = formatStat(stats, "TYDS", "YDS") ?? formatStat(stats, "YDS", "YDS");
+  if (yds) lines.push(yds);
+
+  // Show turnovers
+  const to = formatStat(stats, "TO", "TO", "0");
+  if (to) lines.push(to);
+
+  // Show possession time if available
+  const poss = formatStat(stats, "TOP", "TOP") ?? formatStat(stats, "POSS", "TOP");
+  if (poss) lines.push(poss);
+
+  return lines;
+}
+
+/**
+ * Format stats for MLB games
+ */
+function formatMLBStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const hits = formatStat(stats, "H", "H");
+  if (hits) lines.push(hits);
+
+  return lines;
+}
+
+/**
+ * Format stats for MLS games
+ */
+function formatMLSStats(stats: GameStatsType): string[] {
+  const lines: string[] = [];
+
+  const poss = formatStat(stats, "POSS", "POSS");
+  if (poss) lines.push(poss);
+
+  return lines;
+}
+
+/**
+ * Format stats for display based on league and game status
  */
 function formatStatsDisplay(
   stats: GameStatsType,
-  league: League
+  league: League,
+  status: GameStatus
 ): string[] {
-  const labels = getStatLabels(league);
-  const statKeys = Object.keys(labels);
-  const lines: string[] = [];
+  const isFinal = status === "final";
 
-  // For NHL, show shots and power play in a nice format
-  if (league === "nhl") {
-    const awaySog = stats.away["SOG"] ?? "-";
-    const homeSog = stats.home["SOG"] ?? "-";
-    if (awaySog !== "-" || homeSog !== "-") {
-      lines.push(`SOG: ${awaySog}-${homeSog}`);
-    }
+  switch (league) {
+    case "nhl":
+      return isFinal ? formatNHLFinalStats(stats) : formatNHLLiveStats(stats);
+    case "nba":
+      return isFinal ? formatNBAFinalStats(stats) : formatNBALiveStats(stats);
+    case "nfl":
+      return isFinal ? formatNFLFinalStats(stats) : formatNFLLiveStats(stats);
+    case "mlb":
+      return formatMLBStats(stats);
+    case "mls":
+      return formatMLSStats(stats);
+    default:
+      return [];
   }
-  // For NFL, show total yards
-  else if (league === "nfl") {
-    const awayYds = stats.away["TYDS"] ?? stats.away["YDS"];
-    const homeYds = stats.home["TYDS"] ?? stats.home["YDS"];
-    if (awayYds || homeYds) {
-      lines.push(`YDS: ${awayYds ?? "-"}-${homeYds ?? "-"}`);
-    }
-    const awayTo = stats.away["TO"];
-    const homeTo = stats.home["TO"];
-    if (awayTo || homeTo) {
-      lines.push(`TO: ${awayTo ?? "0"}-${homeTo ?? "0"}`);
-    }
-  }
-  // For NBA, show rebounds and assists
-  else if (league === "nba") {
-    const awayReb = stats.away["REB"];
-    const homeReb = stats.home["REB"];
-    if (awayReb || homeReb) {
-      lines.push(`REB: ${awayReb ?? "-"}-${homeReb ?? "-"}`);
-    }
-  }
-  // For MLS, show possession
-  else if (league === "mls") {
-    const awayPoss = stats.away["POSS"];
-    const homePoss = stats.home["POSS"];
-    if (awayPoss || homePoss) {
-      lines.push(`POSS: ${awayPoss ?? "-"}-${homePoss ?? "-"}`);
-    }
-  }
-  // Generic format for other stats
-  else {
-    for (const key of statKeys.slice(0, 2)) {
-      const awayVal = stats.away[key];
-      const homeVal = stats.home[key];
-      if (awayVal !== undefined || homeVal !== undefined) {
-        lines.push(`${labels[key]}: ${awayVal ?? "-"}-${homeVal ?? "-"}`);
-      }
-    }
-  }
-
-  return lines;
 }
 
 /**
  * Game statistics component for displaying key stats
  */
 export function GameStats({ game }: GameStatsProps) {
-  const { stats, league } = game;
+  const { stats, league, status } = game;
 
   // Don't render if no stats available
   if (!stats || (Object.keys(stats.home).length === 0 && Object.keys(stats.away).length === 0)) {
     return null;
   }
 
-  const statLines = formatStatsDisplay(stats, league);
+  const statLines = formatStatsDisplay(stats, league, status);
 
   if (statLines.length === 0) {
     return null;
