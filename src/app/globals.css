@@ -2,10 +2,9 @@
 
 /* ASCII Scores Theme Configuration */
 @theme {
-  /* Monospace font for ASCII art - uses Fira Code loaded via next/font */
-  --font-mono: var(--font-fira-code), "Fira Code", "JetBrains Mono", "SF Mono",
-    "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", "Menlo",
-    "Consolas", monospace;
+  /* Monospace font for ASCII art */
+  --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", "Inconsolata",
+    "Roboto Mono", "Source Code Pro", "Menlo", "Consolas", monospace;
 
   /* Terminal colors - these will be overridden by theme-specific values */
   --color-terminal-bg: var(--theme-bg);

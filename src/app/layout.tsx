@@ -1,15 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Fira_Code } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/layout";
 import { RootJsonLd } from "@/components/seo";
 import "./globals.css";
-
-const firaCode = Fira_Code({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-fira-code",
-});
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ascii-scores.vercel.app";
 const SITE_NAME = "ASCII Scores";
@@ -99,7 +92,7 @@ export default function RootLayout({
       <head>
         <RootJsonLd />
       </head>
-      <body className={`${firaCode.variable} min-h-screen bg-terminal-bg text-terminal-fg antialiased`}>
+      <body className="min-h-screen bg-terminal-bg text-terminal-fg antialiased">
         <ThemeProvider>
           <a href="#main-content" className="skip-to-content font-mono">
             [SKIP TO CONTENT]
