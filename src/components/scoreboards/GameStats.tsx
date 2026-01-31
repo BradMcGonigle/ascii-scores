@@ -74,8 +74,8 @@ function formatNBAFinalStats(stats: GameStatsType): string[] {
   const fgPct = formatStat(stats, "FG%", "FG%");
   if (fgPct) lines.push(fgPct);
 
-  // Show turnovers
-  const to = formatStat(stats, "TO", "TO", "0");
+  // Show turnovers (ESPN uses TOV for NBA turnovers)
+  const to = formatStat(stats, "TOV", "TO") ?? formatStat(stats, "TO", "TO", "0");
   if (to) lines.push(to);
 
   // Show rebounds
