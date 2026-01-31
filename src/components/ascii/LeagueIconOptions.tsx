@@ -7,47 +7,63 @@
 
 // NHL OPTIONS - Larger, more detailed
 export const NHL_OPTIONS = {
-  // Option A: Hockey Puck (detailed)
+  // Option A: Hockey Stick with Puck (detailed)
+  stickPuck: `
+              __
+             / /
+            / /
+           / /
+          / /
+         / /
+        /_/____
+       |______|
+          __
+         (__)`,
+
+  // Option B: Hockey Goal with Net
+  goalNet: `
+      .=============.
+     /|||||||||||||||\\
+    / ||||||||||||||| \\
+   |  |||||||||||||||  |
+   |  |||||||||||||||  |
+   |  |||||||||||||||  |
+   |__|_|_|_|_|_|_|_|__|
+   [__________________]`,
+
+  // Option C: Crossed Sticks with Puck
+  crossedSticks: `
+        \\       /
+         \\     /
+          \\   /
+           \\ /
+            X
+           / \\
+          /   \\
+         /_____\\
+           (O)`,
+
+  // Option D: Hockey Puck
   puck: `
-     ▄▄▄▄▄▄▄
-    ██═════██
-    ██═════██
-     ▀▀▀▀▀▀▀`,
-
-  // Option B: Hockey Stick with Puck
-  stick: `
-          ║
-         ╱║
-        ╱ ║
-       ╱══╝
-    ▄▄▄
-   █───█
-    ▀▀▀`,
-
-  // Option C: Goal Net with Puck
-  goal: `
-    ╔═══════╗
-    ║░░░░░░░║
-    ║░░░░░░░║
-    ╚══╦═╦══╝
-    ▄▄▄█─█▄▄▄
-       ▀─▀`,
-
-  // Option D: Crossed Sticks with Puck
-  crossed: `
-      ╲     ╱
-       ╲   ╱
-        ╲ ╱
-         ╳
-        ╱ ╲
-       ▄▄▄
-      █───█
-       ▀▀▀`,
+       .------.
+      /        \\
+     |   ____   |
+     |  |    |  |
+      \\  ----  /
+       '------'`,
 };
 
 // NFL OPTIONS - Larger, more detailed
 export const NFL_OPTIONS = {
-  // Option A: Football (detailed)
+  // Option A: Football with Laces (from user reference)
+  footballLaces: `
+        . _-"" ""-_ .
+      \` '\\\\--++++--//' \`
+     (    \`||      ||\`    )
+          .\\\\    //.
+           ' \`=..=' '`,
+
+  // Option B: Football (detailed)
   football: `
        ╱▔▔▔▔╲
       ╱══════╲
@@ -56,7 +72,7 @@ export const NFL_OPTIONS = {
       ╲══════╱
        ╲____╱`,
 
-  // Option B: Field Goal Posts
+  // Option C: Field Goal Posts
   fieldGoal: `
       │       │
       │       │
@@ -65,21 +81,23 @@ export const NFL_OPTIONS = {
           │
           │
          ▄█▄`,
-
-  // Option C: Football with Stitches
-  footballStitch: `
-        ▄▄▄▄
-      ╱──────╲
-     │ ┃┃┃┃┃┃ │
-     │ ───────│
-     │ ┃┃┃┃┃┃ │
-      ╲──────╱
-        ▀▀▀▀`,
 };
 
 // NBA OPTIONS - Larger, more detailed
 export const NBA_OPTIONS = {
-  // Option A: Basketball with Lines
+  // Option A: Basketball Hoop with Net (from user reference)
+  hoopNet: `
+    ___________________
+   |___________________|
+    \\/\\/\\/\\/\\/\\/\\/\\/\\/\\/
+     \\/\\/\\/\\/\\/\\/\\/\\/\\/
+      \\/\\/\\/\\/\\/\\/\\/\\/
+       \\/\\/\\/\\/\\/\\/\\/
+        |\\/\\/\\/\\/\\/\\|
+        |\\/\\/\\/\\/\\/\\|
+        |\\/\\/\\/\\/\\/\\|`,
+
+  // Option B: Basketball with Lines
   basketball: `
        ╭───────╮
       ╱    │    ╲
@@ -88,7 +106,7 @@ export const NBA_OPTIONS = {
       ╲────┼────╱
        ╰───┴───╯`,
 
-  // Option B: Basketball Hoop
+  // Option C: Basketball Hoop (simple)
   hoop: `
     ╔═════════╗
     ╠═════════╣
@@ -97,53 +115,74 @@ export const NBA_OPTIONS = {
     ╚══╧═══╧══╝
         ╲ ╱
          V`,
-
-  // Option C: Ball with Curved Lines
-  ballCurved: `
-       ╭─────╮
-      ╱╲     ╱╲
-     │  ╲   ╱  │
-     │───╲─╱───│
-     │   ╱ ╲   │
-      ╲╱     ╲╱
-       ╰─────╯`,
 };
 
 // MLB OPTIONS - Larger, more detailed
 export const MLB_OPTIONS = {
-  // Option A: Baseball with Seams
-  baseball: `
-       ╭─────╮
-      ╱ ╭─╮   ╲
-     │  ╰─╯    │
-     │    ╭─╮  │
-      ╲   ╰─╯ ╱
-       ╰─────╯`,
+  // Option A: Baseball with Stitching (detailed)
+  baseballStitch: `
+          _.--._
+        .'  __  '.
+       / .c'  \`. \\
+      |  (    )  |
+      |   '--'   |
+       \\ ,____, /
+        '.____.'`,
 
-  // Option B: Bat and Ball
-  batBall: `
-              ╱
-             ╱
-            ╱
-     ●════════
-            ╲
-             ╲
-              ╲`,
+  // Option B: Baseball Bat
+  bat: `
+                   _____
+              ____/     \\
+         ____/           |
+    ____/                |
+   |                     /
+    \\____           ____/
+         \\____  ___/
+              \\/`,
 
   // Option C: Diamond Field with Bases
   diamond: `
-          ◆
-        ╱   ╲
-       ◆     ◆
-        ╲   ╱
-          ◆
-       ╱═════╲
-      ╱       ╲`,
+            ◇
+          /   \\
+         /     \\
+        ◇       ◇
+         \\     /
+          \\   /
+            ◇
+         /     \\
+        /  HOME  \\`,
+
+  // Option D: Baseball Glove with Ball
+  glove: `
+       ,---.  O
+      /     \\(_)
+     |       |
+     |       |
+      \\     /
+       \\   /
+        '-'`,
 };
 
 // MLS OPTIONS - Larger, more detailed
 export const MLS_OPTIONS = {
-  // Option A: Soccer Ball with Pentagons
+  // Option A: Detailed Soccer Ball with Hexagons (from user reference)
+  soccerDetailed: `
+             _____
+          ,-'|:::::'\`-.
+        ,':::|::::::::\`.>
+       /:::::|:::::;,-._\\
+      /::::::|::' / _____\\
+     /::  ___|  / /:::::::\\
+    |: ,-':::\\  \\ \\::::::::|
+    |:|:::::::| ,-. \\:' ::;/
+    |:\\::::::/ |:::|  \\::;/
+    |::\`:--'  /:::/ ,'::;'
+     \\:::\`--':::::\`-'::;'
+      \\::::::::::::::;'
+       \`.::::::::::,'
+         \`-::___:-'`,
+
+  // Option B: Soccer Ball with Pentagons
   soccerBall: `
        ╭─────╮
       ╱ ▓▓▓▓▓ ╲
@@ -151,16 +190,6 @@ export const MLS_OPTIONS = {
      │  ▓▓▓▓▓  │
      │▓▓     ▓▓│
       ╲ ▓▓▓▓▓ ╱
-       ╰─────╯`,
-
-  // Option B: Hexagon Pattern Ball
-  hexBall: `
-       ╭─────╮
-      ╱╲ ╱ ╲ ╱╲
-     │  ╳   ╳  │
-     │ ╱ ╲ ╱ ╲ │
-     │╱   ╳   ╲│
-      ╲ ╱ ╲ ╱ ╲╱
        ╰─────╯`,
 
   // Option C: Goal with Ball
@@ -174,54 +203,66 @@ export const MLS_OPTIONS = {
 
 // F1 OPTIONS - Larger, more detailed
 export const F1_OPTIONS = {
-  // Option A: Race Car Top View
-  carTop: `
-        ▄███▄
-       █═════█
-      ██═════██
-     █═●═════●═█
-      ▀▀▀▀▀▀▀▀▀`,
-
-  // Option B: Checkered Flag
-  flag: `
-     ▄▀▀▀▀▀▀▀▀▄
-     █▓░▓░▓░▓░█
-     █░▓░▓░▓░▓█
-     █▓░▓░▓░▓░█
-     ▀▀▀▀█▀▀▀▀▀
-         █
-         █`,
-
-  // Option C: Car Side View
+  // Option A: F1 Race Car Side View (detailed)
   carSide: `
-         ▄▄▄▄▄
-        ╱▓▓▓▓▓╲▄▄
-     ▄▄╱───────────╗
-     ▀●▀▀▀▀▀▀▀▀▀▀●▀`,
+             ___________
+            /   ___     \\__
+    _______/   /   \\       \\
+   |  __      |  O  |       |
+   |_/  \\______|___|_______/
+     \\O/             \\O/`,
 
-  // Option D: Steering Wheel
+  // Option B: Checkered Flag (detailed)
+  checkeredFlag: `
+     .===============.
+     |#| |#| |#| |#| |
+     | |#| |#| |#| |#|
+     |#| |#| |#| |#| |
+     | |#| |#| |#| |#|
+     |#| |#| |#| |#| |
+     '==============='
+            ||
+            ||
+            ||`,
+
+  // Option C: Racing Helmet
+  helmet: `
+        ,-------.
+       /  _____  \\
+      |  |     |  |
+      |  |_____|  |
+       \\  _____  /
+        '-------'
+           \\_/`,
+
+  // Option D: Steering Wheel (detailed)
   wheel: `
-      ╭───────╮
-     ╱    │    ╲
-    │     │     │
-    │─────●─────│
-    │           │
-     ╲         ╱
-      ╰───────╯`,
+        .-------.
+       /    |    \\
+      |     |     |
+      |-----+-----|
+      |     |     |
+       \\    |    /
+        '-------'`,
 };
 
 // PGA OPTIONS - Larger, more detailed
 export const PGA_OPTIONS = {
-  // Option A: Ball on Tee
-  ballTee: `
-         ●●
-        ●  ●
-        ●  ●
-         ●●
-        ─┼─
-         │
-         │
-        ═╧═`,
+  // Option A: Golf Ball on Tee with Dimples (from user reference)
+  ballOnTee: `
+       _. . . ._
+     .' .o'  o.' .
+    /o  o  .o'  o'\\
+   |'.o  'o.  o'.o|
+   |o.  o'  o  'o .|
+    \\ o  .o.'o'./
+     '._o__o_.'
+        \\   /
+         | |
+         | |
+         | |
+         | |
+          V`,
 
   // Option B: Flag in Hole
   flagHole: `
