@@ -96,11 +96,11 @@ function CompactPeriodScores({
   const showCompact = isMLB && maxPeriods > 9;
 
   return (
-    <div className="font-mono text-xs overflow-x-auto">
+    <div className="font-mono text-xs">
       {/* Header row */}
       <div className="flex items-center">
         {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
-        <div className="flex flex-1 px-2">
+        <div className="flex-1 flex items-center px-2 py-0.5">
           <span className="w-10 text-terminal-muted" />
           {labels.slice(0, showCompact ? 9 : undefined).map((label) => (
             <span
@@ -130,7 +130,7 @@ function CompactPeriodScores({
       {/* Away team row */}
       <div className="flex items-center">
         {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
-        <div className="flex flex-1 px-2">
+        <div className="flex-1 flex items-center px-2 py-0.5">
           <span className="w-10 text-terminal-fg truncate">{awayAbbr}</span>
           {periodScores.away.slice(0, showCompact ? 9 : undefined).map((ps) => (
             <span
@@ -166,7 +166,7 @@ function CompactPeriodScores({
       {/* Home team row */}
       <div className="flex items-center">
         {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
-        <div className="flex flex-1 px-2">
+        <div className="flex-1 flex items-center px-2 py-0.5">
           <span className="w-10 text-terminal-fg truncate">{homeAbbr}</span>
           {periodScores.home.slice(0, showCompact ? 9 : undefined).map((ps) => (
             <span
