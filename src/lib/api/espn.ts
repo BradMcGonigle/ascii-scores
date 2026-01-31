@@ -197,8 +197,8 @@ const LEAGUE_KEY_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
   nba: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
   mlb: ["hits", "strikeouts", "homeRuns"],
   mls: ["possessionPct", "shotsOnTarget", "saves"],
-  ncaam: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers"],
-  ncaaw: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers"],
+  ncaam: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
+  ncaaw: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
 };
 
 /**
