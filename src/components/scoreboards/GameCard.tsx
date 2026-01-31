@@ -70,6 +70,7 @@ function TeamRow({
   team,
   teamFullName,
   record,
+  rank,
   score,
   isWinning,
   side,
@@ -79,6 +80,7 @@ function TeamRow({
   team: string;
   teamFullName: string;
   record?: string;
+  rank?: number;
   score: number;
   isWinning: boolean;
   side: string;
@@ -96,8 +98,11 @@ function TeamRow({
       <span className={sideClass} aria-hidden="true">{side}</span>
       <div className="flex-1 flex items-center justify-between px-2 py-0.5">
         <span className={textClass}>
-          <span className="sr-only">{teamFullName}</span>
-          <span aria-hidden="true">{team}</span>
+          <span className="sr-only">{rank ? `#${rank} ` : ""}{teamFullName}</span>
+          <span aria-hidden="true">
+            {rank && <span className="text-terminal-yellow text-xs">{rank} </span>}
+            {team}
+          </span>
           {record && (
             <span className="text-terminal-muted text-xs ml-2" aria-label={`Record: ${record}`}>
               ({record})
@@ -172,6 +177,7 @@ export function GameCard({ game }: GameCardProps) {
         team={game.awayTeam.abbreviation}
         teamFullName={game.awayTeam.displayName}
         record={game.awayTeam.record}
+        rank={game.awayTeam.rank}
         score={game.awayScore}
         isWinning={game.awayScore > game.homeScore}
         side={border.side}
@@ -184,6 +190,7 @@ export function GameCard({ game }: GameCardProps) {
         team={game.homeTeam.abbreviation}
         teamFullName={game.homeTeam.displayName}
         record={game.homeTeam.record}
+        rank={game.homeTeam.rank}
         score={game.homeScore}
         isWinning={game.homeScore > game.awayScore}
         side={border.side}

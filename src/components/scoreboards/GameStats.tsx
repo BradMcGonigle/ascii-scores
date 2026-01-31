@@ -180,6 +180,8 @@ function getStatsData(
     case "nhl":
       return isFinal ? getNHLFinalStats(stats) : getNHLLiveStats(stats);
     case "nba":
+    case "ncaam":
+    case "ncaaw":
       return isFinal ? getNBAFinalStats(stats) : getNBALiveStats(stats);
     case "nfl":
       return isFinal ? getNFLFinalStats(stats) : getNFLLiveStats(stats);
@@ -197,7 +199,7 @@ function getStatsData(
  */
 function shouldUseFullWidthLayout(league: League, status: GameStatus): boolean {
   if (status !== "live" && status !== "final") return false;
-  return league === "nba" || league === "nhl";
+  return league === "nba" || league === "nhl" || league === "ncaam" || league === "ncaaw";
 }
 
 /**

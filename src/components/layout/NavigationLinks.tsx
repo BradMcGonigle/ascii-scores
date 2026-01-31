@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LEAGUES, type League } from "@/lib/types";
 
-const LEAGUE_ORDER: League[] = ["nhl", "nfl", "nba", "mlb", "mls", "f1", "pga"];
+const LEAGUE_ORDER: League[] = ["nhl", "nfl", "nba", "mlb", "mls", "ncaam", "ncaaw", "f1", "pga"];
 
 interface NavigationLinksProps {
   activeLeague?: string;
