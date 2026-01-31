@@ -1,5 +1,6 @@
 import type { Game, GameStatus } from "@/lib/types";
-import { formatTime, getStatusClass, getStatusText } from "@/lib/utils/format";
+import { getStatusClass, getStatusText } from "@/lib/utils/format";
+import { LocalTime } from "@/components/LocalTime";
 import { GameStats } from "./GameStats";
 import { PeriodScores } from "./PeriodScores";
 
@@ -232,7 +233,7 @@ export function GameCard({ game }: GameCardProps) {
             <div className="flex-1 px-2 py-0.5 text-terminal-muted">
               <span className="text-terminal-yellow mr-1" aria-hidden="true">◈</span>
               <span className="sr-only">Scheduled start time: </span>
-              {formatTime(game.startTime)}
+              <LocalTime date={game.startTime} />
             </div>
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
           </div>
