@@ -1,4 +1,5 @@
 import type { Game, League, PeriodScores as PeriodScoresType } from "@/lib/types";
+import { getStatFullName, getPeriodFullName } from "@/lib/stats/definitions";
 
 interface PeriodScoresProps {
   game: Game;
@@ -102,25 +103,39 @@ function CompactPeriodScores({
         {sideChar && <span className={borderClass} aria-hidden="true">{sideChar}</span>}
         <div className="flex-1 flex items-center px-2 py-0.5">
           <span className="w-10 text-terminal-muted" />
-          {labels.slice(0, showCompact ? 9 : undefined).map((label) => (
-            <span
-              key={`header-${label}`}
-              className="text-terminal-muted text-center"
-              style={{ width: `${colWidth * 0.6}rem` }}
-            >
-              {label}
-            </span>
-          ))}
+          {labels.slice(0, showCompact ? 9 : undefined).map((label, index) => {
+            const fullName = getPeriodFullName(league, index + 1, label);
+            return (
+              <abbr
+                key={`header-${label}`}
+                title={fullName}
+                className="text-terminal-muted text-center no-underline"
+                style={{ width: `${colWidth * 0.6}rem` }}
+              >
+                <span className="sr-only">{fullName}</span>
+                {label}
+              </abbr>
+            );
+          })}
           {showCompact && maxPeriods > 9 && (
             <span className="text-terminal-muted text-center px-1">...</span>
           )}
           {showTotalColumn && (
-            <span className="text-terminal-cyan text-center w-8">T</span>
+            <abbr title={getStatFullName("T")} className="text-terminal-cyan text-center w-8 no-underline">
+              <span className="sr-only">{getStatFullName("T")}</span>
+              T
+            </abbr>
           )}
           {isMLB && (
             <>
-              <span className="text-terminal-muted text-center w-6">H</span>
-              <span className="text-terminal-muted text-center w-6">E</span>
+              <abbr title={getStatFullName("H")} className="text-terminal-muted text-center w-6 no-underline">
+                <span className="sr-only">{getStatFullName("H")}</span>
+                H
+              </abbr>
+              <abbr title={getStatFullName("E")} className="text-terminal-muted text-center w-6 no-underline">
+                <span className="sr-only">{getStatFullName("E")}</span>
+                E
+              </abbr>
             </>
           )}
         </div>
