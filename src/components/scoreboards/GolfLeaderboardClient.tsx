@@ -107,6 +107,7 @@ export function GolfLeaderboardClient({ leaderboard }: GolfLeaderboardClientProp
         <GolfLeaderboardTable
           tournament={tournament}
           selectedRound={displayRound}
+          isLiveView={selectedRound === null}
           lastUpdated={leaderboard.lastUpdated}
         />
       </div>
