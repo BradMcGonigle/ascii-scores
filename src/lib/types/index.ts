@@ -54,6 +54,8 @@ export interface Team {
   displayName: string;
   logo?: string;
   color?: string;
+  /** Team record (e.g., "25-15") */
+  record?: string;
 }
 
 /**

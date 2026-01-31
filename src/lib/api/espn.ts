@@ -27,6 +27,12 @@ interface ESPNStatistic {
   displayValue: string;
 }
 
+interface ESPNRecord {
+  name: string;
+  type: string;
+  summary: string;
+}
+
 interface ESPNCompetitor {
   id: string;
   team: {
@@ -41,6 +47,7 @@ interface ESPNCompetitor {
   homeAway: "home" | "away";
   linescores?: ESPNLinescore[];
   statistics?: ESPNStatistic[];
+  records?: ESPNRecord[];
   /** MLB-specific: hits */
   hits?: number;
   /** MLB-specific: errors */
@@ -103,6 +110,10 @@ function mapStatus(status: ESPNStatus): GameStatus {
  * Map ESPN competitor to our Team type
  */
 function mapTeam(competitor: ESPNCompetitor): Team {
+  // Get overall record (type: "total" or first record)
+  const record = competitor.records?.find(r => r.type === "total")?.summary
+    ?? competitor.records?.[0]?.summary;
+
   return {
     id: competitor.team.id,
     name: competitor.team.name,
@@ -110,6 +121,7 @@ function mapTeam(competitor: ESPNCompetitor): Team {
     displayName: competitor.team.displayName,
     logo: competitor.team.logo,
     color: competitor.team.color,
+    record,
   };
 }
 

@@ -69,6 +69,7 @@ function BorderLine({
 function TeamRow({
   team,
   teamFullName,
+  record,
   score,
   isWinning,
   side,
@@ -77,6 +78,7 @@ function TeamRow({
 }: {
   team: string;
   teamFullName: string;
+  record?: string;
   score: number;
   isWinning: boolean;
   side: string;
@@ -96,6 +98,11 @@ function TeamRow({
         <span className={textClass}>
           <span className="sr-only">{teamFullName}</span>
           <span aria-hidden="true">{team}</span>
+          {record && (
+            <span className="text-terminal-muted text-xs ml-2" aria-label={`Record: ${record}`}>
+              ({record})
+            </span>
+          )}
         </span>
         <div className="flex items-center gap-1">
           <span className={scoreClass}>{score}</span>
@@ -164,6 +171,7 @@ export function GameCard({ game }: GameCardProps) {
       <TeamRow
         team={game.awayTeam.abbreviation}
         teamFullName={game.awayTeam.displayName}
+        record={game.awayTeam.record}
         score={game.awayScore}
         isWinning={game.awayScore > game.homeScore}
         side={border.side}
@@ -175,6 +183,7 @@ export function GameCard({ game }: GameCardProps) {
       <TeamRow
         team={game.homeTeam.abbreviation}
         teamFullName={game.homeTeam.displayName}
+        record={game.homeTeam.record}
         score={game.homeScore}
         isWinning={game.homeScore > game.awayScore}
         side={border.side}
