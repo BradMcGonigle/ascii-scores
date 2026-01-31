@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AsciiLogo, AsciiSportIcon } from "@/components/ascii";
 import { LEAGUES, type League } from "@/lib/types";
 
-const LEAGUE_ORDER: League[] = ["nhl", "nfl", "nba", "mlb", "mls", "f1", "pga"];
+const LEAGUE_ORDER: League[] = ["nhl", "nfl", "nba", "mlb", "mls", "ncaam", "ncaaw", "f1", "pga"];
 
 // League-specific accent colors for hover effects
 const LEAGUE_COLORS: Record<League, string> = {
@@ -13,6 +13,8 @@ const LEAGUE_COLORS: Record<League, string> = {
   nba: "group-hover:text-terminal-red group-hover:border-terminal-red",
   mlb: "group-hover:text-terminal-blue group-hover:border-terminal-blue",
   mls: "group-hover:text-terminal-green group-hover:border-terminal-green",
+  ncaam: "group-hover:text-terminal-yellow group-hover:border-terminal-yellow",
+  ncaaw: "group-hover:text-terminal-cyan group-hover:border-terminal-cyan",
   f1: "group-hover:text-terminal-red group-hover:border-terminal-red",
   pga: "group-hover:text-terminal-green group-hover:border-terminal-green",
 };
@@ -55,7 +57,7 @@ export default function HomePage() {
               </span>
               <span className="text-terminal-border">│</span>
               <span>
-                <span className="text-terminal-cyan">◆</span> 7 LEAGUES ACTIVE
+                <span className="text-terminal-cyan">◆</span> 9 LEAGUES ACTIVE
               </span>
               <span className="text-terminal-border">│</span>
               <span>
@@ -198,10 +200,10 @@ export default function HomePage() {
                   ┏━━━━━━━━━━━━━━━━━━━━━━━━━┓
                 </div>
                 <div className="text-terminal-cyan text-2xl mb-3">
-                  [ 7 LEAGUES ]
+                  [ 9 LEAGUES ]
                 </div>
                 <div className="text-terminal-cyan text-xs mb-4">
-                  ◇ NHL ◇ NFL ◇ NBA ◇ MLB ◇ MLS ◇ F1 ◇ PGA ◇
+                  ◇ NHL ◇ NFL ◇ NBA ◇ MLB ◇ MLS ◇ NCAAM ◇ NCAAW ◇ F1 ◇ PGA ◇
                 </div>
                 <p className="text-terminal-muted text-xs leading-relaxed">
                   Complete coverage of major sports with dedicated scoreboards and standings
@@ -218,7 +220,7 @@ export default function HomePage() {
             <div className="inline-block text-terminal-muted text-xs">
               <span className="text-terminal-green">$</span>
               <span className="ml-2">./select-league.sh --league=</span>
-              <span className="text-terminal-cyan">[nhl|nfl|nba|mlb|mls|f1|pga]</span>
+              <span className="text-terminal-cyan">[nhl|nfl|nba|mlb|mls|ncaam|ncaaw|f1|pga]</span>
               <span className="text-terminal-green animate-pulse ml-1">█</span>
             </div>
           </div>

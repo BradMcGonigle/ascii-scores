@@ -87,6 +87,16 @@ export const PERIOD_DEFINITIONS: Record<League, Record<number, string>> = {
     12: "12th Inning",
   },
   mls: {},
+  ncaam: {
+    1: "1st Half",
+    2: "2nd Half",
+  },
+  ncaaw: {
+    1: "1st Quarter",
+    2: "2nd Quarter",
+    3: "3rd Quarter",
+    4: "4th Quarter",
+  },
   f1: {},
   pga: {},
 };
