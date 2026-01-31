@@ -251,12 +251,17 @@ export function AsciiSportIcon({
     );
   }
 
+  // Pad all lines to equal length for consistent rendering
+  const lines = icon.trim().split('\n');
+  const maxLength = Math.max(...lines.map(line => line.length));
+  const paddedIcon = lines.map(line => line.padEnd(maxLength)).join('\n');
+
   return (
     <pre
       className={`font-mono text-terminal-fg whitespace-pre ${className}`}
       aria-label={`${league.toUpperCase()} icon`}
     >
-      {icon.trim()}
+      {paddedIcon}
     </pre>
   );
 }
