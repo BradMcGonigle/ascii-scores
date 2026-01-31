@@ -1,22 +1,38 @@
 import type { Game, GameStats as GameStatsType, GameStatus, League } from "@/lib/types";
+import { getStatFullName } from "@/lib/stats/definitions";
 
 interface GameStatsProps {
   game: Game;
 }
 
 /**
- * Helper to format a stat line
+ * Structured stat data for rendering
  */
-function formatStat(
+interface StatData {
+  key: string;
+  label: string;
+  awayValue: string;
+  homeValue: string;
+}
+
+/**
+ * Helper to create stat data object
+ */
+function createStatData(
   stats: GameStatsType,
   key: string,
   label: string,
   defaultValue: string = "-"
-): string | null {
+): StatData | null {
   const awayVal = stats.away[key];
   const homeVal = stats.home[key];
   if (awayVal !== undefined || homeVal !== undefined) {
-    return `${label}: ${awayVal ?? defaultValue}-${homeVal ?? defaultValue}`;
+    return {
+      key,
+      label,
+      awayValue: String(awayVal ?? defaultValue),
+      homeValue: String(homeVal ?? defaultValue),
+    };
   }
   return null;
 }
@@ -24,153 +40,153 @@ function formatStat(
 /**
  * Format stats for live NHL games
  */
-function formatNHLLiveStats(stats: GameStatsType): string[] {
-  const lines: string[] = [];
+function getNHLLiveStats(stats: GameStatsType): StatData[] {
+  const result: StatData[] = [];
 
-  const goals = formatStat(stats, "goals", "G");
-  if (goals) lines.push(goals);
+  const goals = createStatData(stats, "goals", "G");
+  if (goals) result.push(goals);
 
-  const assists = formatStat(stats, "assists", "A");
-  if (assists) lines.push(assists);
+  const assists = createStatData(stats, "assists", "A");
+  if (assists) result.push(assists);
 
-  const savePct = formatStat(stats, "savePct", "SV%");
-  if (savePct) lines.push(savePct);
+  const savePct = createStatData(stats, "savePct", "SV%");
+  if (savePct) result.push(savePct);
 
-  return lines;
+  return result;
 }
 
 /**
  * Format stats for final NHL games
  */
-function formatNHLFinalStats(stats: GameStatsType): string[] {
-  const lines: string[] = [];
+function getNHLFinalStats(stats: GameStatsType): StatData[] {
+  const result: StatData[] = [];
 
-  const goals = formatStat(stats, "goals", "G");
-  if (goals) lines.push(goals);
+  const goals = createStatData(stats, "goals", "G");
+  if (goals) result.push(goals);
 
-  const assists = formatStat(stats, "assists", "A");
-  if (assists) lines.push(assists);
+  const assists = createStatData(stats, "assists", "A");
+  if (assists) result.push(assists);
 
-  const savePct = formatStat(stats, "savePct", "SV%");
-  if (savePct) lines.push(savePct);
+  const savePct = createStatData(stats, "savePct", "SV%");
+  if (savePct) result.push(savePct);
 
-  return lines;
+  return result;
 }
 
 /**
  * Format stats for live NBA games
  */
-function formatNBALiveStats(stats: GameStatsType): string[] {
-  const lines: string[] = [];
+function getNBALiveStats(stats: GameStatsType): StatData[] {
+  const result: StatData[] = [];
 
-  const fgPct = formatStat(stats, "fieldGoalPct", "FG%");
-  if (fgPct) lines.push(fgPct);
+  const fgPct = createStatData(stats, "fieldGoalPct", "FG%");
+  if (fgPct) result.push(fgPct);
 
-  const ftPct = formatStat(stats, "freeThrowPct", "FT%");
-  if (ftPct) lines.push(ftPct);
+  const ftPct = createStatData(stats, "freeThrowPct", "FT%");
+  if (ftPct) result.push(ftPct);
 
-  const threePct = formatStat(stats, "threePointFieldGoalPct", "3P%");
-  if (threePct) lines.push(threePct);
+  const threePct = createStatData(stats, "threePointFieldGoalPct", "3P%");
+  if (threePct) result.push(threePct);
 
-  return lines;
+  return result;
 }
 
 /**
  * Format stats for final NBA games
  */
-function formatNBAFinalStats(stats: GameStatsType): string[] {
-  const lines: string[] = [];
+function getNBAFinalStats(stats: GameStatsType): StatData[] {
+  const result: StatData[] = [];
 
-  const fgPct = formatStat(stats, "fieldGoalPct", "FG%");
-  if (fgPct) lines.push(fgPct);
+  const fgPct = createStatData(stats, "fieldGoalPct", "FG%");
+  if (fgPct) result.push(fgPct);
 
-  const ftPct = formatStat(stats, "freeThrowPct", "FT%");
-  if (ftPct) lines.push(ftPct);
+  const ftPct = createStatData(stats, "freeThrowPct", "FT%");
+  if (ftPct) result.push(ftPct);
 
-  const threePct = formatStat(stats, "threePointFieldGoalPct", "3P%");
-  if (threePct) lines.push(threePct);
+  const threePct = createStatData(stats, "threePointFieldGoalPct", "3P%");
+  if (threePct) result.push(threePct);
 
-  return lines;
+  return result;
 }
 
 /**
  * Format stats for live NFL games
  */
-function formatNFLLiveStats(stats: GameStatsType): string[] {
-  const lines: string[] = [];
+function getNFLLiveStats(stats: GameStatsType): StatData[] {
+  const result: StatData[] = [];
 
-  const yds = formatStat(stats, "totalYards", "YDS");
-  if (yds) lines.push(yds);
+  const yds = createStatData(stats, "totalYards", "YDS");
+  if (yds) result.push(yds);
 
-  const to = formatStat(stats, "turnovers", "TO");
-  if (to) lines.push(to);
+  const to = createStatData(stats, "turnovers", "TO");
+  if (to) result.push(to);
 
-  return lines;
+  return result;
 }
 
 /**
  * Format stats for final NFL games
  */
-function formatNFLFinalStats(stats: GameStatsType): string[] {
-  const lines: string[] = [];
+function getNFLFinalStats(stats: GameStatsType): StatData[] {
+  const result: StatData[] = [];
 
-  const yds = formatStat(stats, "totalYards", "YDS");
-  if (yds) lines.push(yds);
+  const yds = createStatData(stats, "totalYards", "YDS");
+  if (yds) result.push(yds);
 
-  const to = formatStat(stats, "turnovers", "TO");
-  if (to) lines.push(to);
+  const to = createStatData(stats, "turnovers", "TO");
+  if (to) result.push(to);
 
-  const poss = formatStat(stats, "possessionTime", "TOP");
-  if (poss) lines.push(poss);
+  const poss = createStatData(stats, "possessionTime", "TOP");
+  if (poss) result.push(poss);
 
-  return lines;
+  return result;
 }
 
 /**
  * Format stats for MLB games
  */
-function formatMLBStats(stats: GameStatsType): string[] {
-  const lines: string[] = [];
+function getMLBStats(stats: GameStatsType): StatData[] {
+  const result: StatData[] = [];
 
-  const hits = formatStat(stats, "hits", "H");
-  if (hits) lines.push(hits);
+  const hits = createStatData(stats, "hits", "H");
+  if (hits) result.push(hits);
 
-  return lines;
+  return result;
 }
 
 /**
  * Format stats for MLS games
  */
-function formatMLSStats(stats: GameStatsType): string[] {
-  const lines: string[] = [];
+function getMLSStats(stats: GameStatsType): StatData[] {
+  const result: StatData[] = [];
 
-  const poss = formatStat(stats, "possessionPct", "POSS");
-  if (poss) lines.push(poss);
+  const poss = createStatData(stats, "possessionPct", "POSS");
+  if (poss) result.push(poss);
 
-  return lines;
+  return result;
 }
 
 /**
- * Format stats for display based on league and game status
+ * Get stats data based on league and game status
  */
-function formatStatsDisplay(
+function getStatsData(
   stats: GameStatsType,
   league: League,
   status: GameStatus
-): string[] {
+): StatData[] {
   const isFinal = status === "final";
 
   switch (league) {
     case "nhl":
-      return isFinal ? formatNHLFinalStats(stats) : formatNHLLiveStats(stats);
+      return isFinal ? getNHLFinalStats(stats) : getNHLLiveStats(stats);
     case "nba":
-      return isFinal ? formatNBAFinalStats(stats) : formatNBALiveStats(stats);
+      return isFinal ? getNBAFinalStats(stats) : getNBALiveStats(stats);
     case "nfl":
-      return isFinal ? formatNFLFinalStats(stats) : formatNFLLiveStats(stats);
+      return isFinal ? getNFLFinalStats(stats) : getNFLLiveStats(stats);
     case "mlb":
-      return formatMLBStats(stats);
+      return getMLBStats(stats);
     case "mls":
-      return formatMLSStats(stats);
+      return getMLSStats(stats);
     default:
       return [];
   }
@@ -185,6 +201,23 @@ function shouldUseFullWidthLayout(league: League, status: GameStatus): boolean {
 }
 
 /**
+ * Render a single stat with accessible abbreviation
+ */
+function StatItem({ stat }: { stat: StatData }) {
+  const fullName = getStatFullName(stat.label);
+
+  return (
+    <span>
+      <abbr title={fullName} className="no-underline">
+        <span className="sr-only">{fullName}</span>
+        {stat.label}
+      </abbr>
+      : {stat.awayValue}-{stat.homeValue}
+    </span>
+  );
+}
+
+/**
  * Game statistics component for displaying key stats
  */
 export function GameStats({ game }: GameStatsProps) {
@@ -195,9 +228,9 @@ export function GameStats({ game }: GameStatsProps) {
     return null;
   }
 
-  const statLines = formatStatsDisplay(stats, league, status);
+  const statsData = getStatsData(stats, league, status);
 
-  if (statLines.length === 0) {
+  if (statsData.length === 0) {
     return null;
   }
 
@@ -205,8 +238,8 @@ export function GameStats({ game }: GameStatsProps) {
   if (shouldUseFullWidthLayout(league, status)) {
     return (
       <div className="font-mono text-xs text-terminal-muted flex justify-between">
-        {statLines.map((stat) => (
-          <span key={stat}>{stat}</span>
+        {statsData.map((stat) => (
+          <StatItem key={stat.key} stat={stat} />
         ))}
       </div>
     );
@@ -215,7 +248,12 @@ export function GameStats({ game }: GameStatsProps) {
   return (
     <div className="font-mono text-xs text-terminal-muted">
       <span className="text-terminal-cyan">◆</span>{" "}
-      {statLines.join("  ")}
+      {statsData.map((stat, index) => (
+        <span key={stat.key}>
+          {index > 0 && "  "}
+          <StatItem stat={stat} />
+        </span>
+      ))}
     </div>
   );
 }
