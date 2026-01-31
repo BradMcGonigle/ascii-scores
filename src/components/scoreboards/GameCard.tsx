@@ -57,7 +57,7 @@ function BorderLine({
   return (
     <div className={`flex ${className}`} aria-hidden="true">
       <span>{left}</span>
-      <span className="flex-1 overflow-hidden">{fill.repeat(50)}</span>
+      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]">{fill.repeat(100)}</span>
       <span>{right}</span>
     </div>
   );
