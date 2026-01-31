@@ -51,11 +51,14 @@ function formatNHLFinalStats(stats: GameStatsType): string[] {
 function formatNBALiveStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  const reb = formatStat(stats, "rebounds", "REB");
-  if (reb) lines.push(reb);
+  const fgPct = formatStat(stats, "fieldGoalPct", "FG%");
+  if (fgPct) lines.push(fgPct);
 
-  const fouls = formatStat(stats, "fouls", "FLS");
-  if (fouls) lines.push(fouls);
+  const ftPct = formatStat(stats, "freeThrowPct", "FT%");
+  if (ftPct) lines.push(ftPct);
+
+  const threePct = formatStat(stats, "threePointFieldGoalPct", "3P%");
+  if (threePct) lines.push(threePct);
 
   return lines;
 }
@@ -165,7 +168,7 @@ function formatStatsDisplay(
  * Check if stats should use full-width layout
  */
 function shouldUseFullWidthLayout(league: League, status: GameStatus): boolean {
-  return league === "nba" && status === "final";
+  return league === "nba" && (status === "live" || status === "final");
 }
 
 /**

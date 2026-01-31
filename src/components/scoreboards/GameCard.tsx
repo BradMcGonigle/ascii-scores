@@ -231,10 +231,17 @@ export function GameCard({ game }: GameCardProps) {
           />
           <div className="flex items-center">
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
-            <div className="flex-1 px-2 py-0.5 text-terminal-muted truncate">
-              <span className="text-terminal-yellow mr-1" aria-hidden="true">◈</span>
-              <span className="sr-only">Venue: </span>
-              <span className="text-xs">{game.venue}</span>
+            <div className="flex-1 px-2 py-0.5 text-terminal-muted flex justify-between text-xs">
+              <span className="truncate">
+                <span className="sr-only">Venue: </span>
+                {game.venue}
+              </span>
+              {game.venueLocation && (
+                <span className="ml-2 shrink-0">
+                  <span className="sr-only">Location: </span>
+                  {game.venueLocation}
+                </span>
+              )}
             </div>
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
           </div>

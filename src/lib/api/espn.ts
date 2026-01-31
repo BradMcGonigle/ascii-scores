@@ -60,13 +60,21 @@ interface ESPNStatus {
   displayClock?: string;
 }
 
+interface ESPNVenue {
+  fullName: string;
+  address?: {
+    city?: string;
+    state?: string;
+  };
+}
+
 interface ESPNEvent {
   id: string;
   date: string;
   name: string;
   competitions: Array<{
     id: string;
-    venue?: { fullName: string };
+    venue?: ESPNVenue;
     broadcasts?: Array<{ names: string[] }>;
     competitors: ESPNCompetitor[];
     status: ESPNStatus;
@@ -212,6 +220,21 @@ function mapGameStats(
 }
 
 /**
+ * Format venue location from city and state
+ */
+function formatVenueLocation(venue?: ESPNVenue): string | undefined {
+  const city = venue?.address?.city;
+  const state = venue?.address?.state;
+  if (city && state) {
+    return `${city}, ${state}`;
+  }
+  if (city) {
+    return city;
+  }
+  return undefined;
+}
+
+/**
  * Map ESPN event to our Game type
  */
 function mapEvent(event: ESPNEvent, league: League): Game {
@@ -230,6 +253,7 @@ function mapEvent(event: ESPNEvent, league: League): Game {
     status: mapStatus(status),
     startTime: new Date(event.date),
     venue: competition.venue?.fullName,
+    venueLocation: formatVenueLocation(competition.venue),
     broadcast: competition.broadcasts?.[0]?.names?.[0],
     homeTeam: mapTeam(homeCompetitor),
     awayTeam: mapTeam(awayCompetitor),
