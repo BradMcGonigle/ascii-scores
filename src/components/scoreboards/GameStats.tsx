@@ -75,7 +75,7 @@ function formatNBAFinalStats(stats: GameStatsType): string[] {
   if (fgPct) lines.push(fgPct);
 
   // Show turnovers (ESPN uses TOV for NBA turnovers)
-  const to = formatStat(stats, "TOV", "TO") ?? formatStat(stats, "TO", "TO", "0");
+  const to = formatStat(stats, "TOV", "TO");
   if (to) lines.push(to);
 
   // Show rebounds
@@ -92,11 +92,11 @@ function formatNFLLiveStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
   // Show total yards
-  const yds = formatStat(stats, "TYDS", "YDS") ?? formatStat(stats, "YDS", "YDS");
+  const yds = formatStat(stats, "TYDS", "YDS");
   if (yds) lines.push(yds);
 
   // Show turnovers
-  const to = formatStat(stats, "TO", "TO", "0");
+  const to = formatStat(stats, "TO", "TO");
   if (to) lines.push(to);
 
   return lines;
@@ -109,15 +109,15 @@ function formatNFLFinalStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
   // Show total yards
-  const yds = formatStat(stats, "TYDS", "YDS") ?? formatStat(stats, "YDS", "YDS");
+  const yds = formatStat(stats, "TYDS", "YDS");
   if (yds) lines.push(yds);
 
   // Show turnovers
-  const to = formatStat(stats, "TO", "TO", "0");
+  const to = formatStat(stats, "TO", "TO");
   if (to) lines.push(to);
 
   // Show possession time if available
-  const poss = formatStat(stats, "TOP", "TOP") ?? formatStat(stats, "POSS", "TOP");
+  const poss = formatStat(stats, "TOP", "TOP");
   if (poss) lines.push(poss);
 
   return lines;
