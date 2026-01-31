@@ -181,11 +181,6 @@ function extractStats(
   const keyStats = LEAGUE_KEY_STATS[league];
   const result: Record<string, string | number> = {};
 
-  // Debug: log all available stats from ESPN
-  if (process.env.NODE_ENV === "development" && league === "nba") {
-    console.log(`[ESPN] ${league} available stats:`, statistics.map(s => ({ name: s.name, abbr: s.abbreviation, value: s.displayValue })));
-  }
-
   for (const stat of statistics) {
     if (keyStats.includes(stat.name)) {
       result[stat.name] = stat.displayValue;

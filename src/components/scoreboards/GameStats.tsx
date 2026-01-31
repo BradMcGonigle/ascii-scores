@@ -172,16 +172,6 @@ export function GameStats({ game }: GameStatsProps) {
     return null;
   }
 
-  // Debug: log available stats keys
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[GameStats] ${league} ${status}:`, {
-      homeKeys: Object.keys(stats.home),
-      awayKeys: Object.keys(stats.away),
-      home: stats.home,
-      away: stats.away,
-    });
-  }
-
   const statLines = formatStatsDisplay(stats, league, status);
 
   if (statLines.length === 0) {
