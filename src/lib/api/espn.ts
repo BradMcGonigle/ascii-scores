@@ -120,10 +120,9 @@ function mapTeam(competitor: ESPNCompetitor): Team {
   const record = competitor.records?.find(r => r.type === "total")?.summary
     ?? competitor.records?.[0]?.summary;
 
-  // Get team ranking for college sports (only include if ranked, i.e., > 0)
-  const rank = competitor.curatedRank?.current && competitor.curatedRank.current > 0
-    ? competitor.curatedRank.current
-    : undefined;
+  // Get team ranking for college sports (only include if in top 25)
+  const rawRank = competitor.curatedRank?.current;
+  const rank = rawRank && rawRank > 0 && rawRank <= 25 ? rawRank : undefined;
 
   return {
     id: competitor.team.id,
