@@ -1,4 +1,4 @@
-import type { GolfLeaderboard, GolfTournament, GolfTournamentStatus } from "@/lib/types";
+import type { GolfLeaderboard, GolfPlayer, GolfTournament, GolfTournamentStatus } from "@/lib/types";
 import { padString, truncate } from "@/lib/utils/format";
 
 interface GolfLeaderboardProps {
@@ -12,11 +12,29 @@ interface GolfLeaderboardTableProps {
 }
 
 /**
+ * Check if all active players have completed their round
+ */
+function isRoundPlayComplete(players: GolfPlayer[]): boolean {
+  const activePlayers = players.filter((p) => p.status === "active");
+  if (activePlayers.length === 0) return false;
+
+  // Round is complete if all active players have finished (thru === "F")
+  return activePlayers.every((p) => p.thru === "F");
+}
+
+/**
  * Get status display text for golf tournament
  */
-function getTournamentStatusText(status: GolfTournamentStatus, currentRound?: number): string {
+function getTournamentStatusText(
+  status: GolfTournamentStatus,
+  currentRound?: number,
+  roundPlayComplete?: boolean
+): string {
   switch (status) {
     case "in_progress":
+      if (roundPlayComplete && currentRound) {
+        return `ROUND ${currentRound} PLAY COMPLETE`;
+      }
       return currentRound ? `ROUND ${currentRound} IN PROGRESS` : "IN PROGRESS";
     case "completed":
       return "FINAL";
@@ -98,7 +116,8 @@ export function GolfLeaderboardTable({
   lastUpdated,
 }: GolfLeaderboardTableProps) {
   const statusClass = getTournamentStatusClass(tournament.status);
-  const statusText = getTournamentStatusText(tournament.status, tournament.currentRound);
+  const roundPlayComplete = isRoundPlayComplete(tournament.players);
+  const statusText = getTournamentStatusText(tournament.status, tournament.currentRound, roundPlayComplete);
 
   // Determine how many round columns to show based on selection
   const completedRounds = Math.max(...tournament.players.map((p) => p.rounds.length), 0);
