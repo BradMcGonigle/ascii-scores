@@ -91,43 +91,28 @@ export default function HomePage() {
                     href={`/${leagueId}`}
                     className="group font-mono text-center"
                   >
-                    <div className={`retro-card p-4 transition-all duration-300 ${LEAGUE_COLORS[leagueId]}`}>
-                      {/* League name header */}
-                      <div className="text-terminal-border group-hover:text-current transition-colors text-xs mb-2" aria-hidden="true">
-                        ╔═══════════════════════╗
-                      </div>
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-terminal-border group-hover:text-current transition-colors" aria-hidden="true">║</span>
-                        <span className="text-lg font-bold text-terminal-fg group-hover:text-glow transition-all">
-                          {league.name}
-                        </span>
-                        <span className="text-terminal-border group-hover:text-current transition-colors" aria-hidden="true">║</span>
-                      </div>
-                      <div className="text-terminal-border group-hover:text-current transition-colors text-xs" aria-hidden="true">
-                        ╠═══════════════════════╣
-                      </div>
-
-                      {/* Sport icon - centered with fixed height */}
-                      <div className="min-h-[200px] flex items-center justify-center py-4">
+                    <div className={`retro-card p-6 transition-all duration-300 ${LEAGUE_COLORS[leagueId]}`}>
+                      {/* ASCII block letter league name */}
+                      <div className="flex items-center justify-center py-4">
                         <AsciiSportIcon
                           league={leagueId}
                           variant="large"
-                          className="text-xs group-hover:text-glow transition-all"
+                          className="text-[10px] leading-none group-hover:text-glow transition-all"
                         />
                       </div>
 
-                      {/* Bottom border */}
-                      <div className="text-terminal-border group-hover:text-current transition-colors text-xs" aria-hidden="true">
-                        ╚═══════════════════════╝
+                      {/* Divider */}
+                      <div className="text-terminal-border group-hover:text-current transition-colors text-xs my-3" aria-hidden="true">
+                        ════════════════════
                       </div>
 
                       {/* Full name */}
-                      <p className="mt-3 text-xs text-terminal-muted group-hover:text-terminal-fg transition-colors">
+                      <p className="text-sm text-terminal-muted group-hover:text-terminal-fg transition-colors">
                         {league.fullName}
                       </p>
 
                       {/* Enter indicator */}
-                      <div className="mt-2 text-xs text-terminal-green opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="mt-3 text-xs text-terminal-green opacity-0 group-hover:opacity-100 transition-opacity">
                         {">"} ENTER
                       </div>
                     </div>
