@@ -27,8 +27,14 @@ function formatStat(
 function formatNHLLiveStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  const sog = formatStat(stats, "shotsOnGoal", "SOG");
-  if (sog) lines.push(sog);
+  const goals = formatStat(stats, "goals", "G");
+  if (goals) lines.push(goals);
+
+  const assists = formatStat(stats, "assists", "A");
+  if (assists) lines.push(assists);
+
+  const savePct = formatStat(stats, "savePct", "SV%");
+  if (savePct) lines.push(savePct);
 
   return lines;
 }
@@ -39,8 +45,14 @@ function formatNHLLiveStats(stats: GameStatsType): string[] {
 function formatNHLFinalStats(stats: GameStatsType): string[] {
   const lines: string[] = [];
 
-  const sog = formatStat(stats, "shotsOnGoal", "SOG");
-  if (sog) lines.push(sog);
+  const goals = formatStat(stats, "goals", "G");
+  if (goals) lines.push(goals);
+
+  const assists = formatStat(stats, "assists", "A");
+  if (assists) lines.push(assists);
+
+  const savePct = formatStat(stats, "savePct", "SV%");
+  if (savePct) lines.push(savePct);
 
   return lines;
 }
@@ -168,7 +180,8 @@ function formatStatsDisplay(
  * Check if stats should use full-width layout
  */
 function shouldUseFullWidthLayout(league: League, status: GameStatus): boolean {
-  return league === "nba" && (status === "live" || status === "final");
+  if (status !== "live" && status !== "final") return false;
+  return league === "nba" || league === "nhl";
 }
 
 /**

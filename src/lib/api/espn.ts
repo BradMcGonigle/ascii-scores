@@ -169,7 +169,7 @@ function mapPeriodScores(
  * Maps ESPN stat names to display labels
  */
 const LEAGUE_KEY_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
-  nhl: ["shotsOnGoal", "powerPlayGoals", "powerPlayOpportunities"],
+  nhl: ["shotsOnGoal", "powerPlayGoals", "powerPlayOpportunities", "goals", "assists", "savePct"],
   nfl: ["totalYards", "turnovers", "passingYards", "rushingYards", "possessionTime"],
   nba: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
   mlb: ["hits", "strikeouts", "homeRuns"],
