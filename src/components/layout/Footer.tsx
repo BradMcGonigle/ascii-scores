@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-terminal-border bg-terminal-bg relative overflow-hidden">
@@ -38,11 +40,16 @@ export function Footer() {
             <span className="text-terminal-border">{" //"}</span>
           </p>
 
-          <p className="text-xs">
-            <span className="text-terminal-border">v1.0.0</span>
-            <span className="text-terminal-muted mx-2">•</span>
+          <p className="text-xs flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <Link
+              href="/changelog"
+              className="text-terminal-fg hover:text-terminal-green transition-colors"
+            >
+              v0.15.0
+            </Link>
+            <span className="text-terminal-muted">•</span>
             <span className="text-terminal-muted">&copy; {new Date().getFullYear()}</span>
-            <span className="text-terminal-muted mx-2">•</span>
+            <span className="text-terminal-muted">•</span>
             <span className="text-terminal-green">MADE WITH {"<"}3{">"}</span>
           </p>
         </div>
