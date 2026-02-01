@@ -21,6 +21,7 @@ const CHANGELOG: ChangelogEntry[] = [
     version: "0.18.1",
     changes: [
       { type: "fix", description: "Fix stale 'today' view showing yesterday's games after midnight" },
+      { type: "fix", description: "Use US Eastern timezone for 'today' to match ESPN schedules" },
     ],
   },
   {

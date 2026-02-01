@@ -1,5 +1,5 @@
 import type { Game, GameStats, GameStatus, League, LeagueStandings, NCAAPolls, PeriodScore, PeriodScores, RankedTeam, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
-import { addDays, formatDateForAPI, isDateInPast } from "@/lib/utils/format";
+import { addDays, formatDateForAPI, getTodayInEastern, isDateInPast } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
 const ESPN_STANDINGS_URL = "https://site.web.api.espn.com/apis/v2/sports";
@@ -309,7 +309,8 @@ export async function getESPNScoreboard(
 
   // Always use explicit date to ensure proper cache invalidation at midnight
   // Without explicit date, the cache key stays the same and stale data persists
-  const effectiveDate = date ?? new Date();
+  // Use Eastern timezone for "today" since ESPN uses it for US sports schedules
+  const effectiveDate = date ?? getTodayInEastern();
   const url = `${baseUrl}?dates=${formatDateForAPI(effectiveDate)}`;
 
   // Determine caching strategy:
@@ -361,7 +362,8 @@ export async function getDatesWithGames(
   daysBack: number = 5,
   daysForward: number = 5
 ): Promise<string[]> {
-  const today = new Date();
+  // Use Eastern timezone for "today" since ESPN uses it for US sports schedules
+  const today = getTodayInEastern();
   const dates: Date[] = [];
 
   // Build array of dates to check
