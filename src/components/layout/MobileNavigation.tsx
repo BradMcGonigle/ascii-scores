@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { LEAGUES, type League } from "@/lib/types";
-
-const LEAGUE_ORDER: League[] = ["nhl", "nfl", "nba", "mlb", "mls", "ncaam", "ncaaw", "f1", "pga"];
+import { LEAGUES, getSortedLeagues } from "@/lib/types";
 
 interface MobileNavigationProps {
   activeLeague?: string;
@@ -19,6 +17,7 @@ export function MobileNavigation({ activeLeague }: MobileNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLUListElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const sortedLeagues = useMemo(() => getSortedLeagues(), []);
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
@@ -102,7 +101,7 @@ export function MobileNavigation({ activeLeague }: MobileNavigationProps) {
           aria-label="League navigation"
           className="md:hidden absolute right-4 top-16 z-50 bg-terminal-bg border border-terminal-border font-mono text-sm"
         >
-          {LEAGUE_ORDER.map((leagueId) => {
+          {sortedLeagues.map((leagueId) => {
             const league = LEAGUES[leagueId];
             const isActive = activeLeague === leagueId;
 

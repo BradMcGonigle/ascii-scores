@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { LEAGUES, type League } from "@/lib/types";
-
-const LEAGUE_ORDER: League[] = ["epl", "f1", "mlb", "mls", "nba", "ncaam", "ncaaw", "nfl", "nhl", "pga"];
+import { LEAGUES, getSortedLeagues } from "@/lib/types";
 
 interface NavigationLinksProps {
   activeLeague?: string;
@@ -30,7 +28,7 @@ export function NavigationLinks({
       }
       id={isDesktop ? undefined : "mobile-menu"}
     >
-      {LEAGUE_ORDER.map((leagueId) => {
+      {getSortedLeagues().map((leagueId) => {
         const league = LEAGUES[leagueId];
         const isActive = activeLeague === leagueId;
 

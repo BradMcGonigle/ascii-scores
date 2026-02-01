@@ -2,9 +2,9 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AsciiLogo, AsciiSportIcon } from "@/components/ascii";
-import { LEAGUES, type League } from "@/lib/types";
+import { LEAGUES, getLeaguesByStatus, type League } from "@/lib/types";
 
-const LEAGUE_ORDER: League[] = ["epl", "f1", "mlb", "mls", "nba", "ncaam", "ncaaw", "nfl", "nhl", "pga"];
+const { active: ACTIVE_LEAGUES, inactive: INACTIVE_LEAGUES } = getLeaguesByStatus();
 
 // League-specific accent colors for hover effects
 const LEAGUE_COLORS: Record<League, string> = {
@@ -52,32 +52,38 @@ export default function HomePage() {
             </div>
 
             {/* System status bar */}
-            <div className="mt-4 font-mono text-xs text-terminal-muted flex items-center justify-center gap-4">
+            <div className="mt-4 font-mono text-xs text-terminal-muted flex items-center justify-center gap-4 flex-wrap">
               <span>
                 <span className="text-terminal-green">●</span> SYSTEM ONLINE
               </span>
-              <span className="text-terminal-border">│</span>
+              <span className="text-terminal-border hidden sm:inline">│</span>
               <span>
-                <span className="text-terminal-cyan">◆</span> 10 LEAGUES ACTIVE
+                <span className="text-terminal-green">◆</span> {ACTIVE_LEAGUES.length} IN SEASON
               </span>
-              <span className="text-terminal-border">│</span>
+              <span className="text-terminal-border hidden sm:inline">│</span>
               <span>
-                <span className="text-terminal-yellow">◈</span> LIVE DATA FEED
+                <span className="text-terminal-yellow">○</span> {INACTIVE_LEAGUES.length} OFF-SEASON
+              </span>
+              <span className="text-terminal-border hidden sm:inline">│</span>
+              <span>
+                <span className="text-terminal-cyan">◈</span> LIVE DATA FEED
               </span>
             </div>
           </div>
 
-          {/* League selection grid */}
-          <section aria-label="Select a league">
+          {/* Active leagues section */}
+          <section aria-label="Active leagues">
             <div className="text-center mb-8">
               <div className="inline-block font-mono">
                 <div className="text-terminal-border text-xs hidden sm:block" aria-hidden="true">
                   ╔════════════════════════════════════════════╗
                 </div>
                 <h2 className="text-terminal-cyan text-lg py-2 px-4">
-                  <span className="text-terminal-border">{"[ "}</span>
-                  SELECT A LEAGUE
-                  <span className="text-terminal-border">{" ]"}</span>
+                  <span className="text-terminal-green">●</span>
+                  <span className="text-terminal-border">{" [ "}</span>
+                  IN SEASON
+                  <span className="text-terminal-border">{" ] "}</span>
+                  <span className="text-terminal-green">●</span>
                 </h2>
                 <div className="text-terminal-border text-xs hidden sm:block" aria-hidden="true">
                   ╚════════════════════════════════════════════╝
@@ -86,7 +92,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {LEAGUE_ORDER.map((leagueId) => {
+              {ACTIVE_LEAGUES.map((leagueId) => {
                 const league = LEAGUES[leagueId];
                 return (
                   <Link
@@ -124,6 +130,68 @@ export default function HomePage() {
               })}
             </div>
           </section>
+
+          {/* Off-season leagues section */}
+          {INACTIVE_LEAGUES.length > 0 && (
+            <section aria-label="Off-season leagues" className="mt-16">
+              <div className="text-center mb-8">
+                <div className="inline-block font-mono">
+                  <div className="text-terminal-border text-xs hidden sm:block" aria-hidden="true">
+                    ┌────────────────────────────────────────────┐
+                  </div>
+                  <h2 className="text-terminal-muted text-lg py-2 px-4">
+                    <span className="text-terminal-yellow">○</span>
+                    <span className="text-terminal-border">{" [ "}</span>
+                    OFF-SEASON
+                    <span className="text-terminal-border">{" ] "}</span>
+                    <span className="text-terminal-yellow">○</span>
+                  </h2>
+                  <div className="text-terminal-border text-xs hidden sm:block" aria-hidden="true">
+                    └────────────────────────────────────────────┘
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {INACTIVE_LEAGUES.map((leagueId) => {
+                  const league = LEAGUES[leagueId];
+                  return (
+                    <Link
+                      key={leagueId}
+                      href={`/${leagueId}`}
+                      className="group font-mono text-center"
+                    >
+                      <div className={`retro-card p-6 transition-all duration-300 opacity-70 hover:opacity-100 ${LEAGUE_COLORS[leagueId]}`}>
+                        {/* ASCII block letter league name */}
+                        <div className="flex items-center justify-center py-4">
+                          <AsciiSportIcon
+                            league={leagueId}
+                            variant="large"
+                            className="text-[11px] leading-[1.1] group-hover:text-glow transition-all"
+                          />
+                        </div>
+
+                        {/* Divider */}
+                        <div className="text-terminal-border group-hover:text-current transition-colors text-xs my-3" aria-hidden="true">
+                          ════════════════════
+                        </div>
+
+                        {/* Full name */}
+                        <p className="text-sm text-terminal-muted group-hover:text-terminal-fg transition-colors">
+                          {league.fullName}
+                        </p>
+
+                        {/* Enter indicator */}
+                        <div className="mt-3 text-xs text-terminal-yellow opacity-0 group-hover:opacity-100 transition-opacity">
+                          {">"} VIEW HISTORY
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* Features section */}
           <section className="mt-20" aria-label="Features">
@@ -188,10 +256,10 @@ export default function HomePage() {
                   ┏━━━━━━━━━━━━━━━━━━━━━━━━━┓
                 </div>
                 <div className="text-terminal-cyan text-2xl mb-3">
-                  [ 10 LEAGUES ]
+                  [ {ACTIVE_LEAGUES.length + INACTIVE_LEAGUES.length} LEAGUES ]
                 </div>
                 <div className="text-terminal-cyan text-xs mb-4">
-                  ◇ NHL ◇ NFL ◇ NBA ◇ MLB ◇ MLS ◇ EPL ◇ NCAAM ◇ NCAAW ◇ F1 ◇ PGA ◇
+                  ◇ {[...ACTIVE_LEAGUES, ...INACTIVE_LEAGUES].map(l => LEAGUES[l].name).join(" ◇ ")} ◇
                 </div>
                 <p className="text-terminal-muted text-xs leading-relaxed">
                   Complete coverage of major sports with dedicated scoreboards and standings
@@ -208,7 +276,7 @@ export default function HomePage() {
             <div className="inline-block text-terminal-muted text-xs">
               <span className="text-terminal-green">$</span>
               <span className="ml-2">./select-league.sh --league=</span>
-              <span className="text-terminal-cyan">[epl|f1|mlb|mls|nba|ncaam|ncaaw|nfl|nhl|pga]</span>
+              <span className="text-terminal-cyan">[{[...ACTIVE_LEAGUES, ...INACTIVE_LEAGUES].join("|")}]</span>
               <span className="text-terminal-green animate-pulse ml-1">█</span>
             </div>
           </div>
