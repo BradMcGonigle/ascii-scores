@@ -145,6 +145,70 @@ export interface F1Standings {
 }
 
 /**
+ * League standings entry (team in standings)
+ */
+export interface StandingsEntry {
+  /** Team info */
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    displayName: string;
+    logo?: string;
+  };
+  /** Stats as key-value pairs (varies by league) */
+  stats: Record<string, string | number>;
+}
+
+/**
+ * Standings group (division/conference)
+ */
+export interface StandingsGroup {
+  /** Group name (e.g., "AFC East", "Eastern Conference") */
+  name: string;
+  /** Teams in this group */
+  entries: StandingsEntry[];
+}
+
+/**
+ * League standings data
+ */
+export interface LeagueStandings {
+  league: League;
+  /** Standings groups (divisions/conferences) */
+  groups: StandingsGroup[];
+  lastUpdated: Date;
+}
+
+/**
+ * Ranked team entry (for Top 25 polls)
+ */
+export interface RankedTeam {
+  rank: number;
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    logo?: string;
+  };
+  record: string;
+  points?: number;
+  trend?: "up" | "down" | "same";
+  previousRank?: number;
+}
+
+/**
+ * NCAA Rankings data
+ */
+export interface NCAAPolls {
+  polls: {
+    name: string;
+    teams: RankedTeam[];
+  }[];
+  lastUpdated: Date;
+}
+
+/**
  * F1 race weekend data (groups multiple sessions)
  */
 export interface F1RaceWeekend {

@@ -1,7 +1,8 @@
-import type { Game, GameStats, GameStatus, League, PeriodScore, PeriodScores, Scoreboard, Team } from "@/lib/types";
+import type { Game, GameStats, GameStatus, League, LeagueStandings, NCAAPolls, PeriodScore, PeriodScores, RankedTeam, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
 import { addDays, formatDateForAPI, isDateInPast } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
+const ESPN_STANDINGS_URL = "https://site.web.api.espn.com/apis/v2/sports";
 
 /**
  * ESPN sport paths for each league (excluding F1 and PGA which have their own API clients)
@@ -397,4 +398,306 @@ export async function getDatesWithGames(
 
   // Filter out nulls and return dates that have games
   return results.filter((date): date is string => date !== null);
+}
+
+/**
+ * ESPN Standings API response types
+ */
+interface ESPNStandingsStat {
+  name: string;
+  displayName: string;
+  shortDisplayName: string;
+  description: string;
+  abbreviation: string;
+  type: string;
+  value?: number;
+  displayValue: string;
+}
+
+interface ESPNStandingsTeam {
+  id: string;
+  uid: string;
+  location: string;
+  name: string;
+  abbreviation: string;
+  displayName: string;
+  shortDisplayName: string;
+  logos?: Array<{ href: string }>;
+}
+
+interface ESPNStandingsEntry {
+  team: ESPNStandingsTeam;
+  stats: ESPNStandingsStat[];
+}
+
+interface ESPNStandingsGroup {
+  name: string;
+  abbreviation?: string;
+  standings: {
+    entries: ESPNStandingsEntry[];
+  };
+}
+
+interface ESPNStandingsChild {
+  name: string;
+  abbreviation?: string;
+  children?: ESPNStandingsGroup[];
+  standings?: {
+    entries: ESPNStandingsEntry[];
+  };
+}
+
+// Note: ESPN API response structure varies by league, so we parse flexibly
+// rather than typing strictly. Expected structures:
+// - { children: ESPNStandingsChild[] } for leagues with divisions/conferences
+// - { standings: { entries: ESPNStandingsEntry[] } } for flat standings
+
+/**
+ * Key stats to extract for standings by league
+ * Order matters - first stat is primary sort
+ */
+const STANDINGS_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
+  nhl: ["points", "gamesPlayed", "wins", "losses", "otLosses", "goalsFor", "goalsAgainst", "goalDifferential"],
+  nfl: ["wins", "losses", "ties", "winPercent", "pointsFor", "pointsAgainst", "pointDifferential"],
+  nba: ["wins", "losses", "winPercent", "gamesBehind", "streak"],
+  mlb: ["wins", "losses", "winPercent", "gamesBehind", "runsFor", "runsAgainst", "runDifferential"],
+  mls: ["points", "gamesPlayed", "wins", "losses", "ties", "goalDifferential"],
+  epl: ["points", "gamesPlayed", "wins", "losses", "ties", "goalDifferential"],
+  ncaam: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses"],
+  ncaaw: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses"],
+};
+
+/**
+ * Primary sort stat for each league (descending order)
+ */
+const PRIMARY_SORT_STAT: Record<Exclude<League, "f1" | "pga">, string> = {
+  nhl: "points",
+  nfl: "wins",
+  nba: "wins",
+  mlb: "wins",
+  mls: "points",
+  epl: "points",
+  ncaam: "wins",
+  ncaaw: "wins",
+};
+
+/**
+ * Map ESPN standings entry to our StandingsEntry type
+ */
+function mapStandingsEntry(
+  entry: ESPNStandingsEntry,
+  league: Exclude<League, "f1" | "pga">
+): StandingsEntry & { _sortValue: number } {
+  const keyStats = STANDINGS_STATS[league];
+  const primaryStat = PRIMARY_SORT_STAT[league];
+  const stats: Record<string, string | number> = {};
+  let sortValue = 0;
+
+  for (const stat of entry.stats) {
+    if (keyStats.includes(stat.name)) {
+      // Use displayValue for formatted output
+      stats[stat.name] = stat.displayValue;
+      // Store numeric value for primary sort stat
+      if (stat.name === primaryStat && stat.value !== undefined) {
+        sortValue = stat.value;
+      }
+    }
+  }
+
+  return {
+    team: {
+      id: entry.team.id,
+      name: entry.team.name,
+      abbreviation: entry.team.abbreviation,
+      displayName: entry.team.displayName,
+      logo: entry.team.logos?.[0]?.href,
+    },
+    stats,
+    _sortValue: sortValue,
+  };
+}
+
+/**
+ * Sort standings entries by primary stat (descending)
+ */
+function sortStandingsEntries(
+  entries: (StandingsEntry & { _sortValue: number })[]
+): StandingsEntry[] {
+  return entries
+    .sort((a, b) => b._sortValue - a._sortValue)
+    .map(({ _sortValue, ...entry }) => entry);
+}
+
+/**
+ * Recursively extract standings groups from ESPN response
+ */
+function extractStandingsGroups(
+  children: ESPNStandingsChild[],
+  league: Exclude<League, "f1" | "pga">
+): StandingsGroup[] {
+  const groups: StandingsGroup[] = [];
+
+  for (const child of children) {
+    // If this child has nested children (conferences with divisions)
+    if (child.children && child.children.length > 0) {
+      for (const subChild of child.children) {
+        if (subChild.standings?.entries) {
+          const mappedEntries = subChild.standings.entries.map((e) => mapStandingsEntry(e, league));
+          groups.push({
+            name: subChild.name,
+            entries: sortStandingsEntries(mappedEntries),
+          });
+        }
+      }
+    }
+    // If this child has direct standings (e.g., soccer tables)
+    else if (child.standings?.entries) {
+      const mappedEntries = child.standings.entries.map((e) => mapStandingsEntry(e, league));
+      groups.push({
+        name: child.name,
+        entries: sortStandingsEntries(mappedEntries),
+      });
+    }
+  }
+
+  return groups;
+}
+
+/**
+ * Fetch standings data for a league from ESPN
+ * @param league - The league to fetch standings for
+ */
+export async function getESPNStandings(
+  league: Exclude<League, "f1" | "pga">
+): Promise<LeagueStandings> {
+  const sportPath = LEAGUE_SPORT_MAP[league];
+  const url = `${ESPN_STANDINGS_URL}/${sportPath}/standings`;
+
+  // Standings update infrequently, cache for 5 minutes
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+    },
+    next: {
+      revalidate: 300,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`ESPN API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+
+  let groups: StandingsGroup[] = [];
+
+  // Handle different response structures
+  // ESPN API structure varies by league - some have children (divisions/conferences),
+  // some have direct standings
+  if (data.children && Array.isArray(data.children) && data.children.length > 0) {
+    groups = extractStandingsGroups(data.children as ESPNStandingsChild[], league);
+  } else if (data.standings?.entries && Array.isArray(data.standings.entries)) {
+    // Direct standings (no divisions/conferences)
+    const mappedEntries = data.standings.entries.map((e: ESPNStandingsEntry) => mapStandingsEntry(e, league));
+    groups = [{
+      name: "Standings",
+      entries: sortStandingsEntries(mappedEntries),
+    }];
+  } else {
+    // Log unexpected structure for debugging
+    console.warn(`Unexpected ESPN standings response structure for ${league}:`, Object.keys(data));
+  }
+
+  return {
+    league,
+    groups,
+    lastUpdated: new Date(),
+  };
+}
+
+/**
+ * ESPN Rankings API response types
+ */
+interface ESPNRankingsTeam {
+  id: string;
+  uid: string;
+  location: string;
+  name: string;
+  nickname?: string;
+  abbreviation: string;
+  logos?: Array<{ href: string }>;
+}
+
+interface ESPNRankedTeam {
+  current: number;
+  previous: number;
+  points?: number;
+  recordSummary?: string;
+  team: ESPNRankingsTeam;
+}
+
+interface ESPNRankingsRank {
+  name: string;
+  shortName?: string;
+  headline?: string;
+  ranks: ESPNRankedTeam[];
+}
+
+interface ESPNRankingsResponse {
+  rankings: ESPNRankingsRank[];
+}
+
+/**
+ * Fetch NCAA rankings (Top 25 polls)
+ * @param league - ncaam or ncaaw
+ */
+export async function getNCAAPolls(
+  league: "ncaam" | "ncaaw"
+): Promise<NCAAPolls> {
+  const sportPath = LEAGUE_SPORT_MAP[league];
+  const url = `${ESPN_BASE_URL}/${sportPath}/rankings`;
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+    },
+    next: {
+      revalidate: 3600, // Rankings update weekly, cache for 1 hour
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`ESPN Rankings API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data: ESPNRankingsResponse = await response.json();
+
+  const polls = data.rankings.map((ranking) => ({
+    name: ranking.shortName || ranking.name,
+    teams: ranking.ranks.slice(0, 25).map((rankedTeam): RankedTeam => {
+      const trend: "up" | "down" | "same" =
+        rankedTeam.previous === 0 ? "same" : // New to rankings
+        rankedTeam.current < rankedTeam.previous ? "up" :
+        rankedTeam.current > rankedTeam.previous ? "down" : "same";
+
+      return {
+        rank: rankedTeam.current,
+        team: {
+          id: rankedTeam.team.id,
+          name: rankedTeam.team.name,
+          abbreviation: rankedTeam.team.abbreviation,
+          logo: rankedTeam.team.logos?.[0]?.href,
+        },
+        record: rankedTeam.recordSummary || "",
+        points: rankedTeam.points,
+        trend,
+        previousRank: rankedTeam.previous || undefined,
+      };
+    }),
+  }));
+
+  return {
+    polls,
+    lastUpdated: new Date(),
+  };
 }
