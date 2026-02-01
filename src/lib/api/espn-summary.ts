@@ -15,8 +15,8 @@ import type {
 } from "@/lib/types";
 
 // ESPN uses different subdomains for different endpoints
-// The summary endpoint works with site.api.espn.com
-const ESPN_SUMMARY_URL = "https://site.api.espn.com/apis/site/v2/sports";
+// The summary endpoint requires site.web.api.espn.com (not site.api.espn.com)
+const ESPN_SUMMARY_URL = "https://site.web.api.espn.com/apis/site/v2/sports";
 
 /**
  * ESPN sport paths for each league
@@ -478,7 +478,8 @@ export async function getGameSummary(
   gameId: string
 ): Promise<GameSummary | null> {
   const sportPath = LEAGUE_SPORT_MAP[league];
-  const url = `${ESPN_SUMMARY_URL}/${sportPath}/summary?event=${gameId}`;
+  // ESPN summary endpoint requires additional query parameters
+  const url = `${ESPN_SUMMARY_URL}/${sportPath}/summary?region=us&lang=en&contentorigin=espn&event=${gameId}`;
 
   try {
     const response = await fetch(url, {
