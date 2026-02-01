@@ -447,7 +447,10 @@ interface ESPNStandingsChild {
 }
 
 interface ESPNStandingsResponse {
-  children: ESPNStandingsChild[];
+  children?: ESPNStandingsChild[];
+  standings?: {
+    entries: ESPNStandingsEntry[];
+  };
 }
 
 /**
@@ -553,7 +556,18 @@ export async function getESPNStandings(
 
   const data: ESPNStandingsResponse = await response.json();
 
-  const groups = extractStandingsGroups(data.children, league);
+  let groups: StandingsGroup[] = [];
+
+  // Handle different response structures
+  if (data.children && data.children.length > 0) {
+    groups = extractStandingsGroups(data.children, league);
+  } else if (data.standings?.entries) {
+    // Direct standings (no divisions/conferences)
+    groups = [{
+      name: "Standings",
+      entries: data.standings.entries.map((e) => mapStandingsEntry(e, league)),
+    }];
+  }
 
   return {
     league,
