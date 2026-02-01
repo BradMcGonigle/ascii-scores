@@ -18,6 +18,14 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.18.0",
+    changes: [
+      { type: "feat", description: "Add league standings pages for all ESPN sports" },
+      { type: "feat", description: "Display division/conference standings with ASCII tables" },
+      { type: "feat", description: "Add standings link to league score pages" },
+    ],
+  },
+  {
     version: "0.17.0",
     changes: [
       { type: "feat", description: "Sort leagues by season status and popularity" },
