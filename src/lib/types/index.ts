@@ -181,6 +181,34 @@ export interface LeagueStandings {
 }
 
 /**
+ * Ranked team entry (for Top 25 polls)
+ */
+export interface RankedTeam {
+  rank: number;
+  team: {
+    id: string;
+    name: string;
+    abbreviation: string;
+    logo?: string;
+  };
+  record: string;
+  points?: number;
+  trend?: "up" | "down" | "same";
+  previousRank?: number;
+}
+
+/**
+ * NCAA Rankings data
+ */
+export interface NCAAPolls {
+  polls: {
+    name: string;
+    teams: RankedTeam[];
+  }[];
+  lastUpdated: Date;
+}
+
+/**
  * F1 race weekend data (groups multiple sessions)
  */
 export interface F1RaceWeekend {

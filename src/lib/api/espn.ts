@@ -1,4 +1,4 @@
-import type { Game, GameStats, GameStatus, League, LeagueStandings, PeriodScore, PeriodScores, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
+import type { Game, GameStats, GameStatus, League, LeagueStandings, NCAAPolls, PeriodScore, PeriodScores, RankedTeam, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
 import { addDays, formatDateForAPI, isDateInPast } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
@@ -611,6 +611,93 @@ export async function getESPNStandings(
   return {
     league,
     groups,
+    lastUpdated: new Date(),
+  };
+}
+
+/**
+ * ESPN Rankings API response types
+ */
+interface ESPNRankingsTeam {
+  id: string;
+  uid: string;
+  location: string;
+  name: string;
+  nickname?: string;
+  abbreviation: string;
+  logos?: Array<{ href: string }>;
+}
+
+interface ESPNRankedTeam {
+  current: number;
+  previous: number;
+  points?: number;
+  recordSummary?: string;
+  team: ESPNRankingsTeam;
+}
+
+interface ESPNRankingsRank {
+  name: string;
+  shortName?: string;
+  headline?: string;
+  ranks: ESPNRankedTeam[];
+}
+
+interface ESPNRankingsResponse {
+  rankings: ESPNRankingsRank[];
+}
+
+/**
+ * Fetch NCAA rankings (Top 25 polls)
+ * @param league - ncaam or ncaaw
+ */
+export async function getNCAAPolls(
+  league: "ncaam" | "ncaaw"
+): Promise<NCAAPolls> {
+  const sportPath = LEAGUE_SPORT_MAP[league];
+  const url = `${ESPN_BASE_URL}/${sportPath}/rankings`;
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+    },
+    next: {
+      revalidate: 3600, // Rankings update weekly, cache for 1 hour
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`ESPN Rankings API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data: ESPNRankingsResponse = await response.json();
+
+  const polls = data.rankings.map((ranking) => ({
+    name: ranking.shortName || ranking.name,
+    teams: ranking.ranks.slice(0, 25).map((rankedTeam): RankedTeam => {
+      const trend: "up" | "down" | "same" =
+        rankedTeam.previous === 0 ? "same" : // New to rankings
+        rankedTeam.current < rankedTeam.previous ? "up" :
+        rankedTeam.current > rankedTeam.previous ? "down" : "same";
+
+      return {
+        rank: rankedTeam.current,
+        team: {
+          id: rankedTeam.team.id,
+          name: rankedTeam.team.name,
+          abbreviation: rankedTeam.team.abbreviation,
+          logo: rankedTeam.team.logos?.[0]?.href,
+        },
+        record: rankedTeam.recordSummary || "",
+        points: rankedTeam.points,
+        trend,
+        previousRank: rankedTeam.previous || undefined,
+      };
+    }),
+  }));
+
+  return {
+    polls,
     lastUpdated: new Date(),
   };
 }

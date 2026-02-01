@@ -4,7 +4,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { LeagueStandingsDisplay } from "@/components/scoreboards/LeagueStandings";
-import { getESPNStandings } from "@/lib/api/espn";
+import { Top25Rankings } from "@/components/scoreboards/Top25Rankings";
+import { getESPNStandings, getNCAAPolls } from "@/lib/api/espn";
 import { LEAGUES, type League } from "@/lib/types";
 
 interface StandingsPageProps {
@@ -122,27 +123,37 @@ async function StandingsContent({
 }: {
   league: Exclude<League, "f1" | "pga">;
 }) {
+  const isNCAA = league === "ncaam" || league === "ncaaw";
+
   try {
-    const standings = await getESPNStandings(league);
-    return <LeagueStandingsDisplay standings={standings} />;
+    // Fetch standings and rankings in parallel for NCAA
+    const [standings, polls] = await Promise.all([
+      getESPNStandings(league),
+      isNCAA ? getNCAAPolls(league) : Promise.resolve(null),
+    ]);
+
+    return (
+      <>
+        {polls && <Top25Rankings polls={polls} />}
+        <LeagueStandingsDisplay standings={standings} />
+      </>
+    );
   } catch (error) {
     console.error(`Failed to fetch ${league} standings:`, error);
     return (
-      <div className="overflow-x-auto">
-        <div className="font-mono text-center py-8 text-terminal-red inline-block min-w-full">
-          <div className="text-terminal-border" aria-hidden="true">
-            ╔══════════════════════════════════════════╗
-          </div>
-          <div>
-            <span className="text-terminal-border" aria-hidden="true">║</span>
-            <span className="px-4">
-              {"  "}Error loading standings. Try again.{"  "}
-            </span>
-            <span className="text-terminal-border" aria-hidden="true">║</span>
-          </div>
-          <div className="text-terminal-border" aria-hidden="true">
-            ╚══════════════════════════════════════════╝
-          </div>
+      <div className="font-mono text-center py-8 text-terminal-red">
+        <div className="text-terminal-border" aria-hidden="true">
+          ╔══════════════════════════════════════════╗
+        </div>
+        <div>
+          <span className="text-terminal-border" aria-hidden="true">║</span>
+          <span className="px-4">
+            {"  "}Error loading standings. Try again.{"  "}
+          </span>
+          <span className="text-terminal-border" aria-hidden="true">║</span>
+        </div>
+        <div className="text-terminal-border" aria-hidden="true">
+          ╚══════════════════════════════════════════╝
         </div>
       </div>
     );
