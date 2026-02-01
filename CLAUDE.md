@@ -122,7 +122,7 @@ pnpm test         # Run tests
 
 ## Versioning
 
-This project uses [Semantic Versioning (semver)](https://semver.org/). **Agents must automatically update the version in `package.json` when making changes.**
+This project uses [Semantic Versioning (semver)](https://semver.org/). **Agents must automatically update the version in `package.json` and add a changelog entry when making changes that require a version bump.**
 
 ### Version Bump Rules
 
@@ -143,21 +143,55 @@ This project uses [Semantic Versioning (semver)](https://semver.org/). **Agents 
 2. Update `package.json` version accordingly:
    - **MINOR bump**: Increment middle number, reset patch to 0 (e.g., 0.12.1 → 0.13.0)
    - **PATCH bump**: Increment last number (e.g., 0.12.1 → 0.12.2)
-3. Include the version bump in your commit
+3. **Add a changelog entry** (see below)
+4. Include the version bump and changelog update in your commit
 
-```bash
-# Example: After adding a new feature
-# Current version: 0.12.1
-# New version: 0.13.0
+### Changelog Maintenance
 
-# Update package.json, then commit with your changes
+**IMPORTANT:** Every version bump MUST include a corresponding changelog entry.
+
+The changelog is maintained in `src/app/changelog/page.tsx` in the `CHANGELOG` constant array.
+
+#### How to Add a Changelog Entry
+
+1. Open `src/app/changelog/page.tsx`
+2. Add a new entry at the **top** of the `CHANGELOG` array (entries are in reverse chronological order)
+3. Include all changes for this version with appropriate types
+
+```typescript
+// Add new entry at the TOP of the CHANGELOG array
+const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "0.X.0",  // The new version number
+    changes: [
+      { type: "feat", description: "Description of new feature" },
+      { type: "fix", description: "Description of bug fix" },
+      // Add all changes for this version
+    ],
+  },
+  // ... existing entries
+];
 ```
+
+#### Change Types
+
+| Type | Label | When to Use |
+|------|-------|-------------|
+| `feat` | NEW | New features, pages, or components |
+| `fix` | FIX | Bug fixes, corrections |
+| `refactor` | REFACTOR | Code restructuring without behavior change |
+| `chore` | CHORE | Dependencies, tooling, configs |
+| `docs` | DOCS | Documentation updates |
+| `style` | STYLE | Formatting, visual changes |
+| `perf` | PERF | Performance improvements |
+| `revert` | REVERT | Reverting previous changes |
 
 ### Important Notes
 
 - Only bump version once per PR, based on the highest-priority change type
 - Breaking changes (when v1.0.0+) would bump MAJOR, but we're in 0.x development
 - The version in `package.json` is the source of truth
+- **Never forget to add a changelog entry when bumping the version**
 
 ## React Best Practices
 
