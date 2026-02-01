@@ -468,19 +468,39 @@ const STANDINGS_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
 };
 
 /**
+ * Primary sort stat for each league (descending order)
+ */
+const PRIMARY_SORT_STAT: Record<Exclude<League, "f1" | "pga">, string> = {
+  nhl: "points",
+  nfl: "wins",
+  nba: "wins",
+  mlb: "wins",
+  mls: "points",
+  epl: "points",
+  ncaam: "wins",
+  ncaaw: "wins",
+};
+
+/**
  * Map ESPN standings entry to our StandingsEntry type
  */
 function mapStandingsEntry(
   entry: ESPNStandingsEntry,
   league: Exclude<League, "f1" | "pga">
-): StandingsEntry {
+): StandingsEntry & { _sortValue: number } {
   const keyStats = STANDINGS_STATS[league];
+  const primaryStat = PRIMARY_SORT_STAT[league];
   const stats: Record<string, string | number> = {};
+  let sortValue = 0;
 
   for (const stat of entry.stats) {
     if (keyStats.includes(stat.name)) {
       // Use displayValue for formatted output
       stats[stat.name] = stat.displayValue;
+      // Store numeric value for primary sort stat
+      if (stat.name === primaryStat && stat.value !== undefined) {
+        sortValue = stat.value;
+      }
     }
   }
 
@@ -493,7 +513,19 @@ function mapStandingsEntry(
       logo: entry.team.logos?.[0]?.href,
     },
     stats,
+    _sortValue: sortValue,
   };
+}
+
+/**
+ * Sort standings entries by primary stat (descending)
+ */
+function sortStandingsEntries(
+  entries: (StandingsEntry & { _sortValue: number })[]
+): StandingsEntry[] {
+  return entries
+    .sort((a, b) => b._sortValue - a._sortValue)
+    .map(({ _sortValue, ...entry }) => entry);
 }
 
 /**
@@ -510,18 +542,20 @@ function extractStandingsGroups(
     if (child.children && child.children.length > 0) {
       for (const subChild of child.children) {
         if (subChild.standings?.entries) {
+          const mappedEntries = subChild.standings.entries.map((e) => mapStandingsEntry(e, league));
           groups.push({
             name: subChild.name,
-            entries: subChild.standings.entries.map((e) => mapStandingsEntry(e, league)),
+            entries: sortStandingsEntries(mappedEntries),
           });
         }
       }
     }
     // If this child has direct standings (e.g., soccer tables)
     else if (child.standings?.entries) {
+      const mappedEntries = child.standings.entries.map((e) => mapStandingsEntry(e, league));
       groups.push({
         name: child.name,
-        entries: child.standings.entries.map((e) => mapStandingsEntry(e, league)),
+        entries: sortStandingsEntries(mappedEntries),
       });
     }
   }
@@ -564,9 +598,10 @@ export async function getESPNStandings(
     groups = extractStandingsGroups(data.children as ESPNStandingsChild[], league);
   } else if (data.standings?.entries && Array.isArray(data.standings.entries)) {
     // Direct standings (no divisions/conferences)
+    const mappedEntries = data.standings.entries.map((e: ESPNStandingsEntry) => mapStandingsEntry(e, league));
     groups = [{
       name: "Standings",
-      entries: data.standings.entries.map((e: ESPNStandingsEntry) => mapStandingsEntry(e, league)),
+      entries: sortStandingsEntries(mappedEntries),
     }];
   } else {
     // Log unexpected structure for debugging
