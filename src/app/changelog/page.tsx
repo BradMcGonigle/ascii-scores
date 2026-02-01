@@ -18,6 +18,15 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.18.0",
+    changes: [
+      { type: "feat", description: "Add game detail pages with full boxscore, scoring summary, and player stats" },
+      { type: "feat", description: "Make game cards clickable to view detailed game information" },
+      { type: "feat", description: "Add team statistics comparison on game detail page" },
+      { type: "feat", description: "Display game leaders, goalie stats, and attendance info" },
+    ],
+  },
+  {
     version: "0.17.0",
     changes: [
       { type: "feat", description: "Sort leagues by season status and popularity" },
