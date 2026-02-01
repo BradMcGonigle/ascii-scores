@@ -307,15 +307,15 @@ export async function getESPNScoreboard(
   const sportPath = LEAGUE_SPORT_MAP[league];
   const baseUrl = `${ESPN_BASE_URL}/${sportPath}/scoreboard`;
 
-  // Add date parameter if provided
-  const url = date
-    ? `${baseUrl}?dates=${formatDateForAPI(date)}`
-    : baseUrl;
+  // Always use explicit date to ensure proper cache invalidation at midnight
+  // Without explicit date, the cache key stays the same and stale data persists
+  const effectiveDate = date ?? new Date();
+  const url = `${baseUrl}?dates=${formatDateForAPI(effectiveDate)}`;
 
   // Determine caching strategy:
   // - Past dates: cache indefinitely (games are final, won't change)
   // - Today/future: revalidate every 30s for live updates
-  const isPastDate = date && isDateInPast(date);
+  const isPastDate = isDateInPast(effectiveDate);
 
   const response = await fetch(url, {
     headers: {
@@ -338,7 +338,7 @@ export async function getESPNScoreboard(
     league,
     games,
     lastUpdated: new Date(),
-    date: date ?? new Date(),
+    date: effectiveDate,
   };
 }
 

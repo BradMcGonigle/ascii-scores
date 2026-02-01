@@ -18,6 +18,12 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.18.1",
+    changes: [
+      { type: "fix", description: "Fix stale 'today' view showing yesterday's games after midnight" },
+    ],
+  },
+  {
     version: "0.18.0",
     changes: [
       { type: "feat", description: "Add league standings pages for all ESPN sports" },
