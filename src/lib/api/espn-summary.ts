@@ -14,7 +14,9 @@ import type {
   TeamBoxscore,
 } from "@/lib/types";
 
-const ESPN_SUMMARY_URL = "https://site.web.api.espn.com/apis/site/v2/sports";
+// ESPN uses different subdomains for different endpoints
+// The summary endpoint works with site.api.espn.com
+const ESPN_SUMMARY_URL = "https://site.api.espn.com/apis/site/v2/sports";
 
 /**
  * ESPN sport paths for each league
@@ -492,32 +494,40 @@ export async function getGameSummary(
     });
 
     if (!response.ok) {
-      console.error(`ESPN Summary API error: ${response.status} ${response.statusText}`);
+      console.error(`ESPN Summary API error for ${url}: ${response.status} ${response.statusText}`);
       return null;
     }
 
     const data: ESPNSummaryResponse = await response.json();
 
-    if (!data.header) {
-      console.error("ESPN Summary API: No header in response");
+    // The ESPN summary API has a different structure - check for header or boxscore
+    if (!data.header && !data.boxscore) {
+      console.error("ESPN Summary API: No header or boxscore in response", Object.keys(data));
       return null;
     }
 
-    const game = mapGame(data.header, league);
-    const homeTeamId = game.homeTeam.id;
-    const awayTeamId = game.awayTeam.id;
+    // If we have header, use that for game info
+    if (data.header) {
+      const game = mapGame(data.header, league);
+      const homeTeamId = game.homeTeam.id;
+      const awayTeamId = game.awayTeam.id;
 
-    return {
-      game,
-      scoringPlays: mapScoringPlays(data.scoringPlays, homeTeamId),
-      homeBoxscore: mapTeamBoxscore(data.boxscore, homeTeamId, game.homeTeam, league),
-      awayBoxscore: mapTeamBoxscore(data.boxscore, awayTeamId, game.awayTeam, league),
-      leaders: mapLeaders(data.leaders),
-      attendance: data.gameInfo?.attendance,
-      officials: data.gameInfo?.officials?.map((o) => o.displayName),
-    };
+      return {
+        game,
+        scoringPlays: mapScoringPlays(data.scoringPlays, homeTeamId),
+        homeBoxscore: mapTeamBoxscore(data.boxscore, homeTeamId, game.homeTeam, league),
+        awayBoxscore: mapTeamBoxscore(data.boxscore, awayTeamId, game.awayTeam, league),
+        leaders: mapLeaders(data.leaders),
+        attendance: data.gameInfo?.attendance,
+        officials: data.gameInfo?.officials?.map((o) => o.displayName),
+      };
+    }
+
+    // Fallback: try to construct basic game info from boxscore
+    console.error("ESPN Summary API: Header not found, cannot construct game summary");
+    return null;
   } catch (error) {
-    console.error("Failed to fetch game summary:", error);
+    console.error(`Failed to fetch game summary for ${league}/${gameId}:`, error);
     return null;
   }
 }
