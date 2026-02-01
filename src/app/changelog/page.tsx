@@ -18,6 +18,21 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.17.0",
+    changes: [
+      { type: "feat", description: "Sort leagues by season status and popularity" },
+      { type: "feat", description: "Add separate 'In Season' and 'Off-Season' sections on homepage" },
+      { type: "feat", description: "Add season dates and popularity rankings to league configuration" },
+    ],
+  },
+  {
+    version: "0.16.0",
+    changes: [
+      { type: "feat", description: "Add English Premier League (EPL) support" },
+      { type: "refactor", description: "Sort leagues alphabetically in navigation and homepage" },
+    ],
+  },
+  {
     version: "0.15.0",
     changes: [
       { type: "feat", description: "Add changelog page with full history of changes" },
