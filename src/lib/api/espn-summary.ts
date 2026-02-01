@@ -509,7 +509,8 @@ export async function getGameSummary(
   try {
     const response = await fetch(url, {
       headers: {
-        Accept: "application/json",
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; AsciiScores/1.0)",
       },
       next: {
         // Cache based on likely game state:
