@@ -177,11 +177,13 @@ interface ESPNHeader {
 }
 
 interface ESPNSummaryResponse {
-  header: ESPNHeader;
+  header?: ESPNHeader;
   boxscore?: ESPNBoxscore;
   scoringPlays?: ESPNScoringPlay[];
   leaders?: ESPNLeader[];
   gameInfo?: ESPNGameInfo;
+  // Allow for unknown additional fields in the response
+  [key: string]: unknown;
 }
 
 // ============================================================================
@@ -240,10 +242,33 @@ function mapPeriodScores(
 }
 
 function mapGame(header: ESPNHeader, league: League): Game {
+  // Defensive checks for data structure
+  if (!header.competitions || header.competitions.length === 0) {
+    console.error("mapGame: No competitions in header", JSON.stringify(header, null, 2).slice(0, 500));
+    throw new Error("No competitions in header");
+  }
+
   const competition = header.competitions[0];
-  const homeCompetitor = competition.competitors.find((c) => c.homeAway === "home")!;
-  const awayCompetitor = competition.competitors.find((c) => c.homeAway === "away")!;
+
+  if (!competition.competitors || competition.competitors.length === 0) {
+    console.error("mapGame: No competitors in competition", JSON.stringify(competition, null, 2).slice(0, 500));
+    throw new Error("No competitors in competition");
+  }
+
+  const homeCompetitor = competition.competitors.find((c) => c.homeAway === "home");
+  const awayCompetitor = competition.competitors.find((c) => c.homeAway === "away");
+
+  if (!homeCompetitor || !awayCompetitor) {
+    console.error("mapGame: Could not find home/away competitors",
+      competition.competitors.map(c => ({ id: c.id, homeAway: c.homeAway })));
+    throw new Error("Could not find home/away competitors");
+  }
+
   const status = competition.status;
+  if (!status || !status.type) {
+    console.error("mapGame: No status in competition");
+    throw new Error("No status in competition");
+  }
 
   return {
     id: header.id,
@@ -501,27 +526,35 @@ export async function getGameSummary(
 
     const data: ESPNSummaryResponse = await response.json();
 
+    // Log the top-level keys for debugging
+    console.log(`ESPN Summary API response keys for ${league}/${gameId}:`, Object.keys(data));
+
     // The ESPN summary API has a different structure - check for header or boxscore
     if (!data.header && !data.boxscore) {
-      console.error("ESPN Summary API: No header or boxscore in response", Object.keys(data));
+      console.error("ESPN Summary API: No header or boxscore in response. Keys:", Object.keys(data));
       return null;
     }
 
     // If we have header, use that for game info
     if (data.header) {
-      const game = mapGame(data.header, league);
-      const homeTeamId = game.homeTeam.id;
-      const awayTeamId = game.awayTeam.id;
+      try {
+        const game = mapGame(data.header, league);
+        const homeTeamId = game.homeTeam.id;
+        const awayTeamId = game.awayTeam.id;
 
-      return {
-        game,
-        scoringPlays: mapScoringPlays(data.scoringPlays, homeTeamId),
-        homeBoxscore: mapTeamBoxscore(data.boxscore, homeTeamId, game.homeTeam, league),
-        awayBoxscore: mapTeamBoxscore(data.boxscore, awayTeamId, game.awayTeam, league),
-        leaders: mapLeaders(data.leaders),
-        attendance: data.gameInfo?.attendance,
-        officials: data.gameInfo?.officials?.map((o) => o.displayName),
-      };
+        return {
+          game,
+          scoringPlays: mapScoringPlays(data.scoringPlays, homeTeamId),
+          homeBoxscore: mapTeamBoxscore(data.boxscore, homeTeamId, game.homeTeam, league),
+          awayBoxscore: mapTeamBoxscore(data.boxscore, awayTeamId, game.awayTeam, league),
+          leaders: mapLeaders(data.leaders),
+          attendance: data.gameInfo?.attendance,
+          officials: data.gameInfo?.officials?.map((o: { displayName: string }) => o.displayName),
+        };
+      } catch (mappingError) {
+        console.error(`Error mapping game data for ${league}/${gameId}:`, mappingError);
+        return null;
+      }
     }
 
     // Fallback: try to construct basic game info from boxscore
