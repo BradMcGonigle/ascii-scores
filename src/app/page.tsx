@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AsciiLogo, AsciiSportIcon } from "@/components/ascii";
 import { LEAGUES, type League } from "@/lib/types";
 
-const LEAGUE_ORDER: League[] = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw", "f1", "pga"];
+const LEAGUE_ORDER: League[] = ["epl", "f1", "mlb", "mls", "nba", "ncaam", "ncaaw", "nfl", "nhl", "pga"];
 
 // League-specific accent colors for hover effects
 const LEAGUE_COLORS: Record<League, string> = {
@@ -208,7 +208,7 @@ export default function HomePage() {
             <div className="inline-block text-terminal-muted text-xs">
               <span className="text-terminal-green">$</span>
               <span className="ml-2">./select-league.sh --league=</span>
-              <span className="text-terminal-cyan">[nhl|nfl|nba|mlb|mls|epl|ncaam|ncaaw|f1|pga]</span>
+              <span className="text-terminal-cyan">[epl|f1|mlb|mls|nba|ncaam|ncaaw|nfl|nhl|pga]</span>
               <span className="text-terminal-green animate-pulse ml-1">█</span>
             </div>
           </div>
