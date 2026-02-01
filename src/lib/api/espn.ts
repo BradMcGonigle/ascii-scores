@@ -1,5 +1,5 @@
 import type { Game, GameStats, GameStatus, League, LeagueStandings, NCAAPolls, PeriodScore, PeriodScores, RankedTeam, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
-import { addDays, formatDateForAPI, isDateInPast } from "@/lib/utils/format";
+import { addDays, formatDateForAPI, getTodayInEastern, getTodayInUK, isDateInPast } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
 const ESPN_STANDINGS_URL = "https://site.web.api.espn.com/apis/v2/sports";
@@ -17,6 +17,20 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
   ncaam: "basketball/mens-college-basketball",
   ncaaw: "basketball/womens-college-basketball",
 };
+
+/**
+ * Get "today" in the appropriate timezone for a league's schedule.
+ * US sports use Eastern time, EPL uses UK time.
+ * This determines which day's games to show, not how times are displayed
+ * (game times are always shown in the user's local timezone).
+ */
+function getTodayForLeague(league: Exclude<League, "f1" | "pga">): Date {
+  if (league === "epl") {
+    return getTodayInUK();
+  }
+  // US sports (NHL, NFL, NBA, MLB, MLS, NCAAM, NCAAW) use Eastern time
+  return getTodayInEastern();
+}
 
 /**
  * ESPN API response types (simplified)
@@ -307,15 +321,16 @@ export async function getESPNScoreboard(
   const sportPath = LEAGUE_SPORT_MAP[league];
   const baseUrl = `${ESPN_BASE_URL}/${sportPath}/scoreboard`;
 
-  // Add date parameter if provided
-  const url = date
-    ? `${baseUrl}?dates=${formatDateForAPI(date)}`
-    : baseUrl;
+  // Always use explicit date to ensure proper cache invalidation at midnight
+  // Without explicit date, the cache key stays the same and stale data persists
+  // Use league-appropriate timezone for "today" (Eastern for US sports, UK for EPL)
+  const effectiveDate = date ?? getTodayForLeague(league);
+  const url = `${baseUrl}?dates=${formatDateForAPI(effectiveDate)}`;
 
   // Determine caching strategy:
   // - Past dates: cache indefinitely (games are final, won't change)
   // - Today/future: revalidate every 30s for live updates
-  const isPastDate = date && isDateInPast(date);
+  const isPastDate = isDateInPast(effectiveDate);
 
   const response = await fetch(url, {
     headers: {
@@ -338,7 +353,7 @@ export async function getESPNScoreboard(
     league,
     games,
     lastUpdated: new Date(),
-    date: date ?? new Date(),
+    date: effectiveDate,
   };
 }
 
@@ -361,7 +376,8 @@ export async function getDatesWithGames(
   daysBack: number = 5,
   daysForward: number = 5
 ): Promise<string[]> {
-  const today = new Date();
+  // Use league-appropriate timezone for "today" (Eastern for US sports, UK for EPL)
+  const today = getTodayForLeague(league);
   const dates: Date[] = [];
 
   // Build array of dates to check

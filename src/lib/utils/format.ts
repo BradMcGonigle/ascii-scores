@@ -154,6 +154,40 @@ export function isDateInPast(date: Date): boolean {
 }
 
 /**
+ * Get "today" in a specific timezone
+ * This ensures consistency regardless of server timezone (e.g., UTC on Vercel).
+ * @param timezone - IANA timezone identifier (e.g., "America/New_York", "Europe/London")
+ */
+export function getTodayInTimezone(timezone: string): Date {
+  const dateStr = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+  // Parse "MM/DD/YYYY" format
+  const [month, day, year] = dateStr.split("/").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/**
+ * Get "today" in US Eastern timezone
+ * ESPN uses Eastern time for US sports schedules.
+ */
+export function getTodayInEastern(): Date {
+  return getTodayInTimezone("America/New_York");
+}
+
+/**
+ * Get "today" in UK timezone
+ * Used for EPL schedules which follow UK time.
+ */
+export function getTodayInUK(): Date {
+  return getTodayInTimezone("Europe/London");
+}
+
+/**
  * Get a relative date label (Today, Yesterday, Tomorrow, or formatted date)
  */
 export function getRelativeDateLabel(date: Date): string {
