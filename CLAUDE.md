@@ -144,7 +144,8 @@ This project uses [Semantic Versioning (semver)](https://semver.org/). **Agents 
    - **MINOR bump**: Increment middle number, reset patch to 0 (e.g., 0.12.1 → 0.13.0)
    - **PATCH bump**: Increment last number (e.g., 0.12.1 → 0.12.2)
 3. **Add a changelog entry** (see below)
-4. Include the version bump and changelog update in your commit
+4. **Update the footer version** in `src/components/layout/Footer.tsx` to match
+5. Include the version bump, changelog update, and footer update in your commit
 
 ### Changelog Maintenance
 
@@ -192,6 +193,17 @@ const CHANGELOG: ChangelogEntry[] = [
 - Breaking changes (when v1.0.0+) would bump MAJOR, but we're in 0.x development
 - The version in `package.json` is the source of truth
 - **Never forget to add a changelog entry when bumping the version**
+- **Never forget to update the footer version** in `src/components/layout/Footer.tsx`
+
+### Version Sync Checklist
+
+When bumping the version, ensure ALL of these locations are updated:
+
+| File | What to Update |
+|------|----------------|
+| `package.json` | `"version": "X.Y.Z"` field |
+| `src/app/changelog/page.tsx` | Add new entry to top of `CHANGELOG` array |
+| `src/components/layout/Footer.tsx` | Update version link text (e.g., `v0.17.0`) |
 
 ## React Best Practices
 
