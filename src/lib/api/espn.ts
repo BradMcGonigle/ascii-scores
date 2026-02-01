@@ -446,12 +446,10 @@ interface ESPNStandingsChild {
   };
 }
 
-interface ESPNStandingsResponse {
-  children?: ESPNStandingsChild[];
-  standings?: {
-    entries: ESPNStandingsEntry[];
-  };
-}
+// Note: ESPN API response structure varies by league, so we parse flexibly
+// rather than typing strictly. Expected structures:
+// - { children: ESPNStandingsChild[] } for leagues with divisions/conferences
+// - { standings: { entries: ESPNStandingsEntry[] } } for flat standings
 
 /**
  * Key stats to extract for standings by league
@@ -554,19 +552,24 @@ export async function getESPNStandings(
     throw new Error(`ESPN API error: ${response.status} ${response.statusText}`);
   }
 
-  const data: ESPNStandingsResponse = await response.json();
+  const data = await response.json();
 
   let groups: StandingsGroup[] = [];
 
   // Handle different response structures
-  if (data.children && data.children.length > 0) {
-    groups = extractStandingsGroups(data.children, league);
-  } else if (data.standings?.entries) {
+  // ESPN API structure varies by league - some have children (divisions/conferences),
+  // some have direct standings
+  if (data.children && Array.isArray(data.children) && data.children.length > 0) {
+    groups = extractStandingsGroups(data.children as ESPNStandingsChild[], league);
+  } else if (data.standings?.entries && Array.isArray(data.standings.entries)) {
     // Direct standings (no divisions/conferences)
     groups = [{
       name: "Standings",
-      entries: data.standings.entries.map((e) => mapStandingsEntry(e, league)),
+      entries: data.standings.entries.map((e: ESPNStandingsEntry) => mapStandingsEntry(e, league)),
     }];
+  } else {
+    // Log unexpected structure for debugging
+    console.warn(`Unexpected ESPN standings response structure for ${league}:`, Object.keys(data));
   }
 
   return {
