@@ -75,6 +75,75 @@ const SPORT_ICONS_COMPACT: Record<League, string> = {
 };
 
 /**
+ * Large ASCII art block letters for league abbreviations
+ */
+const SPORT_ICONS_LARGE: Record<League, string> = {
+  nhl: `
+███╗   ██╗██╗  ██╗██╗
+████╗  ██║██║  ██║██║
+██╔██╗ ██║███████║██║
+██║╚██╗██║██╔══██║██║
+██║ ╚████║██║  ██║███████╗
+╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝`,
+  nfl: `
+███╗   ██╗███████╗██╗
+████╗  ██║██╔════╝██║
+██╔██╗ ██║█████╗  ██║
+██║╚██╗██║██╔══╝  ██║
+██║ ╚████║██║     ███████╗
+╚═╝  ╚═══╝╚═╝     ╚══════╝`,
+  nba: `
+███╗   ██╗██████╗  █████╗
+████╗  ██║██╔══██╗██╔══██╗
+██╔██╗ ██║██████╔╝███████║
+██║╚██╗██║██╔══██╗██╔══██║
+██║ ╚████║██████╔╝██║  ██║
+╚═╝  ╚═══╝╚═════╝ ╚═╝  ╚═╝`,
+  mlb: `
+███╗   ███╗██╗     ██████╗
+████╗ ████║██║     ██╔══██╗
+██╔████╔██║██║     ██████╔╝
+██║╚██╔╝██║██║     ██╔══██╗
+██║ ╚═╝ ██║███████╗██████╔╝
+╚═╝     ╚═╝╚══════╝╚═════╝ `,
+  mls: `
+███╗   ███╗██╗     ███████╗
+████╗ ████║██║     ██╔════╝
+██╔████╔██║██║     ███████╗
+██║╚██╔╝██║██║     ╚════██║
+██║ ╚═╝ ██║███████╗███████║
+╚═╝     ╚═╝╚══════╝╚══════╝`,
+  ncaam: `
+███╗   ██╗ ██████╗ █████╗  █████╗ ███╗   ███╗
+████╗  ██║██╔════╝██╔══██╗██╔══██╗████╗ ████║
+██╔██╗ ██║██║     ███████║███████║██╔████╔██║
+██║╚██╗██║██║     ██╔══██║██╔══██║██║╚██╔╝██║
+██║ ╚████║╚██████╗██║  ██║██║  ██║██║ ╚═╝ ██║
+╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝`,
+  ncaaw: `
+███╗   ██╗ ██████╗ █████╗  █████╗ ██╗    ██╗
+████╗  ██║██╔════╝██╔══██╗██╔══██╗██║    ██║
+██╔██╗ ██║██║     ███████║███████║██║ █╗ ██║
+██║╚██╗██║██║     ██╔══██║██╔══██║██║███╗██║
+██║ ╚████║╚██████╗██║  ██║██║  ██║╚███╔███╔╝
+╚═╝  ╚═══╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝`,
+  f1: `
+███████╗ ██╗
+██╔════╝███║
+█████╗  ╚██║
+██╔══╝   ██║
+██║      ██║
+╚═╝      ╚═╝`,
+  pga: `
+██████╗  ██████╗  █████╗
+██╔══██╗██╔════╝ ██╔══██╗
+██████╔╝██║  ███╗███████║
+██╔═══╝ ██║   ██║██╔══██║
+██║     ╚██████╔╝██║  ██║
+╚═╝      ╚═════╝ ╚═╝  ╚═╝`,
+};
+
+/**
  * ASCII art icons styled with box characters - large
  */
 const SPORT_ICONS_BOXED: Record<League, string> = {
@@ -153,7 +222,7 @@ const SPORT_ICONS_BOXED: Record<League, string> = {
 
 interface AsciiSportIconProps {
   league: League;
-  variant?: "default" | "compact" | "boxed";
+  variant?: "default" | "compact" | "boxed" | "large";
   className?: string;
 }
 
@@ -169,6 +238,7 @@ export function AsciiSportIcon({
     default: SPORT_ICONS,
     compact: SPORT_ICONS_COMPACT,
     boxed: SPORT_ICONS_BOXED,
+    large: SPORT_ICONS_LARGE,
   };
 
   const icon = icons[variant][league];
@@ -181,12 +251,17 @@ export function AsciiSportIcon({
     );
   }
 
+  // Pad all lines to equal length for consistent rendering
+  const lines = icon.trim().split('\n');
+  const maxLength = Math.max(...lines.map(line => line.length));
+  const paddedIcon = lines.map(line => line.padEnd(maxLength)).join('\n');
+
   return (
     <pre
-      className={`font-mono text-terminal-fg leading-none ${className}`}
+      className={`font-mono text-terminal-fg whitespace-pre ${className}`}
       aria-label={`${league.toUpperCase()} icon`}
     >
-      {icon.trim()}
+      {paddedIcon}
     </pre>
   );
 }
