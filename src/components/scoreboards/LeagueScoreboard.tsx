@@ -1,7 +1,7 @@
 import type { Scoreboard } from "@/lib/types";
 import { LEAGUES } from "@/lib/types";
 import { getRelativeDateLabel, isToday } from "@/lib/utils/format";
-import { LocalTime } from "@/components/LocalTime";
+import { SyncStatus } from "@/components/SyncStatus";
 import { GameCard } from "./GameCard";
 
 interface LeagueScoreboardProps {
@@ -164,17 +164,16 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
       <div className="font-mono text-center pt-6" role="status" aria-live="polite">
         <div className="inline-block">
           <div className="text-terminal-border text-xs" aria-hidden="true">
-            ├──────────────────────────────────┤
+            ├────────────────────────────────────────────┤
           </div>
           <div className="text-terminal-muted text-sm py-2">
             <span className="text-terminal-cyan mr-2" aria-hidden="true">◆</span>
-            <span className="sr-only">Data </span>
-            Last synced: <LocalTime date={scoreboard.lastUpdated} />
+            <span className="sr-only">Data sync status: </span>
+            <SyncStatus lastUpdated={scoreboard.lastUpdated} />
             <span className="text-terminal-green ml-2" aria-hidden="true">●</span>
-            <span className="sr-only"> - Connection active</span>
           </div>
           <div className="text-terminal-border text-xs" aria-hidden="true">
-            └──────────────────────────────────┘
+            └────────────────────────────────────────────┘
           </div>
         </div>
       </div>
