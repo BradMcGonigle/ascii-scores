@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 
 interface ChangelogEntry {
   version: string;
-  date: string;
   changes: {
     type: "feat" | "fix" | "refactor" | "chore" | "docs" | "style" | "perf" | "revert";
     description: string;
@@ -20,14 +19,12 @@ interface ChangelogEntry {
 const CHANGELOG: ChangelogEntry[] = [
   {
     version: "0.15.0",
-    date: "2026-02-01",
     changes: [
       { type: "feat", description: "Add changelog page with full history of changes" },
     ],
   },
   {
     version: "0.14.0",
-    date: "2026-01-31",
     changes: [
       { type: "feat", description: "Add countdown to next auto-refresh in sync status" },
       { type: "fix", description: "Display last synced time in user's local timezone" },
@@ -35,7 +32,6 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.13.1",
-    date: "2025-01-29",
     changes: [
       { type: "fix", description: "Pad ASCII art lines to equal length for consistent rendering" },
       { type: "revert", description: "Remove Fira Code web font - made rendering worse" },
@@ -43,7 +39,6 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.13.0",
-    date: "2025-01-28",
     changes: [
       { type: "feat", description: "Add NCAA men's and women's basketball support" },
       { type: "feat", description: "Add ASCII block letters for NCAAM and NCAAW leagues" },
@@ -54,7 +49,6 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.12.1",
-    date: "2025-01-27",
     changes: [
       { type: "feat", description: "Add accessible stat definitions with abbr elements" },
       { type: "fix", description: "Restore NHL, NFL, NBA block letters styling" },
@@ -62,7 +56,6 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.12.0",
-    date: "2025-01-26",
     changes: [
       { type: "feat", description: "Replace sport icons with ASCII block letter league names" },
       { type: "feat", description: "Implement large ASCII league icons on homepage" },
@@ -70,7 +63,6 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.11.0",
-    date: "2025-01-25",
     changes: [
       { type: "feat", description: "Add team records to game cards" },
       { type: "feat", description: "Update NHL game stats to show G, A, SV%" },
@@ -81,21 +73,18 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.10.0",
-    date: "2025-01-24",
     changes: [
       { type: "fix", description: "Display scheduled game times in user's local timezone" },
     ],
   },
   {
     version: "0.9.0",
-    date: "2025-01-23",
     changes: [
       { type: "feat", description: "Add PGA to navigation and enable full-width layout for PGA/F1" },
     ],
   },
   {
     version: "0.8.0",
-    date: "2025-01-22",
     changes: [
       { type: "feat", description: "Add race weekend navigation for F1" },
       { type: "feat", description: "Cache F1 historical races and add date navigation" },
@@ -104,7 +93,6 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.7.0",
-    date: "2025-01-21",
     changes: [
       { type: "feat", description: "Implement comprehensive SEO best practices" },
       { type: "feat", description: "Improve golf leaderboard with round tabs and better formatting" },
@@ -114,21 +102,18 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.6.0",
-    date: "2025-01-20",
     changes: [
       { type: "fix", description: "Comprehensive accessibility improvements for WCAG 2.1 AA compliance" },
     ],
   },
   {
     version: "0.5.0",
-    date: "2025-01-19",
     changes: [
       { type: "refactor", description: "Convert Navigation to server component with minimal client boundary" },
     ],
   },
   {
     version: "0.4.0",
-    date: "2025-01-18",
     changes: [
       { type: "feat", description: "Add period/quarter/inning score breakdowns to game cards" },
       { type: "feat", description: "Add game statistics and update README examples" },
@@ -137,7 +122,6 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.3.0",
-    date: "2025-01-17",
     changes: [
       { type: "feat", description: "Add light theme with system/dark/light selector" },
       { type: "fix", description: "Use theme-aware colors for cards, shadows, and patterns" },
@@ -146,7 +130,6 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.2.0",
-    date: "2025-01-16",
     changes: [
       { type: "feat", description: "Add smart date navigation that skips to days with games" },
       { type: "feat", description: "Add date navigation for viewing past and upcoming scores" },
@@ -155,7 +138,6 @@ const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "0.1.0",
-    date: "2025-01-15",
     changes: [
       { type: "feat", description: "Enhance ASCII art styling with retro CRT terminal aesthetic" },
       { type: "feat", description: "Adopt Vercel React best practices" },
@@ -225,15 +207,9 @@ export default function ChangelogPage() {
               <article key={entry.version} className="font-mono">
                 <div className="retro-card p-6">
                   {/* Version header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                    <h2 className="text-lg">
-                      <span className="text-terminal-green">v{entry.version}</span>
-                    </h2>
-                    <time className="text-terminal-muted text-sm" dateTime={entry.date}>
-                      <span className="text-terminal-border">{"// "}</span>
-                      {entry.date}
-                    </time>
-                  </div>
+                  <h2 className="text-lg mb-4">
+                    <span className="text-terminal-green">v{entry.version}</span>
+                  </h2>
 
                   {/* Divider */}
                   <div className="text-terminal-border text-xs mb-4" aria-hidden="true">
