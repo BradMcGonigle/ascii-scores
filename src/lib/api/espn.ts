@@ -2,6 +2,7 @@ import type { Game, GameStats, GameStatus, League, LeagueStandings, PeriodScore,
 import { addDays, formatDateForAPI, isDateInPast } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
+const ESPN_STANDINGS_URL = "https://site.web.api.espn.com/apis/v2/sports";
 
 /**
  * ESPN sport paths for each league (excluding F1 and PGA which have their own API clients)
@@ -536,7 +537,7 @@ export async function getESPNStandings(
   league: Exclude<League, "f1" | "pga">
 ): Promise<LeagueStandings> {
   const sportPath = LEAGUE_SPORT_MAP[league];
-  const url = `${ESPN_BASE_URL}/${sportPath}/standings`;
+  const url = `${ESPN_STANDINGS_URL}/${sportPath}/standings`;
 
   // Standings update infrequently, cache for 5 minutes
   const response = await fetch(url, {
