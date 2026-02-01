@@ -1,5 +1,5 @@
 import type { Game, GameStats, GameStatus, League, LeagueStandings, NCAAPolls, PeriodScore, PeriodScores, RankedTeam, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
-import { addDays, formatDateForAPI, getTodayInEastern, isDateInPast } from "@/lib/utils/format";
+import { addDays, formatDateForAPI, getTodayInEastern, getTodayInUK, isDateInPast } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
 const ESPN_STANDINGS_URL = "https://site.web.api.espn.com/apis/v2/sports";
@@ -17,6 +17,20 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
   ncaam: "basketball/mens-college-basketball",
   ncaaw: "basketball/womens-college-basketball",
 };
+
+/**
+ * Get "today" in the appropriate timezone for a league's schedule.
+ * US sports use Eastern time, EPL uses UK time.
+ * This determines which day's games to show, not how times are displayed
+ * (game times are always shown in the user's local timezone).
+ */
+function getTodayForLeague(league: Exclude<League, "f1" | "pga">): Date {
+  if (league === "epl") {
+    return getTodayInUK();
+  }
+  // US sports (NHL, NFL, NBA, MLB, MLS, NCAAM, NCAAW) use Eastern time
+  return getTodayInEastern();
+}
 
 /**
  * ESPN API response types (simplified)
@@ -309,8 +323,8 @@ export async function getESPNScoreboard(
 
   // Always use explicit date to ensure proper cache invalidation at midnight
   // Without explicit date, the cache key stays the same and stale data persists
-  // Use Eastern timezone for "today" since ESPN uses it for US sports schedules
-  const effectiveDate = date ?? getTodayInEastern();
+  // Use league-appropriate timezone for "today" (Eastern for US sports, UK for EPL)
+  const effectiveDate = date ?? getTodayForLeague(league);
   const url = `${baseUrl}?dates=${formatDateForAPI(effectiveDate)}`;
 
   // Determine caching strategy:
@@ -362,8 +376,8 @@ export async function getDatesWithGames(
   daysBack: number = 5,
   daysForward: number = 5
 ): Promise<string[]> {
-  // Use Eastern timezone for "today" since ESPN uses it for US sports schedules
-  const today = getTodayInEastern();
+  // Use league-appropriate timezone for "today" (Eastern for US sports, UK for EPL)
+  const today = getTodayForLeague(league);
   const dates: Date[] = [];
 
   // Build array of dates to check
