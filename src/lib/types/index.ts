@@ -1,7 +1,7 @@
 /**
  * Supported leagues
  */
-export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "ncaam" | "ncaaw" | "f1" | "pga";
+export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "epl" | "ncaam" | "ncaaw" | "f1" | "pga";
 
 /**
  * Game status types
@@ -281,6 +281,13 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     name: "MLS",
     fullName: "Major League Soccer",
     color: "mls",
+    sport: "soccer",
+  },
+  epl: {
+    id: "epl",
+    name: "EPL",
+    fullName: "English Premier League",
+    color: "epl",
     sport: "soccer",
   },
   ncaam: {

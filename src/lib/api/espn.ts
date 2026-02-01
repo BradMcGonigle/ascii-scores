@@ -12,6 +12,7 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
   nba: "basketball/nba",
   mlb: "baseball/mlb",
   mls: "soccer/usa.1",
+  epl: "soccer/eng.1",
   ncaam: "basketball/mens-college-basketball",
   ncaaw: "basketball/womens-college-basketball",
 };
@@ -197,6 +198,7 @@ const LEAGUE_KEY_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
   nba: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
   mlb: ["hits", "strikeouts", "homeRuns"],
   mls: ["possessionPct", "shotsOnTarget", "saves"],
+  epl: ["possessionPct", "shotsOnTarget", "saves"],
   ncaam: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
   ncaaw: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
 };

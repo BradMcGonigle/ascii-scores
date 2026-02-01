@@ -87,6 +87,7 @@ export const PERIOD_DEFINITIONS: Record<League, Record<number, string>> = {
     12: "12th Inning",
   },
   mls: {},
+  epl: {},
   ncaam: {
     1: "1st Half",
     2: "2nd Half",
