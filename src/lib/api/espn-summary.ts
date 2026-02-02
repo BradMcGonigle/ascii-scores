@@ -512,15 +512,11 @@ export async function getGameSummary(
   gameId: string
 ): Promise<GameSummary | null> {
   const sportPath = LEAGUE_SPORT_MAP[league];
-  // ESPN summary endpoint requires additional query parameters
-  const url = `${ESPN_SUMMARY_URL}/${sportPath}/summary?region=us&lang=en&contentorigin=espn&event=${gameId}`;
+  // ESPN summary endpoint
+  const url = `${ESPN_SUMMARY_URL}/${sportPath}/summary?event=${gameId}`;
 
   try {
     const response = await fetch(url, {
-      headers: {
-        "Accept": "application/json",
-        "User-Agent": "Mozilla/5.0 (compatible; AsciiScores/1.0)",
-      },
       next: {
         // Cache based on likely game state:
         // - We don't know status yet, so use moderate cache
@@ -568,7 +564,13 @@ export async function getGameSummary(
     console.error("ESPN Summary API: Header not found, cannot construct game summary");
     return null;
   } catch (error) {
-    console.error(`Failed to fetch game summary for ${league}/${gameId}:`, error);
+    console.error(`Failed to fetch game summary for ${league}/${gameId}`);
+    console.error(`URL: ${url}`);
+    console.error(`Error:`, error);
+    if (error instanceof Error) {
+      console.error(`Error name: ${error.name}`);
+      console.error(`Error message: ${error.message}`);
+    }
     return null;
   }
 }
