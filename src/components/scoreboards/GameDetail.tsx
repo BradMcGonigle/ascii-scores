@@ -78,6 +78,36 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
 // ============================================================================
 
 /**
+ * Get the appropriate border style based on game status
+ */
+function getBorderStyle(status: GameSummary["game"]["status"]) {
+  switch (status) {
+    case "live":
+      return {
+        corners: { tl: "╔", tr: "╗", bl: "╚", br: "╝", ml: "╠", mr: "╣" },
+        horizontal: "═",
+        side: "║",
+        textClass: "text-terminal-green",
+      };
+    case "final":
+      return {
+        corners: { tl: "┌", tr: "┐", bl: "└", br: "┘", ml: "├", mr: "┤" },
+        horizontal: "─",
+        side: "│",
+        textClass: "text-terminal-border",
+      };
+    case "scheduled":
+    default:
+      return {
+        corners: { tl: "┏", tr: "┓", bl: "┗", br: "┛", ml: "┣", mr: "┫" },
+        horizontal: "━",
+        side: "┃",
+        textClass: "text-terminal-yellow",
+      };
+  }
+}
+
+/**
  * Flexible border line component that fills available width
  */
 function BorderLine({
@@ -110,27 +140,29 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
   const awayWinning = game.awayScore > game.homeScore;
   const isFinal = game.status === "final";
 
+  const border = getBorderStyle(game.status);
+
   return (
     <div className="font-mono" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
       {/* Top border */}
-      <BorderLine left="╔" right="╗" fill="═" className="text-terminal-green" />
+      <BorderLine left={border.corners.tl} right={border.corners.tr} fill={border.horizontal} className={border.textClass} />
 
       {/* Status line */}
       <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
-        <span className="text-terminal-green" style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">║</span>
+        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
         <div className={`flex-1 text-center py-2 ${statusClass}`} style={{ lineHeight: 'normal' }}>
           {isLive && <span className="text-terminal-green mr-2">●</span>}
           {statusText}
         </div>
-        <span className="text-terminal-green" style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">║</span>
+        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
       </div>
 
       {/* Divider */}
-      <BorderLine left="╠" right="╣" fill="═" className="text-terminal-green" />
+      <BorderLine left={border.corners.ml} right={border.corners.mr} fill={border.horizontal} className={border.textClass} />
 
       {/* Team scores */}
       <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
-        <span className="text-terminal-green" style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">║</span>
+        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
         <div className="flex-1 py-4" style={{ lineHeight: 'normal' }}>
           <div className="flex justify-center items-center gap-8">
             {/* Away team */}
@@ -163,11 +195,11 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             </div>
           </div>
         </div>
-        <span className="text-terminal-green" style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">║</span>
+        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
       </div>
 
       {/* Bottom border */}
-      <BorderLine left="╚" right="╝" fill="═" className="text-terminal-green" />
+      <BorderLine left={border.corners.bl} right={border.corners.br} fill={border.horizontal} className={border.textClass} />
     </div>
   );
 }
