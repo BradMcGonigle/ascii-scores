@@ -76,6 +76,7 @@ When superseding an ADR:
 | [003](003-espn-unofficial-api.md) | ESPN Unofficial API | Accepted | 2026-01 |
 | [004](004-openf1-api.md) | OpenF1 for Formula 1 | Accepted | 2026-01 |
 | [005](005-react-best-practices.md) | Adopt Vercel React Best Practices | Accepted | 2026-01 |
+| [006](006-game-detail-pages.md) | Game Detail Pages with ESPN Summary API | Accepted | 2026-02 |
 
 ## Contributing
 
