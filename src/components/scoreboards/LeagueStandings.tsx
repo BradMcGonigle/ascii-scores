@@ -152,7 +152,7 @@ function StandingsGroupDisplay({ group, league }: StandingsGroupDisplayProps) {
   const visibleStatColumns = statColumns.filter(c => !c.hideOnMobile);
 
   return (
-    <div className="mb-6" id={slug || undefined}>
+    <div id={slug || undefined}>
       {/* Group header */}
       <h3 className="font-mono text-terminal-cyan text-sm mb-2">
         <span className="text-terminal-border">[</span>
@@ -276,8 +276,8 @@ export function LeagueStandingsDisplay({ standings }: LeagueStandingsDisplayProp
         <ConferenceNav groups={standings.groups} />
       )}
 
-      {/* Standings groups */}
-      <div className="space-y-4">
+      {/* Standings groups - grid layout on desktop (3 cols for NCAA) */}
+      <div className={`grid grid-cols-1 lg:grid-cols-2 ${isNCAA ? "xl:grid-cols-3" : ""} gap-4 lg:gap-6`}>
         {standings.groups.map((group) => (
           <StandingsGroupDisplay
             key={group.name}
