@@ -15,7 +15,7 @@ import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
 import { getF1Standings, getF1RaceWeekends, getF1RaceWeekendSessions } from "@/lib/api/openf1";
 import { getPGALeaderboard } from "@/lib/api/pga";
 import { LEAGUES, isLeagueInSeason, getSeasonStartDate, type League } from "@/lib/types";
-import { addDays, parseDateFromAPI } from "@/lib/utils/format";
+import { addDays, formatDateForAPI, getRelativeDateLabel, parseDateFromAPI } from "@/lib/utils/format";
 
 // Leagues that have standings pages
 const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
@@ -257,8 +257,21 @@ async function ESPNContent({
   date?: Date;
 }) {
   try {
-    const scoreboard = await getESPNScoreboard(league, date);
-    return <LeagueScoreboard scoreboard={scoreboard} />;
+    // Fetch scoreboard and dates with games in parallel
+    const [scoreboard, datesWithGames] = await Promise.all([
+      getESPNScoreboard(league, date),
+      getDatesWithGames(league, 0, MAX_DAYS_FUTURE), // Only need future dates
+    ]);
+
+    // Find next date with games (after today)
+    const todayStr = formatDateForAPI(new Date());
+    const sortedDates = [...datesWithGames].sort((a, b) => a.localeCompare(b));
+    const nextDateStr = sortedDates.find((d) => d > todayStr);
+    const nextGameDateLabel = nextDateStr
+      ? getRelativeDateLabel(parseDateFromAPI(nextDateStr)!)
+      : undefined;
+
+    return <LeagueScoreboard scoreboard={scoreboard} nextGameDateLabel={nextGameDateLabel} />;
   } catch (error) {
     console.error(`Failed to fetch ${league} scoreboard:`, error);
     return (
