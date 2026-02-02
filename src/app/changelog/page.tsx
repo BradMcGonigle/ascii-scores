@@ -18,6 +18,17 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.19.0",
+    changes: [
+      { type: "feat", description: "Add day-level precision for league season dates (e.g., MLS starts Feb 21, not Mar 1)" },
+      { type: "style", description: "Improve homepage layout with equal-height league cards" },
+      { type: "style", description: "Remove terminal-style pre-header for cleaner interface" },
+      { type: "style", description: "Move theme selector to footer with consistent styling" },
+      { type: "style", description: "Make 'no games' message responsive on mobile" },
+      { type: "fix", description: "Limit homepage grid to 3 columns for wide league names (NCAAM/NCAAW)" },
+    ],
+  },
+  {
     version: "0.18.1",
     changes: [
       { type: "fix", description: "Fix stale 'today' view showing yesterday's games after midnight" },

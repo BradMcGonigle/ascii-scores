@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { AsciiLogoCompact, AsciiCursor } from "@/components/ascii";
 import { Navigation } from "./Navigation";
-import { ThemeSelector } from "./ThemeSelector";
 
 interface HeaderProps {
   activeLeague?: string;
@@ -10,27 +9,6 @@ interface HeaderProps {
 export function Header({ activeLeague }: HeaderProps) {
   return (
     <header className="border-b border-terminal-border bg-terminal-bg relative">
-      {/* Terminal-style top bar */}
-      <div className="bg-terminal-border/30 border-b border-terminal-border px-4 py-1 hidden sm:block">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-2 text-xs font-mono" aria-hidden="true">
-            <span className="text-terminal-red">●</span>
-            <span className="text-terminal-yellow">●</span>
-            <span className="text-terminal-green">●</span>
-            <span className="text-terminal-muted ml-2">ascii-scores — bash</span>
-          </div>
-          <div className="flex items-center gap-4 text-xs font-mono text-terminal-muted">
-            <ThemeSelector />
-            <div aria-hidden="true">
-              <span className="text-terminal-green">user@scores</span>
-              <span className="text-terminal-muted">:</span>
-              <span className="text-terminal-blue">~</span>
-              <span className="text-terminal-muted">$</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main header content */}
       <div className="mx-auto max-w-7xl px-4 py-3">
         <div className="flex items-center justify-between">
@@ -45,13 +23,7 @@ export function Header({ activeLeague }: HeaderProps) {
               <AsciiCursor variant="block" className="hidden sm:inline opacity-70" />
             </div>
           </Link>
-          <div className="flex items-center gap-2">
-            {/* Theme selector for mobile (hidden on sm+ where it shows in top bar) */}
-            <div className="sm:hidden">
-              <ThemeSelector />
-            </div>
-            <Navigation activeLeague={activeLeague} />
-          </div>
+          <Navigation activeLeague={activeLeague} />
         </div>
       </div>
 

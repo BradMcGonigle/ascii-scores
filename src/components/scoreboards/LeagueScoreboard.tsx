@@ -79,32 +79,49 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
     const noGamesMessage = isTodayDate
       ? `No ${league.name} games scheduled today`
       : `No ${league.name} games on ${dateLabel}`;
-    const paddedMessage = noGamesMessage.padStart(
-      Math.floor((46 + noGamesMessage.length) / 2),
-      " "
-    ).padEnd(46, " ");
 
     return (
-      <div className="font-mono text-center py-12">
-        <div className="inline-block">
-          <div className="text-terminal-border" aria-hidden="true">
+      <div className="font-mono text-center py-12 px-4">
+        <div className="inline-block max-w-full">
+          {/* Top border */}
+          <div className="text-terminal-border hidden sm:block" aria-hidden="true">
             ╔══════════════════════════════════════════════╗
           </div>
-          <div className="text-terminal-border" aria-hidden="true">
+          <div className="text-terminal-border sm:hidden" aria-hidden="true">
+            ╔════════════════════════════╗
+          </div>
+
+          {/* Decorative padding row */}
+          <div className="text-terminal-border hidden sm:block" aria-hidden="true">
             ║{"░".repeat(46)}║
           </div>
-          <div>
+          <div className="text-terminal-border sm:hidden" aria-hidden="true">
+            ║{"░".repeat(28)}║
+          </div>
+
+          {/* Message row */}
+          <div className="flex items-center">
             <span className="text-terminal-border" aria-hidden="true">║</span>
-            <span className="text-terminal-muted">
-              {paddedMessage}
+            <span className="text-terminal-muted px-2 flex-1 text-center whitespace-nowrap overflow-hidden text-ellipsis">
+              {noGamesMessage}
             </span>
             <span className="text-terminal-border" aria-hidden="true">║</span>
           </div>
-          <div className="text-terminal-border" aria-hidden="true">
+
+          {/* Decorative padding row */}
+          <div className="text-terminal-border hidden sm:block" aria-hidden="true">
             ║{"░".repeat(46)}║
           </div>
-          <div className="text-terminal-border" aria-hidden="true">
+          <div className="text-terminal-border sm:hidden" aria-hidden="true">
+            ║{"░".repeat(28)}║
+          </div>
+
+          {/* Bottom border */}
+          <div className="text-terminal-border hidden sm:block" aria-hidden="true">
             ╚══════════════════════════════════════════════╝
+          </div>
+          <div className="text-terminal-border sm:hidden" aria-hidden="true">
+            ╚════════════════════════════╝
           </div>
         </div>
         <div className="mt-4 text-terminal-muted text-xs">
