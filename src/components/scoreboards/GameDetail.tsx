@@ -142,11 +142,6 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
 
   const border = getBorderStyle(game.status);
 
-  // Debug: log the game status to help troubleshoot border colors
-  if (typeof window !== "undefined") {
-    console.log(`Game ${game.awayTeam.abbreviation} @ ${game.homeTeam.abbreviation}: status="${game.status}", border color="${border.textClass}"`);
-  }
-
   return (
     <div className="font-mono" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
       {/* Top border */}
