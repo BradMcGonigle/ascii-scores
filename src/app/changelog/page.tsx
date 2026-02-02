@@ -30,6 +30,8 @@ const CHANGELOG: ChangelogEntry[] = [
       { type: "feat", description: "Make game cards clickable to navigate to detail pages" },
       { type: "feat", description: "Implement ISR caching with 30s revalidation (effectively infinite cache for final games)" },
       { type: "feat", description: "Add responsive ASCII borders that adapt to desktop and mobile widths" },
+      { type: "feat", description: "Add expanded stats to standings pages (streak, home/away, L10, etc.)" },
+      { type: "feat", description: "Add horizontally scrollable standings tables with sticky team column" },
       { type: "fix", description: "Handle sport-specific ESPN API data structures (NBA displayValue vs NHL value)" },
       { type: "fix", description: "Add defensive data parsing with null checks for incomplete API responses" },
       { type: "fix", description: "Remove redundant 'View Details' text from game cards (entire card is clickable)" },

@@ -473,14 +473,47 @@ interface ESPNStandingsChild {
  * Order matters - first stat is primary sort
  */
 const STANDINGS_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
-  nhl: ["points", "gamesPlayed", "wins", "losses", "otLosses", "goalsFor", "goalsAgainst", "goalDifferential"],
-  nfl: ["wins", "losses", "ties", "winPercent", "pointsFor", "pointsAgainst", "pointDifferential"],
-  nba: ["wins", "losses", "winPercent", "gamesBehind", "streak"],
-  mlb: ["wins", "losses", "winPercent", "gamesBehind", "runsFor", "runsAgainst", "runDifferential"],
-  mls: ["points", "gamesPlayed", "wins", "losses", "ties", "goalDifferential"],
-  epl: ["points", "gamesPlayed", "wins", "losses", "ties", "goalDifferential"],
-  ncaam: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses"],
-  ncaaw: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses"],
+  nhl: [
+    "points", "gamesPlayed", "wins", "losses", "otLosses",
+    "goalsFor", "goalsAgainst", "goalDifferential",
+    "streak", "homeRecord", "roadRecord", "regOTWins",
+  ],
+  nfl: [
+    "wins", "losses", "ties", "winPercent",
+    "pointsFor", "pointsAgainst", "pointDifferential",
+    "streak", "homeRecord", "roadRecord", "divisionRecord",
+  ],
+  nba: [
+    "wins", "losses", "winPercent", "gamesBehind", "streak",
+    "homeRecord", "roadRecord", "divisionRecord", "last10Record",
+    "pointsFor", "pointsAgainst",
+  ],
+  mlb: [
+    "wins", "losses", "winPercent", "gamesBehind",
+    "runsFor", "runsAgainst", "runDifferential",
+    "streak", "homeRecord", "roadRecord", "last10Record",
+  ],
+  mls: [
+    "points", "gamesPlayed", "wins", "losses", "ties",
+    "goalsFor", "goalsAgainst", "goalDifferential",
+  ],
+  epl: [
+    "points", "gamesPlayed", "wins", "losses", "ties",
+    "goalsFor", "goalsAgainst", "goalDifferential",
+  ],
+  ncaam: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses", "streak"],
+  ncaaw: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses", "streak"],
+};
+
+/**
+ * Map ESPN stat names to our display names
+ * ESPN may use different names for the same stat
+ */
+const STAT_NAME_ALIASES: Record<string, string> = {
+  // ESPN uses "road" not "away"
+  roadRecord: "awayRecord",
+  // ESPN uses regOTWins for regulation + OT wins
+  regOTWins: "regulationWins",
 };
 
 /**
@@ -502,17 +535,25 @@ const PRIMARY_SORT_STAT: Record<Exclude<League, "f1" | "pga">, string> = {
  */
 function mapStandingsEntry(
   entry: ESPNStandingsEntry,
-  league: Exclude<League, "f1" | "pga">
+  league: Exclude<League, "f1" | "pga">,
+  logStats = false
 ): StandingsEntry & { _sortValue: number } {
   const keyStats = STANDINGS_STATS[league];
   const primaryStat = PRIMARY_SORT_STAT[league];
   const stats: Record<string, string | number> = {};
   let sortValue = 0;
 
+  // Debug: log all available stat names (only once per league in dev)
+  if (logStats && process.env.NODE_ENV === "development") {
+    console.log(`[${league.toUpperCase()}] Available stats:`, entry.stats.map(s => s.name).join(", "));
+  }
+
   for (const stat of entry.stats) {
     if (keyStats.includes(stat.name)) {
+      // Use alias name if defined, otherwise use original name
+      const displayName = STAT_NAME_ALIASES[stat.name] ?? stat.name;
       // Use displayValue for formatted output
-      stats[stat.name] = stat.displayValue;
+      stats[displayName] = stat.displayValue;
       // Store numeric value for primary sort stat
       if (stat.name === primaryStat && stat.value !== undefined) {
         sortValue = stat.value;
@@ -580,9 +621,14 @@ function extractStandingsGroups(
       // Collect all entries from divisions for conference-level view
       const allConferenceEntries: (StandingsEntry & { _sortValue: number })[] = [];
 
+      let hasLoggedStats = false;
       for (const subChild of child.children) {
         if (subChild.standings?.entries) {
-          const mappedEntries = subChild.standings.entries.map((e) => mapStandingsEntry(e, league));
+          const mappedEntries = subChild.standings.entries.map((e, idx) => {
+            const shouldLog = !hasLoggedStats && idx === 0;
+            if (shouldLog) hasLoggedStats = true;
+            return mapStandingsEntry(e, league, shouldLog);
+          });
 
           // Add division-level group
           groups.push({
