@@ -264,25 +264,6 @@ export function GameCard({ game }: GameCardProps) {
         </>
       )}
 
-      {/* View details indicator for clickable cards */}
-      {supportsDetail && (
-        <>
-          <BorderLine
-            left={border.corners.ml}
-            right={border.corners.mr}
-            fill={border.horizontal}
-            className={border.textClass}
-          />
-          <div className="flex items-center">
-            <span className={border.textClass} aria-hidden="true">{border.side}</span>
-            <div className="flex-1 px-2 py-0.5 text-center text-terminal-muted text-xs hover:text-terminal-green transition-colors">
-              View Details ►
-            </div>
-            <span className={border.textClass} aria-hidden="true">{border.side}</span>
-          </div>
-        </>
-      )}
-
       {/* Bottom border */}
       <BorderLine
         left={border.corners.bl}

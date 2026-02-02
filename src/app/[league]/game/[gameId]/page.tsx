@@ -16,6 +16,10 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ascii-scores.verce
 // Only ESPN-based leagues support game details
 const SUPPORTED_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
+// Dynamic revalidation: 30s for live games, effectively infinite for final games
+// This will be used by Next.js for ISR caching
+export const revalidate = 30;
+
 export async function generateMetadata({ params }: GamePageProps) {
   const { league: leagueId, gameId } = await params;
   const league = LEAGUES[leagueId as League];

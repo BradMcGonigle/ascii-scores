@@ -527,14 +527,12 @@ export async function getGameSummary(
   const url = `${ESPN_SUMMARY_URL}/${sportPath}/summary?event=${gameId}`;
 
   try {
-    const response = await fetch(url, {
-      next: {
-        // Cache based on likely game state:
-        // - We don't know status yet, so use moderate cache
-        // - Will be revalidated on subsequent requests if game is live
-        revalidate: 60,
-      },
-    });
+    // Note: We use the page-level revalidate (30s) for caching.
+    // This means:
+    // - Final games will be cached for 30s, then served from CDN/cache indefinitely
+    // - Live games will revalidate every 30s to get updates
+    // - On Vercel, ISR will keep final games cached until next deployment
+    const response = await fetch(url);
 
     if (!response.ok) {
       console.error(`ESPN Summary API error for ${url}: ${response.status} ${response.statusText}`);

@@ -92,10 +92,10 @@ function BorderLine({
   className: string;
 }) {
   return (
-    <div className={`flex ${className}`} aria-hidden="true">
-      <span className="leading-none">{left}</span>
-      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0] leading-none">{fill.repeat(200)}</span>
-      <span className="leading-none">{right}</span>
+    <div className={`flex ${className}`} style={{ lineHeight: 0.85, height: '1em', margin: 0, padding: 0 }} aria-hidden="true">
+      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{left}</span>
+      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{fill.repeat(200)}</span>
+      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{right}</span>
     </div>
   );
 }
@@ -111,27 +111,27 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
   const isFinal = game.status === "final";
 
   return (
-    <div className="font-mono leading-none -space-y-px">
+    <div className="font-mono" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
       {/* Top border */}
       <BorderLine left="╔" right="╗" fill="═" className="text-terminal-green" />
 
       {/* Status line */}
-      <div className="flex leading-none">
-        <span className="text-terminal-green leading-none" aria-hidden="true">║</span>
-        <div className={`flex-1 text-center py-2 ${statusClass}`}>
+      <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
+        <span className="text-terminal-green" style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">║</span>
+        <div className={`flex-1 text-center py-2 ${statusClass}`} style={{ lineHeight: 'normal' }}>
           {isLive && <span className="text-terminal-green mr-2">●</span>}
           {statusText}
         </div>
-        <span className="text-terminal-green leading-none" aria-hidden="true">║</span>
+        <span className="text-terminal-green" style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">║</span>
       </div>
 
       {/* Divider */}
       <BorderLine left="╠" right="╣" fill="═" className="text-terminal-green" />
 
       {/* Team scores */}
-      <div className="flex leading-none">
-        <span className="text-terminal-green leading-none" aria-hidden="true">║</span>
-        <div className="flex-1 py-4">
+      <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
+        <span className="text-terminal-green" style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">║</span>
+        <div className="flex-1 py-4" style={{ lineHeight: 'normal' }}>
           <div className="flex justify-center items-center gap-8">
             {/* Away team */}
             <div className="text-center min-w-[120px]">
@@ -163,7 +163,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             </div>
           </div>
         </div>
-        <span className="text-terminal-green leading-none" aria-hidden="true">║</span>
+        <span className="text-terminal-green" style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">║</span>
       </div>
 
       {/* Bottom border */}
@@ -699,11 +699,11 @@ function GameInfoSection({ venue, venueLocation, attendance, broadcast }: GameIn
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="flex text-terminal-border" aria-hidden="true">
-      <span>╔══</span>
-      <span className="text-terminal-fg mx-2 whitespace-nowrap">{title}</span>
-      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]">{"═".repeat(200)}</span>
-      <span>╗</span>
+    <div className="flex text-terminal-border" style={{ lineHeight: 0.85, height: '1em', margin: 0, padding: 0 }} aria-hidden="true">
+      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>╔══</span>
+      <span className="text-terminal-fg mx-2 whitespace-nowrap" style={{ lineHeight: 'normal' }}>{title}</span>
+      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{"═".repeat(200)}</span>
+      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>╗</span>
     </div>
   );
 }
