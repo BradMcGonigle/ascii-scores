@@ -14,7 +14,7 @@ import { LeagueJsonLd } from "@/components/seo";
 import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
 import { getF1Standings, getF1RaceWeekends, getF1RaceWeekendSessions } from "@/lib/api/openf1";
 import { getPGALeaderboard } from "@/lib/api/pga";
-import { LEAGUES, type League } from "@/lib/types";
+import { LEAGUES, isLeagueInSeason, getSeasonStartDate, type League } from "@/lib/types";
 import { addDays, parseDateFromAPI } from "@/lib/utils/format";
 
 // Leagues that have standings pages
@@ -119,6 +119,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
   }
 
   const league = LEAGUES[leagueId as League];
+  const isOffSeason = !isLeagueInSeason(league);
 
   // Parse and validate date parameter (for ESPN leagues only)
   const isF1 = leagueId === "f1";
@@ -160,6 +161,13 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                   </Link>
                 )}
               </div>
+              {isOffSeason && (
+                <p className="font-mono text-xs text-terminal-yellow mt-2">
+                  <span className="text-terminal-border">[</span>
+                  <span className="mx-1">⏱ Season starts {getSeasonStartDate(league)}</span>
+                  <span className="text-terminal-border">]</span>
+                </p>
+              )}
             </div>
             <RefreshButton />
           </div>

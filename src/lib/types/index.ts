@@ -635,3 +635,15 @@ export function getSortedLeagues(currentDate?: Date): League[] {
   const { active, inactive } = getLeaguesByStatus(currentDate);
   return [...active, ...inactive];
 }
+
+/**
+ * Get the formatted season start date for a league (e.g., "February 21")
+ */
+export function getSeasonStartDate(league: LeagueConfig): string {
+  const { seasonStart, seasonStartDay } = league.season;
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  return `${monthNames[seasonStart - 1]} ${seasonStartDay}`;
+}
