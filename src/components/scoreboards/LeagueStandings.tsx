@@ -276,8 +276,8 @@ export function LeagueStandingsDisplay({ standings }: LeagueStandingsDisplayProp
         <ConferenceNav groups={standings.groups} />
       )}
 
-      {/* Standings groups - grid layout on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+      {/* Standings groups - grid layout on desktop (3 cols for NCAA) */}
+      <div className={`grid grid-cols-1 lg:grid-cols-2 ${isNCAA ? "xl:grid-cols-3" : ""} gap-4 lg:gap-6`}>
         {standings.groups.map((group) => (
           <StandingsGroupDisplay
             key={group.name}
