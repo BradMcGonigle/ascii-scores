@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(git fetch:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm dev)",
+      "WebFetch(domain:ascii-scores-git-claude-add-div-cdd7d5-brad-mcgonigles-projects.vercel.app)",
+      "Bash(git reset:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(git stash:*)",
+      "Bash(pnpm lint:*)",
+      "WebFetch(domain:ascii-scores-git-claude-preview-87f87a-brad-mcgonigles-projects.vercel.app)",
+      "Bash(curl:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}

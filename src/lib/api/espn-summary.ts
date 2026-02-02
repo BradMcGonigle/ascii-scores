@@ -382,27 +382,16 @@ function mapPlayerStats(
   const players: PlayerStats[] = [];
   const goalies: GoalieStats[] = [];
 
-  if (!playersData) {
-    console.log(`mapPlayerStats: No playersData`);
-    return { players, goalies };
-  }
+  if (!playersData) return { players, goalies };
 
   const teamData = playersData.find((p) => p.team.id === teamId);
-  if (!teamData) {
-    console.log(`mapPlayerStats: Team ${teamId} not found in players data. Available teams:`, playersData.map(p => p.team.id));
-    return { players, goalies };
-  }
-
-  console.log(`mapPlayerStats: Found team ${teamId}, has ${teamData.statistics?.length || 0} stat categories`);
+  if (!teamData) return { players, goalies };
 
   for (const category of teamData.statistics) {
     // Defensive check: ensure category has required properties
     if (!category.athletes) {
-      console.log(`mapPlayerStats: Category has no athletes, skipping`);
       continue;
     }
-
-    console.log(`mapPlayerStats: Processing category with ${category.athletes.length} athletes`);
 
     // Check if this is a goalie/goalkeeper category (primarily for hockey)
     const isGoalieCategory = category.name?.toLowerCase().includes("goalie") ||

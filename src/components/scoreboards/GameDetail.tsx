@@ -77,6 +77,29 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
 // Score Header
 // ============================================================================
 
+/**
+ * Flexible border line component that fills available width
+ */
+function BorderLine({
+  left,
+  right,
+  fill,
+  className,
+}: {
+  left: string;
+  right: string;
+  fill: string;
+  className: string;
+}) {
+  return (
+    <div className={`flex ${className}`} aria-hidden="true">
+      <span>{left}</span>
+      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]">{fill.repeat(200)}</span>
+      <span>{right}</span>
+    </div>
+  );
+}
+
 function GameScoreHeader({ summary }: { summary: GameSummary }) {
   const { game } = summary;
   const statusClass = getStatusClass(game.status);
@@ -90,9 +113,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
   return (
     <div className="font-mono">
       {/* Top border */}
-      <div className="text-terminal-green" aria-hidden="true">
-        ╔══════════════════════════════════════════════════════════════════╗
-      </div>
+      <BorderLine left="╔" right="╗" fill="═" className="text-terminal-green" />
 
       {/* Status line */}
       <div className="flex">
@@ -105,9 +126,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
       </div>
 
       {/* Divider */}
-      <div className="text-terminal-green" aria-hidden="true">
-        ╠══════════════════════════════════════════════════════════════════╣
-      </div>
+      <BorderLine left="╠" right="╣" fill="═" className="text-terminal-green" />
 
       {/* Team scores */}
       <div className="flex">
@@ -148,9 +167,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
       </div>
 
       {/* Bottom border */}
-      <div className="text-terminal-green" aria-hidden="true">
-        ╚══════════════════════════════════════════════════════════════════╝
-      </div>
+      <BorderLine left="╚" right="╝" fill="═" className="text-terminal-green" />
     </div>
   );
 }
