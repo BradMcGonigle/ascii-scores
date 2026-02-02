@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
-import { LeagueStandingsDisplay } from "@/components/scoreboards/LeagueStandings";
+import { StandingsViewToggle } from "@/components/scoreboards/StandingsViewToggle";
 import { Top25Rankings } from "@/components/scoreboards/Top25Rankings";
 import { getESPNStandings, getNCAAPolls } from "@/lib/api/espn";
 import { LEAGUES, type League } from "@/lib/types";
@@ -135,7 +135,7 @@ async function StandingsContent({
     return (
       <>
         {polls && <Top25Rankings polls={polls} />}
-        <LeagueStandingsDisplay standings={standings} />
+        <StandingsViewToggle standings={standings} />
       </>
     );
   } catch (error) {
