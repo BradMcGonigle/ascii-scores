@@ -111,7 +111,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
   const isFinal = game.status === "final";
 
   return (
-    <div className="font-mono leading-none">
+    <div className="font-mono leading-none -space-y-px">
       {/* Top border */}
       <BorderLine left="╔" right="╗" fill="═" className="text-terminal-green" />
 
