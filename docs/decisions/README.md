@@ -77,6 +77,9 @@ When superseding an ADR:
 | [004](004-openf1-api.md) | OpenF1 for Formula 1 | Accepted | 2026-01 |
 | [005](005-react-best-practices.md) | Adopt Vercel React Best Practices | Accepted | 2026-01 |
 | [006](006-game-detail-pages.md) | Game Detail Pages with ESPN Summary API | Accepted | 2026-02 |
+| [007](007-server-component-patterns.md) | Server Component Patterns | Accepted | 2026-01 |
+| [008](008-wcag-accessibility.md) | WCAG 2.1 AA Accessibility | Accepted | 2026-01 |
+| [009](009-hybrid-caching-strategy.md) | Hybrid Caching Strategy | Accepted | 2026-01 |
 
 ## Contributing
 

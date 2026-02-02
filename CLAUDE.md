@@ -118,7 +118,38 @@ pnpm test         # Run tests
 - Prefer server components; use `"use client"` only when necessary
 - Keep components focused and single-purpose
 - Follow conventional commits for commit messages
-- **Always run checks before committing**: `pnpm lint && pnpm typecheck`
+
+### Git Workflow (MANDATORY)
+
+**NEVER commit directly to `main`.** Always use feature branches and pull requests:
+
+1. **Create a feature branch** before making changes:
+
+   ```bash
+   git checkout -b <type>/<short-description>
+   # Examples: feat/add-nhl-standings, fix/mobile-nav-focus, refactor/api-caching
+   ```
+
+2. **Make commits on the feature branch**, not `main`
+
+3. **Open a PR** to merge into `main` when work is complete
+
+4. **Branch naming convention**:
+   - `feat/` - New features
+   - `fix/` - Bug fixes
+   - `refactor/` - Code refactoring
+   - `docs/` - Documentation only
+   - `chore/` - Maintenance tasks
+
+If you find yourself on `main` with uncommitted changes, stash or create a branch before committing.
+
+### Pre-Commit Checklist (MANDATORY)
+
+Before committing any changes, you MUST complete these steps:
+
+1. **Run code checks**: `pnpm lint && pnpm typecheck`
+2. **Evaluate documentation needs** for the branch/PR (see decision tree below)
+3. **Create or update documentation** as needed (one ADR per decision, not per commit)
 
 ## Versioning
 
@@ -383,33 +414,86 @@ items.forEach(item => {
 - ASCII art should work in standard terminal widths (80+ chars)
 - Prioritize accessibility - scores should be readable by screen readers
 
-## Documentation Maintenance
+## Documentation Maintenance (MANDATORY)
 
-**You are expected to maintain documentation during development.** This ensures future AI agents and developers understand the context behind decisions.
+**Documentation is NOT optional.** Like running `pnpm lint && pnpm typecheck`, documentation must be completed as part of your work. This ensures future AI agents and developers understand the context behind decisions.
 
-### When to Update Documentation
+### Scope: Branch/PR, Not Per-Commit
 
-| Action | Documentation Required |
-|--------|----------------------|
-| Add new library/dependency | Create ADR in `docs/decisions/` |
-| Change architectural patterns | Create ADR + update `ARCHITECTURE.md` |
-| Establish new coding patterns | Update this file (`CLAUDE.md`) |
-| Complete development phase | Update `AGENTS.md` status |
-| Make significant trade-offs | Create ADR documenting decision |
+Documentation is scoped to the **entire branch or PR**, not individual commits:
+
+- **One ADR per decision**, not per commit. If you're iterating on a feature across multiple commits, create the ADR once and refine it as needed.
+- **One Historical Context Log entry per feature/decision**, updated as understanding evolves.
+- **Review documentation before the PR is merged**, ensuring it reflects the final implementation.
+- If a previous commit in the same branch already created an ADR, **update it** rather than creating a new one.
+
+### Documentation Decision Tree
+
+Before committing, walk through this decision tree:
+
+```
+┌─ Did you add/remove a dependency or external service?
+│  └─ YES → Create ADR (see below)
+│
+├─ Did you change how data is fetched, cached, or stored?
+│  └─ YES → Create ADR
+│
+├─ Did you establish a pattern that will be used in 2+ places?
+│  └─ YES → Create ADR + update CLAUDE.md
+│
+├─ Did you make a trade-off (chose X over Y for a reason)?
+│  └─ YES → Create ADR
+│
+├─ Did you add a new feature or component type?
+│  └─ YES → Add entry to Historical Context Log in AGENTS.md
+│
+├─ Did you refactor existing architecture?
+│  └─ YES → Create ADR if approach changed, update ARCHITECTURE.md
+│
+└─ Did you learn something important (gotcha, failed approach)?
+   └─ YES → Add entry to Historical Context Log in AGENTS.md
+```
+
+### ADR Triggers (MUST create ADR)
+
+Create an ADR in `docs/decisions/` when ANY of these apply:
+
+| Trigger | Example |
+|---------|---------|
+| New dependency added | Adding Vercel Analytics, a date library, etc. |
+| Dependency removed | Removing TanStack Query in favor of built-in caching |
+| New external API/service | Integrating OpenF1, adding SEO tools |
+| Caching strategy change | Different TTLs for historical vs live data |
+| Component architecture pattern | Server-first components, client boundary rules |
+| Accessibility approach | WCAG compliance level, reduced motion handling |
+| Performance optimization pattern | Code splitting rules, bundle size strategies |
+| Security decision | Auth approach, API key handling |
+
+### Historical Context Log Triggers (MUST add entry)
+
+Add to the Historical Context Log in `AGENTS.md` when:
+
+| Trigger | Example |
+|---------|---------|
+| New feature type added | PGA Tour golf (non-date-based sport) |
+| Visual/UX decision | Simplifying CRT effects for clarity |
+| Tool/service adoption | Adding Vercel Analytics |
+| Implementation insight | Theme system localStorage approach |
+| Failed approach worth noting | Why a library didn't work out |
 
 ### Creating an ADR
 
 1. Copy `docs/decisions/000-template.md` to `docs/decisions/NNN-title.md`
-2. Fill in all sections (Context, Decision, Consequences, Alternatives)
+2. Fill in ALL sections (Context, Decision, Consequences, Alternatives)
 3. Update `docs/decisions/README.md` table
-4. Update `AGENTS.md` quick reference table
+4. Update `AGENTS.md` Quick Decision Reference table
 5. Reference ADR in commit message
 
 ### Commit Message References
 
 When implementing documented decisions, reference them:
 
-```
+```text
 feat: implement ESPN scoreboard caching
 
 Implements caching strategy from ADR-001 using Next.js 16
@@ -418,6 +502,15 @@ Implements caching strategy from ADR-001 using Next.js 16
 Relates to: ADR-001, ADR-003
 ```
 
-### Historical Context
+### Verification Before Merge
 
-When you learn something important during development (gotchas, failed approaches, insights), add it to the "Historical Context Log" section in `AGENTS.md`.
+Before merging a PR (or on final commit of a branch), verify:
+
+- [ ] Code checks pass: `pnpm lint && pnpm typecheck`
+- [ ] Documentation decision tree evaluated for the branch as a whole
+- [ ] Required ADRs created/updated and tables updated
+- [ ] Historical Context Log updated if applicable
+- [ ] ADRs reflect the **final implementation**, not intermediate iterations
+- [ ] Commit/PR message references relevant ADRs
+
+**During iteration:** Focus on code quality. Update existing documentation if the approach changes significantly, but don't create new ADRs for each iteration on the same decision.
