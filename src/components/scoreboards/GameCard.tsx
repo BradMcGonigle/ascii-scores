@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Game, GameStatus } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
 import { GameStats } from "./GameStats";
@@ -6,6 +7,9 @@ import { PeriodScores } from "./PeriodScores";
 interface GameCardProps {
   game: Game;
 }
+
+// Leagues that support game detail pages
+const DETAIL_SUPPORTED_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
 /**
  * Get the appropriate border style based on game status
@@ -135,12 +139,14 @@ export function GameCard({ game }: GameCardProps) {
   const isLive = game.status === "live";
   const cardClass = isLive ? "retro-card border-terminal-green/70" : "retro-card";
 
-  return (
-    <div
-      className={`font-mono text-sm ${cardClass} p-1 transition-all hover:border-terminal-fg/50`}
-      role="article"
-      aria-label={`${game.awayTeam.displayName} vs ${game.homeTeam.displayName}`}
-    >
+  // Check if this league supports game detail pages
+  const supportsDetail = DETAIL_SUPPORTED_LEAGUES.includes(game.league);
+  const gameUrl = supportsDetail ? `/${game.league}/game/${game.id}` : undefined;
+
+  const wrapperClassName = `font-mono text-sm ${cardClass} p-1 transition-all hover:border-terminal-fg/50 ${supportsDetail ? "cursor-pointer" : ""} block`;
+
+  const cardContent = (
+    <>
       {/* Top border */}
       <BorderLine
         left={border.corners.tl}
@@ -265,6 +271,30 @@ export function GameCard({ game }: GameCardProps) {
         fill={border.horizontal}
         className={border.textClass}
       />
+    </>
+  );
+
+  // Wrap in Link if game details are supported
+  if (gameUrl) {
+    return (
+      <Link
+        href={gameUrl}
+        className={wrapperClassName}
+        role="article"
+        aria-label={`${game.awayTeam.displayName} vs ${game.homeTeam.displayName} - Click for details`}
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div
+      className={wrapperClassName}
+      role="article"
+      aria-label={`${game.awayTeam.displayName} vs ${game.homeTeam.displayName}`}
+    >
+      {cardContent}
     </div>
   );
 }

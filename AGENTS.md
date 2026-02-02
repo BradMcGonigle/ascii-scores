@@ -54,6 +54,7 @@ All significant architectural and technical decisions are documented in `docs/de
 | [003 - ESPN Unofficial API](docs/decisions/003-espn-unofficial-api.md) | Accepted | Use ESPN's hidden API with aggressive caching |
 | [004 - OpenF1 for Formula 1](docs/decisions/004-openf1-api.md) | Accepted | Use community OpenF1 API for F1 data |
 | [005 - React Best Practices](docs/decisions/005-react-best-practices.md) | Accepted | Adopt Vercel's React best practices and enhanced ESLint rules |
+| [006 - Game Detail Pages](docs/decisions/006-game-detail-pages.md) | Accepted | Use ESPN Summary API for detailed game data with ISR caching |
 
 ## Development Context
 

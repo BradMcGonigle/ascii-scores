@@ -136,6 +136,142 @@ export interface Scoreboard {
   date: Date;
 }
 
+// ============================================================================
+// Game Summary / Boxscore Types
+// ============================================================================
+
+/**
+ * Scoring play strength indicator
+ */
+export type ScoringStrength = "even" | "ppg" | "shg" | "en" | "ps" | "og";
+
+/**
+ * Individual scoring play in a game
+ */
+export interface ScoringPlay {
+  /** Period/quarter/inning when score occurred */
+  period: number;
+  /** Time of the score (e.g., "12:34") */
+  time: string;
+  /** Team that scored */
+  team: {
+    id: string;
+    abbreviation: string;
+  };
+  /** Player who scored */
+  scorer: {
+    id: string;
+    name: string;
+    seasonTotal?: number;
+  };
+  /** Assists (hockey/soccer) or other contributors */
+  assists?: Array<{
+    id: string;
+    name: string;
+  }>;
+  /** Scoring strength (PP, SH, EN, etc.) */
+  strength?: ScoringStrength;
+  /** Score after this play (home-away) */
+  homeScore: number;
+  awayScore: number;
+  /** Description of the play */
+  description?: string;
+}
+
+/**
+ * Player statistics for boxscore
+ */
+export interface PlayerStats {
+  /** Player info */
+  player: {
+    id: string;
+    name: string;
+    displayName: string;
+    shortName: string;
+    jersey?: string;
+    position?: string;
+  };
+  /** Whether player is a starter */
+  starter: boolean;
+  /** Sport-specific stats as key-value pairs */
+  stats: Record<string, string | number>;
+}
+
+/**
+ * Goalie/pitcher/keeper specific stats
+ */
+export interface GoalieStats {
+  /** Player info */
+  player: {
+    id: string;
+    name: string;
+    displayName: string;
+    shortName: string;
+    jersey?: string;
+  };
+  /** Win/Loss/OTL decision */
+  decision?: "W" | "L" | "OTL" | "SO" | "ND";
+  /** Sport-specific stats */
+  stats: Record<string, string | number>;
+}
+
+/**
+ * Team boxscore data
+ */
+export interface TeamBoxscore {
+  /** Team info */
+  team: Team;
+  /** All team statistics */
+  stats: Record<string, string | number>;
+  /** Player statistics (skaters in hockey, position players in other sports) */
+  players: PlayerStats[];
+  /** Goalies/pitchers/keepers */
+  goalies?: GoalieStats[];
+}
+
+/**
+ * Game leaders (top performers)
+ */
+export interface GameLeaders {
+  /** Category name (e.g., "Goals", "Assists", "Points") */
+  category: string;
+  /** Leaders in this category */
+  leaders: Array<{
+    player: {
+      id: string;
+      name: string;
+      shortName: string;
+    };
+    team: {
+      id: string;
+      abbreviation: string;
+    };
+    value: string | number;
+  }>;
+}
+
+/**
+ * Full game summary with boxscore data
+ */
+export interface GameSummary {
+  /** Basic game info (from scoreboard) */
+  game: Game;
+  /** Scoring plays timeline */
+  scoringPlays: ScoringPlay[];
+  /** Home team boxscore */
+  homeBoxscore: TeamBoxscore;
+  /** Away team boxscore */
+  awayBoxscore: TeamBoxscore;
+  /** Game leaders by category */
+  leaders: GameLeaders[];
+  /** Attendance */
+  attendance?: number;
+  /** Game duration */
+  duration?: string;
+  /** Officials/referees */
+  officials?: string[];
+}
+
 /**
  * F1 standings data
  */

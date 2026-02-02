@@ -45,7 +45,7 @@ export function Footer() {
               href="/changelog"
               className="text-terminal-fg hover:text-terminal-green transition-colors"
             >
-              v0.19.0
+              v0.20.0
             </Link>
             <span className="text-terminal-muted">•</span>
             <span className="text-terminal-muted">&copy; {new Date().getFullYear()}</span>
