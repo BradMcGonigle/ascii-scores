@@ -699,10 +699,10 @@ function GameInfoSection({ venue, venueLocation, attendance, broadcast }: GameIn
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="text-terminal-border" aria-hidden="true">
+    <div className="flex text-terminal-border" aria-hidden="true">
       <span>╔══</span>
-      <span className="text-terminal-fg mx-2">{title}</span>
-      <span>{"═".repeat(Math.max(0, 60 - title.length))}</span>
+      <span className="text-terminal-fg mx-2 whitespace-nowrap">{title}</span>
+      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]">{"═".repeat(200)}</span>
       <span>╗</span>
     </div>
   );
