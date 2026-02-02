@@ -55,6 +55,9 @@ All significant architectural and technical decisions are documented in `docs/de
 | [004 - OpenF1 for Formula 1](docs/decisions/004-openf1-api.md) | Accepted | Use community OpenF1 API for F1 data |
 | [005 - React Best Practices](docs/decisions/005-react-best-practices.md) | Accepted | Adopt Vercel's React best practices and enhanced ESLint rules |
 | [006 - Game Detail Pages](docs/decisions/006-game-detail-pages.md) | Accepted | Use ESPN Summary API for detailed game data with ISR caching |
+| [007 - Server Component Patterns](docs/decisions/007-server-component-patterns.md) | Accepted | Minimize client JS with server-first component design |
+| [008 - WCAG Accessibility](docs/decisions/008-wcag-accessibility.md) | Accepted | WCAG 2.1 AA compliance with reduced motion support |
+| [009 - Hybrid Caching Strategy](docs/decisions/009-hybrid-caching-strategy.md) | Accepted | Cache historical data indefinitely, live data at 30s |
 
 ## Development Context
 
@@ -120,6 +123,19 @@ Implements caching strategy from ADR-001 using Next.js 16
 
 This section captures important context that doesn't fit in formal ADRs - discussions, experiments, and learnings.
 
+### 2026-02
+
+- **Added game detail pages** (PR #38) - click-through from scoreboard to full boxscore with play-by-play, team stats, and player stats; uses ESPN Summary API with ISR caching (ADR-006)
+- **Added league standings pages** (PR #36) - comprehensive standings for all ESPN sports with division/conference groupings; reuses existing API patterns
+- **Added division/conference toggle** (PR #37) - standings can be viewed by division, conference, or full league; user preference persisted
+- **Added changelog page** (PR #32) - in-app changelog at /changelog showing version history; changelog maintained in code as TypeScript constant for type safety
+- **Added NCAA basketball** (PR #29) - men's (NCAAM) and women's (NCAAW) college basketball; follows established ESPN league pattern
+- **Added English Premier League** (PR #33) - EPL soccer support following existing MLS pattern
+- **Extended hybrid caching to F1** (PR #22) - F1 historical sessions now cached indefinitely like ESPN leagues; added date navigation for browsing past race weekends
+- **Local timezone display** (PR #24, #31, #39) - game times and "last synced" timestamps now display in user's local timezone; uses Intl.DateTimeFormat for localization
+- **Semantic versioning adopted** (PR #30) - added semver workflow to CLAUDE.md; version bumps required for feat/fix commits with changelog entries
+- **League sorting by season status** (PR #34) - homepage leagues sorted by active season first, then by popularity; improves UX during off-seasons
+
 ### 2026-01
 
 - **Project initiated** with focus on ASCII aesthetic and minimal dependencies
@@ -127,6 +143,11 @@ This section captures important context that doesn't fit in formal ADRs - discus
 - **Decision to avoid TanStack Query** - evaluated but determined Next.js 16 covers our read-only use case
 - **Adopted Vercel React Best Practices** - enhanced ESLint with jsx-a11y plugin, documented patterns in CLAUDE.md (ADR-005)
 - **Enhanced ASCII art styling** - added CRT effects (scanlines, vignette, phosphor glow), sport icons, and retro terminal aesthetic to differentiate from other sports score sites
+- **Simplified CRT effects** (PR #15) - removed heavy scanline overlay and vignette effects in favor of cleaner ASCII borders; glow effects replaced with simple bold text; decision driven by visual clarity over maximum retro simulation
+- **Added Vercel Web Analytics** (PR #11) - chose Vercel Analytics for native Next.js integration and zero-config setup; privacy-friendly (no cookies, GDPR compliant); tracks page views and Web Vitals automatically
+- **Implemented theme system** (PR #14) - light/dark/system theme with localStorage persistence; CRT effects reduced in light mode; uses CSS variables for theme switching without flash; system preference detected via `prefers-color-scheme`
+- **Added PGA Tour golf** (PR #19) - established pattern for adding non-date-based sports; golf uses tournament leaderboard view instead of daily scores; demonstrates extensibility of the league architecture
+- **Comprehensive SEO implementation** (PR #20) - added OpenGraph/Twitter cards, JSON-LD structured data (Organization, WebSite, BreadcrumbList), XML sitemap, robots.txt, and PWA manifest; pattern for future metadata needs
 
 ---
 
