@@ -481,21 +481,25 @@ function mapTeamBoxscore(
 function mapLeaders(leaders: ESPNLeader[] | undefined): GameLeaders[] {
   if (!leaders) return [];
 
-  return leaders.map((leader) => ({
-    category: leader.displayName,
-    leaders: leader.leaders.map((l) => ({
-      player: {
-        id: l.athlete.id,
-        name: l.athlete.displayName,
-        shortName: l.athlete.shortName,
-      },
-      team: {
-        id: l.team.id,
-        abbreviation: l.team.abbreviation,
-      },
-      value: l.displayValue || l.value,
-    })),
-  }));
+  return leaders
+    .filter((leader) => leader.displayName && leader.leaders)
+    .map((leader) => ({
+      category: leader.displayName,
+      leaders: leader.leaders
+        .filter((l) => l.athlete && l.team)
+        .map((l) => ({
+          player: {
+            id: l.athlete.id,
+            name: l.athlete.displayName,
+            shortName: l.athlete.shortName,
+          },
+          team: {
+            id: l.team.id,
+            abbreviation: l.team.abbreviation,
+          },
+          value: l.displayValue || l.value,
+        })),
+    }));
 }
 
 // ============================================================================
