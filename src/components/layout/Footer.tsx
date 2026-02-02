@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { ThemeSelector } from "./ThemeSelector";
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-terminal-border bg-terminal-bg relative overflow-visible">
+    <footer className="mt-auto border-t border-terminal-border bg-terminal-bg relative overflow-hidden">
       {/* Decorative top gradient */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-terminal-green/30 to-transparent" />
 
@@ -19,18 +18,12 @@ export function Footer() {
             ┌──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┐
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 text-center">
-            <span>
-              <span className="text-terminal-cyan">DATA:</span> ESPN API + OpenF1
-            </span>
-            <span className="text-terminal-border">│</span>
-            <span>
-              <span className="text-terminal-yellow">STATUS:</span>
-              <span className="text-terminal-green ml-1">● ONLINE</span>
-            </span>
-            <span className="text-terminal-border">│</span>
-            <ThemeSelector />
-          </div>
+          <p className="text-center">
+            <span className="text-terminal-cyan">DATA:</span> ESPN API + OpenF1
+            <span className="text-terminal-border mx-2">│</span>
+            <span className="text-terminal-yellow">STATUS:</span>
+            <span className="text-terminal-green ml-1">● ONLINE</span>
+          </p>
 
           {/* Main logo section */}
           <div className="flex items-center gap-2">
