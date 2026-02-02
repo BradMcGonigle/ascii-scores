@@ -128,40 +128,40 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
       {/* Divider */}
       <BorderLine left="╠" right="╣" fill="═" className="text-terminal-green" />
 
-      {/* Away team score */}
+      {/* Team scores */}
       <div className="flex">
         <span className="text-terminal-green" aria-hidden="true">║</span>
-        <div className="flex-1 flex items-center justify-between px-4 py-2">
-          <div className="flex items-center gap-4">
-            <span className={`text-2xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
-              {game.awayTeam.abbreviation}
-            </span>
-            {game.awayTeam.record && (
-              <span className="text-terminal-muted text-sm">({game.awayTeam.record})</span>
-            )}
-          </div>
-          <span className={`text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
-            {game.awayScore}
-          </span>
-        </div>
-        <span className="text-terminal-green" aria-hidden="true">║</span>
-      </div>
+        <div className="flex-1 py-4">
+          <div className="flex justify-center items-center gap-8">
+            {/* Away team */}
+            <div className="text-center min-w-[120px]">
+              <div className={`text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+                {game.awayTeam.abbreviation}
+              </div>
+              <div className="text-terminal-muted text-sm">{game.awayTeam.record}</div>
+            </div>
 
-      {/* Home team score */}
-      <div className="flex">
-        <span className="text-terminal-green" aria-hidden="true">║</span>
-        <div className="flex-1 flex items-center justify-between px-4 py-2">
-          <div className="flex items-center gap-4">
-            <span className={`text-2xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
-              {game.homeTeam.abbreviation}
-            </span>
-            {game.homeTeam.record && (
-              <span className="text-terminal-muted text-sm">({game.homeTeam.record})</span>
-            )}
+            {/* Score */}
+            <div className="text-center">
+              <div className="flex items-center gap-4 text-4xl font-bold">
+                <span className={awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
+                  {game.awayScore}
+                </span>
+                <span className="text-terminal-muted text-2xl">-</span>
+                <span className={homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
+                  {game.homeScore}
+                </span>
+              </div>
+            </div>
+
+            {/* Home team */}
+            <div className="text-center min-w-[120px]">
+              <div className={`text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+                {game.homeTeam.abbreviation}
+              </div>
+              <div className="text-terminal-muted text-sm">{game.homeTeam.record}</div>
+            </div>
           </div>
-          <span className={`text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
-            {game.homeScore}
-          </span>
         </div>
         <span className="text-terminal-green" aria-hidden="true">║</span>
       </div>
