@@ -445,15 +445,19 @@ export interface GolfLeaderboard {
 }
 
 /**
- * Season date range (uses month numbers, 1-12)
- * For leagues that span calendar years (e.g., NHL Oct-Apr),
+ * Season date range with day-level precision
+ * For leagues that span calendar years (e.g., NHL Oct-Jun),
  * seasonStart > seasonEnd indicates a wrap-around
  */
 export interface SeasonDates {
   /** Month the season starts (1-12) */
   seasonStart: number;
+  /** Day the season starts (1-31) */
+  seasonStartDay: number;
   /** Month the season ends (1-12) */
   seasonEnd: number;
+  /** Day the season ends (1-31) */
+  seasonEndDay: number;
 }
 
 /**
@@ -481,7 +485,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "National Hockey League",
     color: "nhl",
     sport: "hockey",
-    season: { seasonStart: 10, seasonEnd: 6 }, // October - June
+    season: { seasonStart: 10, seasonStartDay: 8, seasonEnd: 6, seasonEndDay: 30 }, // Oct 8 - Jun 30
     popularity: 4,
   },
   nfl: {
@@ -490,7 +494,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "National Football League",
     color: "nfl",
     sport: "football",
-    season: { seasonStart: 9, seasonEnd: 2 }, // September - February
+    season: { seasonStart: 9, seasonStartDay: 5, seasonEnd: 2, seasonEndDay: 10 }, // Sep 5 - Feb 10
     popularity: 1,
   },
   nba: {
@@ -499,7 +503,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "National Basketball Association",
     color: "nba",
     sport: "basketball",
-    season: { seasonStart: 10, seasonEnd: 6 }, // October - June
+    season: { seasonStart: 10, seasonStartDay: 15, seasonEnd: 6, seasonEndDay: 20 }, // Oct 15 - Jun 20
     popularity: 2,
   },
   mlb: {
@@ -508,7 +512,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Major League Baseball",
     color: "mlb",
     sport: "baseball",
-    season: { seasonStart: 3, seasonEnd: 10 }, // March - October
+    season: { seasonStart: 3, seasonStartDay: 20, seasonEnd: 11, seasonEndDay: 5 }, // Mar 20 - Nov 5
     popularity: 3,
   },
   mls: {
@@ -517,7 +521,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Major League Soccer",
     color: "mls",
     sport: "soccer",
-    season: { seasonStart: 2, seasonEnd: 11 }, // February - November
+    season: { seasonStart: 2, seasonStartDay: 21, seasonEnd: 11, seasonEndDay: 30 }, // Feb 21 - Nov 30
     popularity: 8,
   },
   epl: {
@@ -526,7 +530,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "English Premier League",
     color: "epl",
     sport: "soccer",
-    season: { seasonStart: 8, seasonEnd: 5 }, // August - May
+    season: { seasonStart: 8, seasonStartDay: 10, seasonEnd: 5, seasonEndDay: 25 }, // Aug 10 - May 25
     popularity: 7,
   },
   ncaam: {
@@ -535,7 +539,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "NCAA Men's Basketball Top 25",
     color: "ncaam",
     sport: "basketball",
-    season: { seasonStart: 11, seasonEnd: 4 }, // November - April
+    season: { seasonStart: 11, seasonStartDay: 1, seasonEnd: 4, seasonEndDay: 10 }, // Nov 1 - Apr 10
     popularity: 5,
   },
   ncaaw: {
@@ -544,7 +548,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "NCAA Women's Basketball Top 25",
     color: "ncaaw",
     sport: "basketball",
-    season: { seasonStart: 11, seasonEnd: 4 }, // November - April
+    season: { seasonStart: 11, seasonStartDay: 1, seasonEnd: 4, seasonEndDay: 10 }, // Nov 1 - Apr 10
     popularity: 6,
   },
   f1: {
@@ -553,7 +557,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Formula 1",
     color: "f1",
     sport: "racing",
-    season: { seasonStart: 3, seasonEnd: 12 }, // March - December
+    season: { seasonStart: 3, seasonStartDay: 1, seasonEnd: 12, seasonEndDay: 15 }, // Mar 1 - Dec 15
     popularity: 9,
   },
   pga: {
@@ -562,7 +566,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "PGA Tour",
     color: "pga",
     sport: "golf",
-    season: { seasonStart: 1, seasonEnd: 8 }, // January - August (main season)
+    season: { seasonStart: 1, seasonStartDay: 1, seasonEnd: 9, seasonEndDay: 1 }, // Jan 1 - Sep 1
     popularity: 10,
   },
 };
@@ -570,26 +574,34 @@ export const LEAGUES: Record<League, LeagueConfig> = {
 /**
  * Check if a league is currently in season
  * @param league The league configuration to check
- * @param currentMonth Optional month to check (1-12), defaults to current month
+ * @param currentDate Optional date to check, defaults to current date
  */
-export function isLeagueInSeason(league: LeagueConfig, currentMonth?: number): boolean {
-  const month = currentMonth ?? new Date().getMonth() + 1; // getMonth() is 0-indexed
-  const { seasonStart, seasonEnd } = league.season;
+export function isLeagueInSeason(league: LeagueConfig, currentDate?: Date): boolean {
+  const now = currentDate ?? new Date();
+  const month = now.getMonth() + 1; // getMonth() is 0-indexed
+  const day = now.getDate();
+
+  const { seasonStart, seasonStartDay, seasonEnd, seasonEndDay } = league.season;
+
+  // Create comparable date values (MMDD format as numbers for easy comparison)
+  const currentValue = month * 100 + day;
+  const startValue = seasonStart * 100 + seasonStartDay;
+  const endValue = seasonEnd * 100 + seasonEndDay;
 
   // Season spans calendar year (e.g., October to June)
-  if (seasonStart > seasonEnd) {
-    return month >= seasonStart || month <= seasonEnd;
+  if (seasonStart > seasonEnd || (seasonStart === seasonEnd && seasonStartDay > seasonEndDay)) {
+    return currentValue >= startValue || currentValue <= endValue;
   }
 
   // Season within same calendar year (e.g., March to October)
-  return month >= seasonStart && month <= seasonEnd;
+  return currentValue >= startValue && currentValue <= endValue;
 }
 
 /**
  * Get all leagues sorted by status (active first) and popularity
  * Returns { active: League[], inactive: League[] }
  */
-export function getLeaguesByStatus(currentMonth?: number): {
+export function getLeaguesByStatus(currentDate?: Date): {
   active: League[];
   inactive: League[];
 } {
@@ -599,7 +611,7 @@ export function getLeaguesByStatus(currentMonth?: number): {
   const inactive: LeagueConfig[] = [];
 
   for (const league of allLeagues) {
-    if (isLeagueInSeason(league, currentMonth)) {
+    if (isLeagueInSeason(league, currentDate)) {
       active.push(league);
     } else {
       inactive.push(league);
@@ -619,7 +631,7 @@ export function getLeaguesByStatus(currentMonth?: number): {
 /**
  * Get all leagues in a single sorted array (active first by popularity, then inactive by popularity)
  */
-export function getSortedLeagues(currentMonth?: number): League[] {
-  const { active, inactive } = getLeaguesByStatus(currentMonth);
+export function getSortedLeagues(currentDate?: Date): League[] {
+  const { active, inactive } = getLeaguesByStatus(currentDate);
   return [...active, ...inactive];
 }
