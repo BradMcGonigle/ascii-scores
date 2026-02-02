@@ -14,9 +14,8 @@ import type {
   TeamBoxscore,
 } from "@/lib/types";
 
-// ESPN uses different subdomains for different endpoints
-// The summary endpoint requires site.web.api.espn.com (not site.api.espn.com)
-const ESPN_SUMMARY_URL = "https://site.web.api.espn.com/apis/site/v2/sports";
+// ESPN summary endpoint uses the same base URL as scoreboard
+const ESPN_SUMMARY_URL = "https://site.api.espn.com/apis/site/v2/sports";
 
 /**
  * ESPN sport paths for each league
