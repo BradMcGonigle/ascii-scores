@@ -93,9 +93,9 @@ function BorderLine({
 }) {
   return (
     <div className={`flex ${className}`} aria-hidden="true">
-      <span>{left}</span>
-      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]">{fill.repeat(200)}</span>
-      <span>{right}</span>
+      <span className="leading-none">{left}</span>
+      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0] leading-none">{fill.repeat(200)}</span>
+      <span className="leading-none">{right}</span>
     </div>
   );
 }
@@ -111,26 +111,26 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
   const isFinal = game.status === "final";
 
   return (
-    <div className="font-mono">
+    <div className="font-mono leading-none">
       {/* Top border */}
       <BorderLine left="╔" right="╗" fill="═" className="text-terminal-green" />
 
       {/* Status line */}
-      <div className="flex">
-        <span className="text-terminal-green" aria-hidden="true">║</span>
+      <div className="flex leading-none">
+        <span className="text-terminal-green leading-none" aria-hidden="true">║</span>
         <div className={`flex-1 text-center py-2 ${statusClass}`}>
           {isLive && <span className="text-terminal-green mr-2">●</span>}
           {statusText}
         </div>
-        <span className="text-terminal-green" aria-hidden="true">║</span>
+        <span className="text-terminal-green leading-none" aria-hidden="true">║</span>
       </div>
 
       {/* Divider */}
       <BorderLine left="╠" right="╣" fill="═" className="text-terminal-green" />
 
       {/* Team scores */}
-      <div className="flex">
-        <span className="text-terminal-green" aria-hidden="true">║</span>
+      <div className="flex leading-none">
+        <span className="text-terminal-green leading-none" aria-hidden="true">║</span>
         <div className="flex-1 py-4">
           <div className="flex justify-center items-center gap-8">
             {/* Away team */}
@@ -163,7 +163,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             </div>
           </div>
         </div>
-        <span className="text-terminal-green" aria-hidden="true">║</span>
+        <span className="text-terminal-green leading-none" aria-hidden="true">║</span>
       </div>
 
       {/* Bottom border */}
