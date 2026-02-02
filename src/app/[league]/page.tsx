@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LeagueScoreboard } from "@/components/scoreboards/LeagueScoreboard";
@@ -15,6 +16,9 @@ import { getF1Standings, getF1RaceWeekends, getF1RaceWeekendSessions } from "@/l
 import { getPGALeaderboard } from "@/lib/api/pga";
 import { LEAGUES, type League } from "@/lib/types";
 import { addDays, parseDateFromAPI } from "@/lib/utils/format";
+
+// Leagues that have standings pages
+const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
 const MAX_DAYS_PAST = 5;
 const MAX_DAYS_FUTURE = 5;
@@ -143,9 +147,19 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                 {" "}
                 <span className="text-terminal-muted">Scores</span>
               </h1>
-              <p className="text-terminal-muted font-mono text-sm mt-1">
-                {league.fullName}
-              </p>
+              <div className="flex items-center gap-4 mt-1">
+                <p className="text-terminal-muted font-mono text-sm">
+                  {league.fullName}
+                </p>
+                {STANDINGS_LEAGUES.includes(leagueId) && (
+                  <Link
+                    href={`/${leagueId}/standings`}
+                    className="font-mono text-xs text-terminal-cyan hover:text-terminal-green transition-colors"
+                  >
+                    [Standings]
+                  </Link>
+                )}
+              </div>
             </div>
             <RefreshButton />
           </div>

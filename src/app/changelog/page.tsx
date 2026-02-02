@@ -18,7 +18,7 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "0.18.0",
+    version: "0.20.0",
     changes: [
       { type: "feat", description: "Add game detail pages with full boxscore, scoring summary, and player stats for all ESPN leagues" },
       { type: "feat", description: "Add ESPN Summary API integration with sport-specific data mapping (NBA, NHL, NFL, MLB, MLS, EPL, NCAAM, NCAAW)" },
@@ -34,6 +34,27 @@ const CHANGELOG: ChangelogEntry[] = [
       { type: "fix", description: "Add defensive data parsing with null checks for incomplete API responses" },
       { type: "fix", description: "Remove redundant 'View Details' text from game cards (entire card is clickable)" },
       { type: "style", description: "Optimize ASCII border rendering with tight line-height for seamless appearance" },
+    ],
+  },
+  {
+    version: "0.19.0",
+    changes: [
+      { type: "feat", description: "Add division/conference toggle to standings pages" },
+    ],
+  },
+  {
+    version: "0.18.1",
+    changes: [
+      { type: "fix", description: "Fix stale 'today' view showing yesterday's games after midnight" },
+      { type: "fix", description: "Use league-appropriate timezones for schedules (US Eastern for US sports, UK for EPL)" },
+    ],
+  },
+  {
+    version: "0.18.0",
+    changes: [
+      { type: "feat", description: "Add league standings pages for all ESPN sports" },
+      { type: "feat", description: "Display division/conference standings with ASCII tables" },
+      { type: "feat", description: "Add standings link to league score pages" },
     ],
   },
   {
