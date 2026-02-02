@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Game, GameType } from "@/lib/types";
+import type { Game, GameStatus, GameType } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
 import { GameStats } from "./GameStats";
 import { PeriodScores } from "./PeriodScores";
