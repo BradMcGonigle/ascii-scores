@@ -9,6 +9,15 @@ export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "epl" | "ncaam" | "
 export type GameStatus = "scheduled" | "live" | "final" | "postponed" | "delayed";
 
 /**
+ * Game type classification (season phase)
+ * - preseason: Exhibition/preseason games (NFL preseason, MLB spring training)
+ * - regular: Regular season games
+ * - postseason: Playoff/championship games
+ * - allstar: All-Star games and related events
+ */
+export type GameType = "preseason" | "regular" | "postseason" | "allstar";
+
+/**
  * Period/quarter/inning score data
  */
 export interface PeriodScore {
@@ -83,6 +92,8 @@ export interface Game {
   periodScores?: PeriodScores;
   /** Game statistics (sport-specific) */
   stats?: GameStats;
+  /** Game type (preseason, regular, postseason, allstar) */
+  gameType?: GameType;
 }
 
 /**

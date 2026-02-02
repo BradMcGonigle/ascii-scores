@@ -1,8 +1,25 @@
 import Link from "next/link";
-import type { Game, GameStatus } from "@/lib/types";
+import type { Game, GameType } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
 import { GameStats } from "./GameStats";
 import { PeriodScores } from "./PeriodScores";
+
+/**
+ * Get badge display for game type (preseason, playoff, etc.)
+ */
+function getGameTypeBadge(gameType?: GameType): { label: string; className: string } | null {
+  switch (gameType) {
+    case "preseason":
+      return { label: "PRE", className: "text-terminal-cyan" };
+    case "postseason":
+      return { label: "PLAYOFF", className: "text-terminal-yellow text-glow" };
+    case "allstar":
+      return { label: "ALL-STAR", className: "text-terminal-magenta" };
+    case "regular":
+    default:
+      return null; // No badge for regular season
+  }
+}
 
 interface GameCardProps {
   game: Game;
@@ -158,14 +175,23 @@ export function GameCard({ game }: GameCardProps) {
       {/* Status line */}
       <div className="flex items-center">
         <span className={border.textClass} aria-hidden="true">{border.side}</span>
-        <div className={`flex-1 px-2 py-0.5 ${statusClass}`}>
-          {isLive && (
-            <>
-              <span className="inline-block mr-1 text-terminal-green" aria-hidden="true">●</span>
-              <span className="sr-only">Live game: </span>
-            </>
+        <div className={`flex-1 px-2 py-0.5 ${statusClass} flex items-center justify-between`}>
+          <div>
+            {isLive && (
+              <>
+                <span className="inline-block mr-1 text-terminal-green" aria-hidden="true">●</span>
+                <span className="sr-only">Live game: </span>
+              </>
+            )}
+            {statusText}
+          </div>
+          {/* Game type badge (preseason, playoff, etc.) */}
+          {game.gameType && getGameTypeBadge(game.gameType) && (
+            <span className={`text-xs ${getGameTypeBadge(game.gameType)!.className}`}>
+              <span className="sr-only">{game.gameType} game</span>
+              <span aria-hidden="true">[{getGameTypeBadge(game.gameType)!.label}]</span>
+            </span>
           )}
-          {statusText}
         </div>
         <span className={border.textClass} aria-hidden="true">{border.side}</span>
       </div>
