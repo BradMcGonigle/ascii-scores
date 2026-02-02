@@ -91,16 +91,16 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {ACTIVE_LEAGUES.map((leagueId) => {
                 const league = LEAGUES[leagueId];
                 return (
                   <Link
                     key={leagueId}
                     href={`/${leagueId}`}
-                    className="group font-mono text-center"
+                    className="group font-mono text-center h-full flex"
                   >
-                    <div className={`retro-card p-6 transition-all duration-300 ${LEAGUE_COLORS[leagueId]}`}>
+                    <div className={`retro-card p-6 transition-all duration-300 flex-1 ${LEAGUE_COLORS[leagueId]}`}>
                       {/* ASCII block letter league name */}
                       <div className="flex items-center justify-center py-4">
                         <AsciiSportIcon
@@ -119,11 +119,6 @@ export default function HomePage() {
                       <p className="text-sm text-terminal-muted group-hover:text-terminal-fg transition-colors">
                         {league.fullName}
                       </p>
-
-                      {/* Enter indicator */}
-                      <div className="mt-3 text-xs text-terminal-green opacity-0 group-hover:opacity-100 transition-opacity">
-                        {">"} ENTER
-                      </div>
                     </div>
                   </Link>
                 );
@@ -152,16 +147,16 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {INACTIVE_LEAGUES.map((leagueId) => {
                   const league = LEAGUES[leagueId];
                   return (
                     <Link
                       key={leagueId}
                       href={`/${leagueId}`}
-                      className="group font-mono text-center"
+                      className="group font-mono text-center h-full flex"
                     >
-                      <div className={`retro-card p-6 transition-all duration-300 opacity-70 hover:opacity-100 ${LEAGUE_COLORS[leagueId]}`}>
+                      <div className={`retro-card p-6 transition-all duration-300 opacity-70 hover:opacity-100 flex-1 ${LEAGUE_COLORS[leagueId]}`}>
                         {/* ASCII block letter league name */}
                         <div className="flex items-center justify-center py-4">
                           <AsciiSportIcon
@@ -180,11 +175,6 @@ export default function HomePage() {
                         <p className="text-sm text-terminal-muted group-hover:text-terminal-fg transition-colors">
                           {league.fullName}
                         </p>
-
-                        {/* Enter indicator */}
-                        <div className="mt-3 text-xs text-terminal-yellow opacity-0 group-hover:opacity-100 transition-opacity">
-                          {">"} VIEW HISTORY
-                        </div>
                       </div>
                     </Link>
                   );

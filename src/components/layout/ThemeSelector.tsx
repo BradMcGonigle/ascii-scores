@@ -116,7 +116,7 @@ export function ThemeSelector() {
   }, [isOpen, currentIndex]);
 
   return (
-    <div ref={dropdownRef} className="relative font-mono text-xs">
+    <div ref={dropdownRef} className="relative font-mono">
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
@@ -126,22 +126,21 @@ export function ThemeSelector() {
             setIsOpen(true);
           }
         }}
-        className="flex items-center gap-1 text-terminal-muted hover:text-terminal-fg transition-colors px-2 py-1"
+        className="flex items-center gap-1 hover:text-terminal-fg transition-colors"
         aria-label={`Theme: ${currentOption.fullLabel}. Press Enter to change.`}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-controls={isOpen ? "theme-listbox" : undefined}
       >
-        <span className="text-terminal-border" aria-hidden="true">[</span>
-        <span className="text-terminal-green" aria-hidden="true">{currentOption.icon}</span>
-        <span>{currentOption.label}</span>
-        <span className="text-terminal-border" aria-hidden="true">]</span>
+        <span className="text-terminal-cyan">THEME:</span>
+        <span className="text-terminal-green">{currentOption.icon}</span>
+        <span className="text-terminal-muted">{currentOption.label}</span>
       </button>
 
       {isOpen && (
         <div
           id="theme-listbox"
-          className="absolute right-0 top-full mt-1 bg-terminal-bg border border-terminal-border z-50 min-w-[100px]"
+          className="absolute right-0 bottom-full mb-1 bg-terminal-bg border border-terminal-border z-9999 min-w-[100px]"
           role="listbox"
           aria-label="Select theme"
           aria-activedescendant={focusedIndex >= 0 ? `theme-option-${THEME_OPTIONS[focusedIndex].value}` : undefined}
