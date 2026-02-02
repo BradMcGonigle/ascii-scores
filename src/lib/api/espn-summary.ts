@@ -383,10 +383,20 @@ function mapPlayerStats(
   if (!teamData) return { players, goalies };
 
   for (const category of teamData.statistics) {
+    // Defensive check: ensure category has required properties
+    if (!category.name || !category.athletes) {
+      continue;
+    }
+
     const isGoalieCategory = category.name.toLowerCase().includes("goalie") ||
       category.name.toLowerCase().includes("goalkeep");
 
     for (const athlete of category.athletes) {
+      // Defensive check: ensure athlete has required properties
+      if (!athlete.athlete || !athlete.stats) {
+        continue;
+      }
+
       const statsObj: Record<string, string | number> = {};
 
       // Map stats based on category keys or use default keys
