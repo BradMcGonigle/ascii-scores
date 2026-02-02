@@ -52,7 +52,8 @@ interface ESPNPlayerStatLine {
 }
 
 interface ESPNStatCategory {
-  name: string;
+  name?: string;
+  names?: string[]; // NBA uses this instead of/in addition to keys
   keys: string[];
   athletes: ESPNPlayerStatLine[];
 }
@@ -215,12 +216,16 @@ function mapTeam(competitor: ESPNHeader["competitions"][0]["competitors"][0]): T
   };
 }
 
-function mapLinescores(linescores?: Array<{ value: number }>): PeriodScore[] {
+function mapLinescores(linescores?: Array<{ value?: number; displayValue?: string }>): PeriodScore[] {
   if (!linescores) return [];
-  return linescores.map((ls, index) => ({
-    period: index + 1,
-    score: ls.value,
-  }));
+  return linescores.map((ls, index) => {
+    // ESPN API uses 'value' for some sports and 'displayValue' for others (like NBA)
+    const score = ls.value ?? (ls.displayValue ? parseInt(ls.displayValue, 10) : 0);
+    return {
+      period: index + 1,
+      score,
+    };
+  });
 }
 
 function mapPeriodScores(
@@ -384,12 +389,14 @@ function mapPlayerStats(
 
   for (const category of teamData.statistics) {
     // Defensive check: ensure category has required properties
-    if (!category.name || !category.athletes) {
+    if (!category.athletes) {
       continue;
     }
 
-    const isGoalieCategory = category.name.toLowerCase().includes("goalie") ||
-      category.name.toLowerCase().includes("goalkeep");
+    // Check if this is a goalie/goalkeeper category (primarily for hockey)
+    const isGoalieCategory = category.name?.toLowerCase().includes("goalie") ||
+      category.name?.toLowerCase().includes("goalkeep") ||
+      false;
 
     for (const athlete of category.athletes) {
       // Defensive check: ensure athlete has required properties
