@@ -496,7 +496,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "National Hockey League",
     color: "nhl",
     sport: "hockey",
-    season: { seasonStart: 10, seasonStartDay: 8, seasonEnd: 6, seasonEndDay: 30 }, // Oct 8 - Jun 30
+    season: { seasonStart: 10, seasonStartDay: 7, seasonEnd: 6, seasonEndDay: 30 }, // Oct 7 - Jun 30 (2025-26)
     popularity: 4,
   },
   nfl: {
@@ -505,7 +505,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "National Football League",
     color: "nfl",
     sport: "football",
-    season: { seasonStart: 9, seasonStartDay: 5, seasonEnd: 2, seasonEndDay: 10 }, // Sep 5 - Feb 10
+    season: { seasonStart: 9, seasonStartDay: 10, seasonEnd: 2, seasonEndDay: 14 }, // Sep 10 - Feb 14 (2026)
     popularity: 1,
   },
   nba: {
@@ -514,7 +514,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "National Basketball Association",
     color: "nba",
     sport: "basketball",
-    season: { seasonStart: 10, seasonStartDay: 15, seasonEnd: 6, seasonEndDay: 20 }, // Oct 15 - Jun 20
+    season: { seasonStart: 10, seasonStartDay: 21, seasonEnd: 6, seasonEndDay: 19 }, // Oct 21 - Jun 19 (2025-26)
     popularity: 2,
   },
   mlb: {
@@ -523,7 +523,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Major League Baseball",
     color: "mlb",
     sport: "baseball",
-    season: { seasonStart: 3, seasonStartDay: 20, seasonEnd: 11, seasonEndDay: 5 }, // Mar 20 - Nov 5
+    season: { seasonStart: 3, seasonStartDay: 26, seasonEnd: 11, seasonEndDay: 5 }, // Mar 26 - Nov 5 (2026)
     popularity: 3,
   },
   mls: {
@@ -541,7 +541,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "English Premier League",
     color: "epl",
     sport: "soccer",
-    season: { seasonStart: 8, seasonStartDay: 10, seasonEnd: 5, seasonEndDay: 25 }, // Aug 10 - May 25
+    season: { seasonStart: 8, seasonStartDay: 15, seasonEnd: 5, seasonEndDay: 24 }, // Aug 15 - May 24 (2025-26)
     popularity: 7,
   },
   ncaam: {
@@ -550,7 +550,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "NCAA Men's Basketball Top 25",
     color: "ncaam",
     sport: "basketball",
-    season: { seasonStart: 11, seasonStartDay: 1, seasonEnd: 4, seasonEndDay: 10 }, // Nov 1 - Apr 10
+    season: { seasonStart: 11, seasonStartDay: 3, seasonEnd: 4, seasonEndDay: 6 }, // Nov 3 - Apr 6 (2025-26)
     popularity: 5,
   },
   ncaaw: {
@@ -559,7 +559,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "NCAA Women's Basketball Top 25",
     color: "ncaaw",
     sport: "basketball",
-    season: { seasonStart: 11, seasonStartDay: 1, seasonEnd: 4, seasonEndDay: 10 }, // Nov 1 - Apr 10
+    season: { seasonStart: 11, seasonStartDay: 3, seasonEnd: 4, seasonEndDay: 5 }, // Nov 3 - Apr 5 (2025-26)
     popularity: 6,
   },
   f1: {
@@ -568,7 +568,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Formula 1",
     color: "f1",
     sport: "racing",
-    season: { seasonStart: 3, seasonStartDay: 1, seasonEnd: 12, seasonEndDay: 15 }, // Mar 1 - Dec 15
+    season: { seasonStart: 3, seasonStartDay: 6, seasonEnd: 12, seasonEndDay: 6 }, // Mar 6 - Dec 6 (2026)
     popularity: 9,
   },
   pga: {
@@ -577,7 +577,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "PGA Tour",
     color: "pga",
     sport: "golf",
-    season: { seasonStart: 1, seasonStartDay: 1, seasonEnd: 9, seasonEndDay: 1 }, // Jan 1 - Sep 1
+    season: { seasonStart: 1, seasonStartDay: 1, seasonEnd: 8, seasonEndDay: 31 }, // Jan 1 - Aug 31 (FedExCup season)
     popularity: 10,
   },
 };
