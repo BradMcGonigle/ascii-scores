@@ -527,9 +527,6 @@ export async function getGameSummary(
 
     const data: ESPNSummaryResponse = await response.json();
 
-    // Log the top-level keys for debugging
-    console.log(`ESPN Summary API response keys for ${league}/${gameId}:`, Object.keys(data));
-
     // The ESPN summary API has a different structure - check for header or boxscore
     if (!data.header && !data.boxscore) {
       console.error("ESPN Summary API: No header or boxscore in response. Keys:", Object.keys(data));
