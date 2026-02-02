@@ -2,22 +2,28 @@ import type { LeagueStandings, League, StandingsEntry, StandingsGroup } from "@/
 
 /**
  * Column configuration for each league's standings table
+ * All stats are shown - users can scroll horizontally on mobile
  */
 interface StandingsColumn {
   key: string;
   header: string;
-  hideOnMobile?: boolean;
 }
 
 const STANDINGS_COLUMNS: Record<Exclude<League, "f1" | "pga">, StandingsColumn[]> = {
   nhl: [
     { key: "team", header: "TEAM" },
-    { key: "gamesPlayed", header: "GP", hideOnMobile: true },
+    { key: "gamesPlayed", header: "GP" },
     { key: "wins", header: "W" },
     { key: "losses", header: "L" },
     { key: "otLosses", header: "OT" },
     { key: "points", header: "PTS" },
-    { key: "goalDifferential", header: "DIFF", hideOnMobile: true },
+    { key: "regulationWins", header: "ROW" },
+    { key: "goalDifferential", header: "DIFF" },
+    { key: "goalsFor", header: "GF" },
+    { key: "goalsAgainst", header: "GA" },
+    { key: "homeRecord", header: "HOME" },
+    { key: "awayRecord", header: "AWAY" },
+    { key: "streak", header: "STRK" },
   ],
   nfl: [
     { key: "team", header: "TEAM" },
@@ -25,7 +31,13 @@ const STANDINGS_COLUMNS: Record<Exclude<League, "f1" | "pga">, StandingsColumn[]
     { key: "losses", header: "L" },
     { key: "ties", header: "T" },
     { key: "winPercent", header: "PCT" },
-    { key: "pointDifferential", header: "DIFF", hideOnMobile: true },
+    { key: "pointDifferential", header: "DIFF" },
+    { key: "pointsFor", header: "PF" },
+    { key: "pointsAgainst", header: "PA" },
+    { key: "homeRecord", header: "HOME" },
+    { key: "awayRecord", header: "AWAY" },
+    { key: "divisionRecord", header: "DIV" },
+    { key: "streak", header: "STRK" },
   ],
   nba: [
     { key: "team", header: "TEAM" },
@@ -33,7 +45,11 @@ const STANDINGS_COLUMNS: Record<Exclude<League, "f1" | "pga">, StandingsColumn[]
     { key: "losses", header: "L" },
     { key: "winPercent", header: "PCT" },
     { key: "gamesBehind", header: "GB" },
-    { key: "streak", header: "STRK", hideOnMobile: true },
+    { key: "homeRecord", header: "HOME" },
+    { key: "awayRecord", header: "AWAY" },
+    { key: "divisionRecord", header: "DIV" },
+    { key: "last10Record", header: "L10" },
+    { key: "streak", header: "STRK" },
   ],
   mlb: [
     { key: "team", header: "TEAM" },
@@ -41,25 +57,35 @@ const STANDINGS_COLUMNS: Record<Exclude<League, "f1" | "pga">, StandingsColumn[]
     { key: "losses", header: "L" },
     { key: "winPercent", header: "PCT" },
     { key: "gamesBehind", header: "GB" },
-    { key: "runDifferential", header: "DIFF", hideOnMobile: true },
+    { key: "runDifferential", header: "DIFF" },
+    { key: "runsFor", header: "RS" },
+    { key: "runsAgainst", header: "RA" },
+    { key: "homeRecord", header: "HOME" },
+    { key: "awayRecord", header: "AWAY" },
+    { key: "last10Record", header: "L10" },
+    { key: "streak", header: "STRK" },
   ],
   mls: [
     { key: "team", header: "TEAM" },
-    { key: "gamesPlayed", header: "GP", hideOnMobile: true },
+    { key: "gamesPlayed", header: "GP" },
     { key: "wins", header: "W" },
     { key: "losses", header: "L" },
     { key: "ties", header: "D" },
-    { key: "goalDifferential", header: "GD" },
     { key: "points", header: "PTS" },
+    { key: "goalDifferential", header: "GD" },
+    { key: "goalsFor", header: "GF" },
+    { key: "goalsAgainst", header: "GA" },
   ],
   epl: [
     { key: "team", header: "TEAM" },
-    { key: "gamesPlayed", header: "GP", hideOnMobile: true },
+    { key: "gamesPlayed", header: "GP" },
     { key: "wins", header: "W" },
     { key: "losses", header: "L" },
     { key: "ties", header: "D" },
-    { key: "goalDifferential", header: "GD" },
     { key: "points", header: "PTS" },
+    { key: "goalDifferential", header: "GD" },
+    { key: "goalsFor", header: "GF" },
+    { key: "goalsAgainst", header: "GA" },
   ],
   ncaam: [
     { key: "team", header: "TEAM" },
@@ -68,6 +94,7 @@ const STANDINGS_COLUMNS: Record<Exclude<League, "f1" | "pga">, StandingsColumn[]
     { key: "winPercent", header: "PCT" },
     { key: "conferenceWins", header: "CW" },
     { key: "conferenceLosses", header: "CL" },
+    { key: "streak", header: "STRK" },
   ],
   ncaaw: [
     { key: "team", header: "TEAM" },
@@ -76,6 +103,7 @@ const STANDINGS_COLUMNS: Record<Exclude<League, "f1" | "pga">, StandingsColumn[]
     { key: "winPercent", header: "PCT" },
     { key: "conferenceWins", header: "CW" },
     { key: "conferenceLosses", header: "CL" },
+    { key: "streak", header: "STRK" },
   ],
 };
 
@@ -147,9 +175,8 @@ function StandingsGroupDisplay({ group, league }: StandingsGroupDisplayProps) {
     return value !== undefined ? String(value) : "-";
   };
 
-  // Calculate grid columns - team gets more space, stats are equal
+  // Separate team column from stat columns
   const statColumns = columns.filter(c => c.key !== "team");
-  const visibleStatColumns = statColumns.filter(c => !c.hideOnMobile);
 
   return (
     <div id={slug || undefined}>
@@ -165,51 +192,59 @@ function StandingsGroupDisplay({ group, league }: StandingsGroupDisplayProps) {
         )}
       </h3>
 
-      {/* Responsive standings table */}
-      <div className="font-mono text-sm border border-terminal-border rounded">
-        {/* Header row */}
-        <div
-          className="grid border-b border-terminal-border bg-terminal-bg/50 text-terminal-cyan"
-          style={{
-            gridTemplateColumns: `minmax(60px, 1fr) repeat(${visibleStatColumns.length}, minmax(32px, 48px))`
-          }}
-        >
-          {columns.filter(c => !c.hideOnMobile).map((col) => (
-            <div
-              key={col.key}
-              className={`px-2 py-1 ${col.key === "team" ? "text-left" : "text-right"}`}
-            >
-              {col.header}
+      {/* Scrollable standings table with sticky team column */}
+      <div className="font-mono text-sm border border-terminal-border rounded overflow-x-auto">
+        <div className="min-w-max">
+          {/* Header row */}
+          <div className="flex border-b border-terminal-border bg-terminal-bg/50 text-terminal-cyan">
+            {/* Sticky team header */}
+            <div className="sticky left-0 z-10 bg-terminal-bg/95 px-2 py-1 min-w-[60px] text-left border-r border-terminal-border">
+              TEAM
             </div>
-          ))}
-        </div>
-
-        {/* Data rows */}
-        {group.entries.map((entry, index) => (
-          <div
-            key={entry.team.id}
-            className={`grid ${index % 2 === 0 ? "bg-terminal-bg/30" : ""}`}
-            style={{
-              gridTemplateColumns: `minmax(60px, 1fr) repeat(${visibleStatColumns.length}, minmax(32px, 48px))`
-            }}
-          >
-            {columns.filter(c => !c.hideOnMobile).map((col) => (
+            {/* Scrollable stat headers */}
+            {statColumns.map((col) => (
               <div
                 key={col.key}
-                className={`px-2 py-1 ${col.key === "team" ? "text-left text-terminal-fg" : "text-right text-terminal-muted"}`}
+                className="px-2 py-1 min-w-[48px] text-right"
               >
-                {getCellValue(entry, col.key)}
+                {col.header}
               </div>
             ))}
           </div>
-        ))}
 
-        {/* Empty state */}
-        {group.entries.length === 0 && (
-          <div className="px-2 py-4 text-center text-terminal-muted">
-            No standings data
-          </div>
-        )}
+          {/* Data rows */}
+          {group.entries.map((entry, index) => (
+            <div
+              key={entry.team.id}
+              className={`flex ${index % 2 === 0 ? "bg-terminal-bg/30" : ""}`}
+            >
+              {/* Sticky team cell */}
+              <div
+                className={`sticky left-0 z-10 px-2 py-1 min-w-[60px] text-left text-terminal-fg border-r border-terminal-border ${
+                  index % 2 === 0 ? "bg-terminal-bg/95" : "bg-terminal-bg"
+                }`}
+              >
+                {entry.team.abbreviation}
+              </div>
+              {/* Scrollable stat cells */}
+              {statColumns.map((col) => (
+                <div
+                  key={col.key}
+                  className="px-2 py-1 min-w-[48px] text-right text-terminal-muted"
+                >
+                  {getCellValue(entry, col.key)}
+                </div>
+              ))}
+            </div>
+          ))}
+
+          {/* Empty state */}
+          {group.entries.length === 0 && (
+            <div className="px-2 py-4 text-center text-terminal-muted">
+              No standings data
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

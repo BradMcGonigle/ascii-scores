@@ -18,6 +18,13 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.20.0",
+    changes: [
+      { type: "feat", description: "Add expanded stats to standings pages (streak, home/away, L10, etc.)" },
+      { type: "feat", description: "Add horizontally scrollable standings tables with sticky team column" },
+    ],
+  },
+  {
     version: "0.19.0",
     changes: [
       { type: "feat", description: "Add division/conference toggle to standings pages" },

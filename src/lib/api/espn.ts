@@ -473,14 +473,36 @@ interface ESPNStandingsChild {
  * Order matters - first stat is primary sort
  */
 const STANDINGS_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
-  nhl: ["points", "gamesPlayed", "wins", "losses", "otLosses", "goalsFor", "goalsAgainst", "goalDifferential"],
-  nfl: ["wins", "losses", "ties", "winPercent", "pointsFor", "pointsAgainst", "pointDifferential"],
-  nba: ["wins", "losses", "winPercent", "gamesBehind", "streak"],
-  mlb: ["wins", "losses", "winPercent", "gamesBehind", "runsFor", "runsAgainst", "runDifferential"],
-  mls: ["points", "gamesPlayed", "wins", "losses", "ties", "goalDifferential"],
-  epl: ["points", "gamesPlayed", "wins", "losses", "ties", "goalDifferential"],
-  ncaam: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses"],
-  ncaaw: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses"],
+  nhl: [
+    "points", "gamesPlayed", "wins", "losses", "otLosses",
+    "goalsFor", "goalsAgainst", "goalDifferential",
+    "streak", "homeRecord", "awayRecord", "regulationWins",
+  ],
+  nfl: [
+    "wins", "losses", "ties", "winPercent",
+    "pointsFor", "pointsAgainst", "pointDifferential",
+    "streak", "homeRecord", "awayRecord", "divisionRecord",
+  ],
+  nba: [
+    "wins", "losses", "winPercent", "gamesBehind", "streak",
+    "homeRecord", "awayRecord", "divisionRecord", "last10Record",
+    "pointsFor", "pointsAgainst",
+  ],
+  mlb: [
+    "wins", "losses", "winPercent", "gamesBehind",
+    "runsFor", "runsAgainst", "runDifferential",
+    "streak", "homeRecord", "awayRecord", "last10Record",
+  ],
+  mls: [
+    "points", "gamesPlayed", "wins", "losses", "ties",
+    "goalsFor", "goalsAgainst", "goalDifferential",
+  ],
+  epl: [
+    "points", "gamesPlayed", "wins", "losses", "ties",
+    "goalsFor", "goalsAgainst", "goalDifferential",
+  ],
+  ncaam: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses", "streak"],
+  ncaaw: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses", "streak"],
 };
 
 /**
