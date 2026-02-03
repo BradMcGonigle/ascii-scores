@@ -164,22 +164,22 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
       <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
         <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
         <div className="flex-1 py-4" style={{ lineHeight: 'normal' }}>
-          <div className="flex justify-center items-center gap-8">
+          <div className="flex justify-center items-center gap-3 sm:gap-8">
             {/* Away team */}
-            <div className="text-center min-w-[120px]">
-              <div className={`text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+            <div className="text-center min-w-[60px] sm:min-w-[120px]">
+              <div className={`text-xl sm:text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
                 {game.awayTeam.abbreviation}
               </div>
-              <div className="text-terminal-muted text-sm">{game.awayTeam.record}</div>
+              <div className="text-terminal-muted text-xs sm:text-sm">{game.awayTeam.record}</div>
             </div>
 
             {/* Score */}
             <div className="text-center">
-              <div className="flex items-center gap-4 text-4xl font-bold">
+              <div className="flex items-center gap-2 sm:gap-4 text-2xl sm:text-4xl font-bold">
                 <span className={awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
                   {game.awayScore}
                 </span>
-                <span className="text-terminal-muted text-2xl">-</span>
+                <span className="text-terminal-muted text-lg sm:text-2xl">-</span>
                 <span className={homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
                   {game.homeScore}
                 </span>
@@ -187,11 +187,11 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             </div>
 
             {/* Home team */}
-            <div className="text-center min-w-[120px]">
-              <div className={`text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+            <div className="text-center min-w-[60px] sm:min-w-[120px]">
+              <div className={`text-xl sm:text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
                 {game.homeTeam.abbreviation}
               </div>
-              <div className="text-terminal-muted text-sm">{game.homeTeam.record}</div>
+              <div className="text-terminal-muted text-xs sm:text-sm">{game.homeTeam.record}</div>
             </div>
           </div>
         </div>
