@@ -18,6 +18,14 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.21.0",
+    changes: [
+      { type: "feat", description: "Extend date navigation to allow browsing up to 1 year of past games" },
+      { type: "feat", description: "Extend F1 race weekend navigation to show full year of past races" },
+      { type: "perf", description: "Implement sliding window navigation to minimize API calls while allowing deep history browsing" },
+    ],
+  },
+  {
     version: "0.20.2",
     changes: [
       { type: "fix", description: "Fix timezone bug causing stale game statuses (live games showing as scheduled or vice versa)" },

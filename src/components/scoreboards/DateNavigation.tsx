@@ -70,7 +70,6 @@ export function DateNavigation({ league, datesWithGames }: DateNavigationProps) 
   const canGoPrev = prevDateWithGames !== null;
   const canGoNext = nextDateWithGames !== null;
   const isCurrentlyToday = isToday(currentDate);
-  const hasGamesToday = datesWithGames.includes(todayStr);
 
   const navigateToDate = useCallback(
     (dateStr: string) => {
@@ -156,8 +155,8 @@ export function DateNavigation({ league, datesWithGames }: DateNavigationProps) 
         </button>
       </div>
 
-      {/* Today button (only show if not on today and there are games today) */}
-      {!isCurrentlyToday && hasGamesToday && (
+      {/* Today button - always show when viewing a past date */}
+      {!isCurrentlyToday && (
         <div className="flex justify-center mt-2">
           <button
             onClick={handleToday}

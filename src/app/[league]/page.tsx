@@ -20,8 +20,12 @@ import { addDays, formatDateForAPI, getRelativeDateLabel, parseDateFromAPI } fro
 // Leagues that have standings pages
 const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
-const MAX_DAYS_PAST = 5;
-const MAX_DAYS_FUTURE = 5;
+// How far users can navigate via URL (validates date param)
+const MAX_DAYS = 365;
+
+// How many dates to check for navigation hints (PREV/NEXT buttons)
+// Kept smaller to limit API calls - users navigate in "hops"
+const NAV_WINDOW = 30;
 
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
@@ -84,8 +88,8 @@ export async function generateMetadata({ params }: LeaguePageProps) {
  */
 function validateDate(
   dateStr: string | undefined,
-  daysBack: number = MAX_DAYS_PAST,
-  daysForward: number = MAX_DAYS_FUTURE
+  daysBack: number = MAX_DAYS,
+  daysForward: number = MAX_DAYS
 ): Date | null {
   if (!dateStr) return null;
 
@@ -179,7 +183,10 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                 {isF1 ? (
                   <F1RaceWeekendNavWrapper />
                 ) : (
-                  <DateNavigationWrapper league={leagueId as Exclude<League, "f1" | "pga">} />
+                  <DateNavigationWrapper
+                    league={leagueId as Exclude<League, "f1" | "pga">}
+                    currentDate={selectedDate ?? undefined}
+                  />
                 )}
               </Suspense>
             </div>
@@ -205,13 +212,23 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
 /**
  * Server component wrapper that fetches dates with games (ESPN leagues)
+ * Fetches NAV_WINDOW days in each direction from the current view.
+ * Users navigate in "hops" - each page load checks ±30 days, allowing
+ * them to eventually reach any date within MAX_DAYS (365).
  */
 async function DateNavigationWrapper({
   league,
+  currentDate,
 }: {
   league: Exclude<League, "f1" | "pga">;
+  currentDate?: Date;
 }) {
-  const datesWithGames = await getDatesWithGames(league, MAX_DAYS_PAST, MAX_DAYS_FUTURE);
+  const datesWithGames = await getDatesWithGames(
+    league,
+    NAV_WINDOW,
+    NAV_WINDOW,
+    currentDate
+  );
   return <DateNavigation league={league} datesWithGames={datesWithGames} />;
 }
 
@@ -260,7 +277,7 @@ async function ESPNContent({
     // Fetch scoreboard and dates with games in parallel
     const [scoreboard, datesWithGames] = await Promise.all([
       getESPNScoreboard(league, date),
-      getDatesWithGames(league, 0, MAX_DAYS_FUTURE), // Only need future dates
+      getDatesWithGames(league, 0, NAV_WINDOW), // Only need future dates for "next game" hint
     ]);
 
     // Find next date with games (after today)
