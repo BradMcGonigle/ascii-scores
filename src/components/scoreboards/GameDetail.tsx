@@ -5,6 +5,7 @@ import type {
   GoalieStats,
   PlayerStats,
   ScoringPlay,
+  Team,
   TeamBoxscore,
 } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
@@ -18,11 +19,21 @@ interface GameDetailDisplayProps {
  */
 export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
   const { game, scoringPlays, homeBoxscore, awayBoxscore, leaders, attendance } = summary;
+  const isScheduled = game.status === "scheduled";
 
   return (
     <div className="space-y-6">
       {/* Score header */}
       <GameScoreHeader summary={summary} />
+
+      {/* Team matchup details for scheduled games */}
+      {isScheduled && (
+        <TeamMatchupSection
+          homeTeam={game.homeTeam}
+          awayTeam={game.awayTeam}
+          league={game.league}
+        />
+      )}
 
       {/* Period scores */}
       {game.periodScores && (
@@ -41,6 +52,7 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
         homeBoxscore={homeBoxscore}
         awayBoxscore={awayBoxscore}
         league={game.league}
+        isScheduled={isScheduled}
       />
 
       {/* Scoring timeline */}
@@ -217,6 +229,78 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
 }
 
 // ============================================================================
+// Team Matchup Section (for scheduled games)
+// ============================================================================
+
+interface TeamMatchupSectionProps {
+  homeTeam: Team;
+  awayTeam: Team;
+  league: string;
+}
+
+/**
+ * Check if this is a college sports league
+ */
+function isCollegeLeague(league: string): boolean {
+  return league === "ncaam" || league === "ncaaw";
+}
+
+/**
+ * Display team matchup details for scheduled games
+ * Shows full team names, rankings, and team colors
+ */
+function TeamMatchupSection({ homeTeam, awayTeam, league }: TeamMatchupSectionProps) {
+  const showRankings = isCollegeLeague(league);
+
+  return (
+    <div className="font-mono">
+      <SectionHeader title="MATCHUP" />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Away team */}
+        <TeamMatchupCard team={awayTeam} label="AWAY" showRank={showRankings} />
+
+        {/* Home team */}
+        <TeamMatchupCard team={homeTeam} label="HOME" showRank={showRankings} />
+      </div>
+    </div>
+  );
+}
+
+interface TeamMatchupCardProps {
+  team: Team;
+  label: string;
+  showRank: boolean;
+}
+
+function TeamMatchupCard({ team, label, showRank }: TeamMatchupCardProps) {
+  // Generate CSS custom property for team color accent
+  const teamColorStyle = team.color
+    ? { borderColor: `#${team.color}` }
+    : {};
+
+  return (
+    <div
+      className="border-l-4 border-terminal-border pl-3 py-2"
+      style={teamColorStyle}
+    >
+      <div className="text-terminal-muted text-xs mb-1">{label}</div>
+      <div className="flex items-baseline gap-2">
+        {showRank && team.rank && (
+          <span className="text-terminal-yellow text-sm">#{team.rank}</span>
+        )}
+        <span className="text-terminal-fg font-bold">{team.displayName}</span>
+      </div>
+      {team.record && (
+        <div className="text-terminal-muted text-sm mt-1">
+          Record: {team.record}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
 // Period Scores Table
 // ============================================================================
 
@@ -332,6 +416,7 @@ interface TeamStatsComparisonProps {
   homeBoxscore: TeamBoxscore;
   awayBoxscore: TeamBoxscore;
   league: string;
+  isScheduled?: boolean;
 }
 
 const STAT_DISPLAY_NAMES: Record<string, string> = {
@@ -376,7 +461,7 @@ const STAT_DISPLAY_NAMES: Record<string, string> = {
   saves: "Saves",
 };
 
-function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league }: TeamStatsComparisonProps) {
+function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league, isScheduled }: TeamStatsComparisonProps) {
   // Get all unique stat keys from both teams
   const allKeys = new Set([
     ...Object.keys(homeBoxscore.stats),
@@ -388,9 +473,12 @@ function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league }: Te
 
   if (displayStats.length === 0) return null;
 
+  // Use "SEASON STATS" for scheduled games since these are season-to-date statistics
+  const sectionTitle = isScheduled ? "SEASON STATS" : "TEAM STATISTICS";
+
   return (
     <div className="font-mono">
-      <SectionHeader title="TEAM STATISTICS" />
+      <SectionHeader title={sectionTitle} />
 
       <div className="space-y-1">
         {displayStats.map((statKey) => {
