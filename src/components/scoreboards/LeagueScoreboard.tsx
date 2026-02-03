@@ -1,11 +1,13 @@
 import type { Scoreboard } from "@/lib/types";
-import { LEAGUES } from "@/lib/types";
+import { LEAGUES, isLeagueInSeason, getSeasonStartDate } from "@/lib/types";
 import { getRelativeDateLabel, isToday } from "@/lib/utils/format";
 import { SyncStatus } from "@/components/SyncStatus";
 import { GameCard } from "./GameCard";
 
 interface LeagueScoreboardProps {
   scoreboard: Scoreboard;
+  /** Next date with games (for "no games" message), formatted as relative label */
+  nextGameDateLabel?: string;
 }
 
 /**
@@ -70,10 +72,11 @@ function SectionHeader({
 /**
  * Displays a scoreboard for a league with all games
  */
-export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
+export function LeagueScoreboard({ scoreboard, nextGameDateLabel }: LeagueScoreboardProps) {
   const league = LEAGUES[scoreboard.league];
   const dateLabel = getRelativeDateLabel(scoreboard.date);
   const isTodayDate = isToday(scoreboard.date);
+  const isOffSeason = !isLeagueInSeason(league);
 
   if (scoreboard.games.length === 0) {
     const noGamesMessage = isTodayDate
@@ -127,7 +130,11 @@ export function LeagueScoreboard({ scoreboard }: LeagueScoreboardProps) {
         <div className="mt-4 text-terminal-muted text-xs">
           <span className="text-terminal-cyan">{">"}</span>{" "}
           {isTodayDate
-            ? "Check back later for game updates"
+            ? isOffSeason
+              ? `Season starts ${getSeasonStartDate(league)}`
+              : nextGameDateLabel
+                ? `Next games ${nextGameDateLabel}`
+                : "Check back later for game updates"
             : "Use navigation to browse other dates"}
         </div>
       </div>

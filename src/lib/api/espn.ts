@@ -1,4 +1,4 @@
-import type { Game, GameStats, GameStatus, League, LeagueStandings, NCAAPolls, PeriodScore, PeriodScores, RankedTeam, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
+import type { Game, GameStats, GameStatus, GameType, League, LeagueStandings, NCAAPolls, PeriodScore, PeriodScores, RankedTeam, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
 import { addDays, formatDateForAPI, getTodayInEastern, getTodayInUK, isDateInPast } from "@/lib/utils/format";
 
 const ESPN_BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
@@ -17,6 +17,18 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
   ncaam: "basketball/mens-college-basketball",
   ncaaw: "basketball/womens-college-basketball",
 };
+
+/**
+ * Get the timezone used for a league's schedule.
+ * US sports use Eastern time, EPL uses UK time.
+ */
+function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): string {
+  if (league === "epl") {
+    return "Europe/London";
+  }
+  // US sports (NHL, NFL, NBA, MLB, MLS, NCAAM, NCAAW) use Eastern time
+  return "America/New_York";
+}
 
 /**
  * Get "today" in the appropriate timezone for a league's schedule.
@@ -97,21 +109,34 @@ interface ESPNVenue {
   };
 }
 
+interface ESPNSeason {
+  type: number; // 1=preseason, 2=regular, 3=postseason, 4=off-season
+  year: number;
+}
+
+interface ESPNCompetitionType {
+  id: string;
+  abbreviation?: string; // "REG", "EXH" (exhibition/spring training), "POST", etc.
+}
+
 interface ESPNEvent {
   id: string;
   date: string;
   name: string;
+  season?: ESPNSeason;
   competitions: Array<{
     id: string;
     venue?: ESPNVenue;
     broadcasts?: Array<{ names: string[] }>;
     competitors: ESPNCompetitor[];
     status: ESPNStatus;
+    type?: ESPNCompetitionType;
   }>;
 }
 
 interface ESPNScoreboardResponse {
   events: ESPNEvent[];
+  season?: ESPNSeason;
 }
 
 /**
@@ -126,6 +151,33 @@ function mapStatus(status: ESPNStatus): GameStatus {
   if (name === "postponed") return "postponed";
   if (name === "delayed") return "delayed";
   return "scheduled";
+}
+
+/**
+ * Map ESPN season type to our GameType
+ * ESPN season.type: 1=preseason, 2=regular, 3=postseason, 4=off-season
+ * ESPN competition.type.abbreviation: "EXH"=exhibition, "REG"=regular, "POST"=postseason
+ */
+function mapGameType(
+  seasonType?: number,
+  competitionTypeAbbr?: string
+): GameType | undefined {
+  // Competition type abbreviation takes precedence (more specific)
+  if (competitionTypeAbbr) {
+    const abbr = competitionTypeAbbr.toUpperCase();
+    if (abbr === "EXH" || abbr === "PRE") return "preseason";
+    if (abbr === "POST" || abbr === "PST") return "postseason";
+    if (abbr === "ASG" || abbr === "ALL") return "allstar";
+    if (abbr === "REG") return "regular";
+  }
+
+  // Fall back to season type
+  if (seasonType === 1) return "preseason";
+  if (seasonType === 2) return "regular";
+  if (seasonType === 3) return "postseason";
+  // seasonType === 4 is off-season, no games expected
+
+  return undefined;
 }
 
 /**
@@ -306,6 +358,7 @@ function mapEvent(event: ESPNEvent, league: League): Game {
     detail: status.type.shortDetail,
     periodScores: mapPeriodScores(homeCompetitor, awayCompetitor, league),
     stats: mapGameStats(homeCompetitor, awayCompetitor, league),
+    gameType: mapGameType(event.season?.type, competition.type?.abbreviation),
   };
 }
 
@@ -330,7 +383,8 @@ export async function getESPNScoreboard(
   // Determine caching strategy:
   // - Past dates: cache indefinitely (games are final, won't change)
   // - Today/future: revalidate every 30s for live updates
-  const isPastDate = isDateInPast(effectiveDate);
+  // Use league-appropriate timezone for the comparison
+  const isPastDate = isDateInPast(effectiveDate, getTimezoneForLeague(league));
 
   const response = await fetch(url, {
     headers: {
@@ -347,7 +401,14 @@ export async function getESPNScoreboard(
 
   const data: ESPNScoreboardResponse = await response.json();
 
-  const games = data.events.map((event) => mapEvent(event, league));
+  // Map events to games, passing top-level season data if not present per-event
+  const games = data.events.map((event) => {
+    const eventWithSeason: ESPNEvent = {
+      ...event,
+      season: event.season ?? data.season,
+    };
+    return mapEvent(eventWithSeason, league);
+  });
 
   return {
     league,
@@ -395,7 +456,8 @@ export async function getDatesWithGames(
       const url = `${ESPN_BASE_URL}/${sportPath}/scoreboard?dates=${dateStr}`;
 
       // Past dates can be cached indefinitely, future/today revalidate every 5 min
-      const isPast = isDateInPast(date);
+      // Use league-appropriate timezone for the comparison
+      const isPast = isDateInPast(date, getTimezoneForLeague(league));
 
       try {
         const response = await fetch(url, {

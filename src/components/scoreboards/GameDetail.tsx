@@ -164,22 +164,22 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
       <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
         <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
         <div className="flex-1 py-4" style={{ lineHeight: 'normal' }}>
-          <div className="flex justify-center items-center gap-8">
+          <div className="flex justify-center items-center gap-3 sm:gap-8">
             {/* Away team */}
-            <div className="text-center min-w-[120px]">
-              <div className={`text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+            <div className="text-center min-w-[60px] sm:min-w-[120px]">
+              <div className={`text-xl sm:text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
                 {game.awayTeam.abbreviation}
               </div>
-              <div className="text-terminal-muted text-sm">{game.awayTeam.record}</div>
+              <div className="text-terminal-muted text-xs sm:text-sm">{game.awayTeam.record}</div>
             </div>
 
             {/* Score */}
             <div className="text-center">
-              <div className="flex items-center gap-4 text-4xl font-bold">
+              <div className="flex items-center gap-2 sm:gap-4 text-2xl sm:text-4xl font-bold">
                 <span className={awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
                   {game.awayScore}
                 </span>
-                <span className="text-terminal-muted text-2xl">-</span>
+                <span className="text-terminal-muted text-lg sm:text-2xl">-</span>
                 <span className={homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
                   {game.homeScore}
                 </span>
@@ -187,11 +187,11 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             </div>
 
             {/* Home team */}
-            <div className="text-center min-w-[120px]">
-              <div className={`text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+            <div className="text-center min-w-[60px] sm:min-w-[120px]">
+              <div className={`text-xl sm:text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
                 {game.homeTeam.abbreviation}
               </div>
-              <div className="text-terminal-muted text-sm">{game.homeTeam.record}</div>
+              <div className="text-terminal-muted text-xs sm:text-sm">{game.homeTeam.record}</div>
             </div>
           </div>
         </div>
@@ -380,7 +380,7 @@ function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league }: Te
     <div className="font-mono">
       <SectionHeader title="TEAM STATISTICS" />
 
-      <div className="space-y-1 mt-4">
+      <div className="space-y-1">
         {displayStats.map((statKey) => {
           const homeValue = homeBoxscore.stats[statKey] ?? "-";
           const awayValue = awayBoxscore.stats[statKey] ?? "-";
@@ -426,7 +426,7 @@ function ScoringTimeline({ plays, homeTeamId: _homeTeamId, league }: ScoringTime
     <div className="font-mono">
       <SectionHeader title="SCORING SUMMARY" />
 
-      <div className="mt-4 space-y-4">
+      <div className="space-y-4">
         {periods.map((period) => (
           <div key={period}>
             <div className="text-terminal-yellow text-sm mb-2">
@@ -506,7 +506,7 @@ function GameLeadersDisplay({ leaders }: GameLeadersDisplayProps) {
     <div className="font-mono">
       <SectionHeader title="GAME LEADERS" />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {displayLeaders.map((category) => (
           <div key={category.category}>
             <div className="text-terminal-muted text-sm mb-2 uppercase">
@@ -541,35 +541,37 @@ interface PlayerStatsSectionProps {
 
 function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsSectionProps) {
   return (
-    <div className="font-mono space-y-6">
+    <div className="font-mono">
       <SectionHeader title="PLAYER STATISTICS" />
 
-      {/* Away team */}
-      <div>
-        <div className="text-terminal-fg font-bold mb-2">
-          {awayBoxscore.team.displayName}
-        </div>
-        <PlayerStatsTable players={awayBoxscore.players} league={league} />
-        {awayBoxscore.goalies && awayBoxscore.goalies.length > 0 && (
-          <div className="mt-4">
-            <div className="text-terminal-muted text-sm mb-2">Goalies</div>
-            <GoalieStatsTable goalies={awayBoxscore.goalies} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Away team */}
+        <div>
+          <div className="text-terminal-fg font-bold mb-2">
+            {awayBoxscore.team.displayName}
           </div>
-        )}
-      </div>
+          <PlayerStatsTable players={awayBoxscore.players} league={league} />
+          {awayBoxscore.goalies && awayBoxscore.goalies.length > 0 && (
+            <div className="mt-4">
+              <div className="text-terminal-muted text-sm mb-2">Goalies</div>
+              <GoalieStatsTable goalies={awayBoxscore.goalies} />
+            </div>
+          )}
+        </div>
 
-      {/* Home team */}
-      <div>
-        <div className="text-terminal-fg font-bold mb-2">
-          {homeBoxscore.team.displayName}
-        </div>
-        <PlayerStatsTable players={homeBoxscore.players} league={league} />
-        {homeBoxscore.goalies && homeBoxscore.goalies.length > 0 && (
-          <div className="mt-4">
-            <div className="text-terminal-muted text-sm mb-2">Goalies</div>
-            <GoalieStatsTable goalies={homeBoxscore.goalies} />
+        {/* Home team */}
+        <div>
+          <div className="text-terminal-fg font-bold mb-2">
+            {homeBoxscore.team.displayName}
           </div>
-        )}
+          <PlayerStatsTable players={homeBoxscore.players} league={league} />
+          {homeBoxscore.goalies && homeBoxscore.goalies.length > 0 && (
+            <div className="mt-4">
+              <div className="text-terminal-muted text-sm mb-2">Goalies</div>
+              <GoalieStatsTable goalies={homeBoxscore.goalies} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -698,7 +700,7 @@ function GameInfoSection({ venue, venueLocation, attendance, broadcast }: GameIn
     <div className="font-mono">
       <SectionHeader title="GAME INFO" />
 
-      <div className="mt-4 space-y-1 text-sm">
+      <div className="space-y-1 text-sm">
         {venue && (
           <div className="flex">
             <span className="text-terminal-muted w-24">Venue:</span>
@@ -731,11 +733,9 @@ function GameInfoSection({ venue, venueLocation, attendance, broadcast }: GameIn
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="flex text-terminal-border" style={{ lineHeight: 0.85, height: '1em', margin: 0, padding: 0 }} aria-hidden="true">
-      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>╔══</span>
-      <span className="text-terminal-fg mx-2 whitespace-nowrap" style={{ lineHeight: 'normal' }}>{title}</span>
-      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{"═".repeat(200)}</span>
-      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>╗</span>
+    <div className="flex text-terminal-border mb-4" style={{ lineHeight: 0.85, height: '1em', margin: 0, padding: 0, marginBottom: '1rem' }} aria-hidden="true">
+      <span className="text-terminal-fg whitespace-nowrap" style={{ lineHeight: 'normal' }}>{title}</span>
+      <span className="ml-2 flex-1 overflow-hidden whitespace-nowrap tracking-[0]" style={{ lineHeight: 0.85, margin: 0, padding: 0, marginLeft: '0.5rem' }}>{"─".repeat(200)}</span>
     </div>
   );
 }
