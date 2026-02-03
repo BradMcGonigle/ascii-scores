@@ -80,7 +80,8 @@ export interface Game {
   venue?: string;
   /** Venue location (city, state) */
   venueLocation?: string;
-  broadcast?: string;
+  /** Broadcast networks */
+  broadcasts?: string[];
   homeTeam: Team;
   awayTeam: Team;
   homeScore: number;
