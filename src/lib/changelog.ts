@@ -26,6 +26,11 @@ function stripCommitSha(line: string): string {
     .trim();
 }
 
+function toSentenceCase(text: string): string {
+  if (!text) return text;
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 function parseChangeType(line: string): ChangelogChange {
   // Strip commit SHA references before parsing
   const cleanLine = stripCommitSha(line);
@@ -34,13 +39,13 @@ function parseChangeType(line: string): ChangelogChange {
   if (match) {
     return {
       type: match[1] as ChangelogChange["type"],
-      description: cleanLine.replace(TYPE_PATTERN, ""),
+      description: toSentenceCase(cleanLine.replace(TYPE_PATTERN, "")),
     };
   }
   // Default to "feat" for entries without a type prefix
   return {
     type: "feat",
-    description: cleanLine,
+    description: toSentenceCase(cleanLine),
   };
 }
 

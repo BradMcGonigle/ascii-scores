@@ -241,7 +241,11 @@ git push
 
 The footer version is read directly from `package.json` at build time - no manual updates needed.
 
-The changelog page (`/changelog`) reads from `CHANGELOG.md` and automatically displays all entries.
+The changelog page (`/changelog`) reads from `CHANGELOG.md` and automatically displays all entries. The parser (`src/lib/changelog.ts`) cleans up entries for end-user display:
+
+- Strips commit SHAs (e.g., `f76ee3a:`) that changesets adds to entries
+- Extracts type prefixes (`feat:`, `fix:`, etc.) to display as tags (`[NEW]`, `[FIX]`, etc.)
+- Applies sentence casing for consistent formatting
 
 ## React Best Practices
 
