@@ -396,7 +396,8 @@ export async function getESPNScoreboard(
   const url = `${baseUrl}?dates=${formatDateForAPI(effectiveDate)}`;
 
   // Determine caching strategy:
-  // - Past dates: cache indefinitely (games are final, won't change)
+  // - Past dates: revalidate every hour (games should be final, but cache may have
+  //   stale data from before games completed - don't cache forever to allow refresh)
   // - Today/future: revalidate every 30s for live updates
   // Use league-appropriate timezone for the comparison
   const isPastDate = isDateInPast(effectiveDate, getTimezoneForLeague(league));
@@ -406,7 +407,7 @@ export async function getESPNScoreboard(
       Accept: "application/json",
     },
     next: {
-      revalidate: isPastDate ? false : 30,
+      revalidate: isPastDate ? 3600 : 30, // 1 hour for past, 30s for today/future
     },
   });
 
@@ -470,14 +471,14 @@ export async function getDatesWithGames(
       const dateStr = formatDateForAPI(date);
       const url = `${ESPN_BASE_URL}/${sportPath}/scoreboard?dates=${dateStr}`;
 
-      // Past dates can be cached indefinitely, future/today revalidate every 5 min
+      // Past dates revalidate hourly (to handle stale cache), future/today every 5 min
       // Use league-appropriate timezone for the comparison
       const isPast = isDateInPast(date, getTimezoneForLeague(league));
 
       try {
         const response = await fetch(url, {
           headers: { Accept: "application/json" },
-          next: { revalidate: isPast ? false : 300 },
+          next: { revalidate: isPast ? 3600 : 300 },
         });
 
         if (!response.ok) return null;
