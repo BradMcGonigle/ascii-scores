@@ -142,14 +142,18 @@ export function isToday(date: Date): boolean {
 }
 
 /**
- * Check if a date is in the past (before today)
+ * Check if a date is in the past (before today) in a specific timezone
  * Used to determine caching strategy - past dates can be cached indefinitely
+ * @param date - The date to check
+ * @param timezone - Optional IANA timezone (defaults to "America/New_York" for US sports)
  */
-export function isDateInPast(date: Date): boolean {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+export function isDateInPast(date: Date, timezone: string = "America/New_York"): boolean {
+  // Get today's date in the specified timezone
+  const today = getTodayInTimezone(timezone);
+  // Compare date portions only (ignore time)
   const compareDate = new Date(date);
   compareDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
   return compareDate < today;
 }
 
