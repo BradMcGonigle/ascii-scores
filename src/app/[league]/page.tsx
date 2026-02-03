@@ -20,8 +20,12 @@ import { addDays, parseDateFromAPI } from "@/lib/utils/format";
 // Leagues that have standings pages
 const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
-const MAX_DAYS_PAST = 5;
+// URL validation limits - how far users can navigate
+const MAX_DAYS_PAST = 365;
 const MAX_DAYS_FUTURE = 5;
+
+// Navigation window - dates fetched around the current view (kept small to limit API calls)
+const NAV_WINDOW_DAYS = 5;
 
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
@@ -171,7 +175,10 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                 {isF1 ? (
                   <F1RaceWeekendNavWrapper />
                 ) : (
-                  <DateNavigationWrapper league={leagueId as Exclude<League, "f1" | "pga">} />
+                  <DateNavigationWrapper
+                    league={leagueId as Exclude<League, "f1" | "pga">}
+                    currentDate={selectedDate ?? undefined}
+                  />
                 )}
               </Suspense>
             </div>
@@ -197,13 +204,21 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
 /**
  * Server component wrapper that fetches dates with games (ESPN leagues)
+ * Uses a sliding window centered on the current view date to limit API calls
  */
 async function DateNavigationWrapper({
   league,
+  currentDate,
 }: {
   league: Exclude<League, "f1" | "pga">;
+  currentDate?: Date;
 }) {
-  const datesWithGames = await getDatesWithGames(league, MAX_DAYS_PAST, MAX_DAYS_FUTURE);
+  const datesWithGames = await getDatesWithGames(
+    league,
+    NAV_WINDOW_DAYS,
+    NAV_WINDOW_DAYS,
+    currentDate
+  );
   return <DateNavigation league={league} datesWithGames={datesWithGames} />;
 }
 

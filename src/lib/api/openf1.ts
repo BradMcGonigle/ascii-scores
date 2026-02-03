@@ -278,7 +278,7 @@ export async function getDatesWithF1Sessions(
  * @param daysForward - Number of days in the future to check
  */
 export async function getF1RaceWeekends(
-  daysBack: number = 90,
+  daysBack: number = 365,
   daysForward: number = 30
 ): Promise<F1RaceWeekend[]> {
   try {

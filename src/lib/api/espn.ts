@@ -374,15 +374,16 @@ export function hasLiveGames(scoreboard: Scoreboard): boolean {
 export async function getDatesWithGames(
   league: Exclude<League, "f1" | "pga">,
   daysBack: number = 5,
-  daysForward: number = 5
+  daysForward: number = 5,
+  centerDate?: Date
 ): Promise<string[]> {
-  // Use league-appropriate timezone for "today" (Eastern for US sports, UK for EPL)
-  const today = getTodayForLeague(league);
+  // Use provided center date, or fall back to league-appropriate "today"
+  const center = centerDate ?? getTodayForLeague(league);
   const dates: Date[] = [];
 
-  // Build array of dates to check
+  // Build array of dates to check around the center date
   for (let i = -daysBack; i <= daysForward; i++) {
-    dates.push(addDays(today, i));
+    dates.push(addDays(center, i));
   }
 
   const sportPath = LEAGUE_SPORT_MAP[league];
