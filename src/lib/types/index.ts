@@ -392,6 +392,26 @@ export interface F1RaceWeekend {
 export type GolfTournamentStatus = "scheduled" | "in_progress" | "completed" | "canceled";
 
 /**
+ * Golf course information
+ */
+export interface GolfCourse {
+  /** Course name */
+  name: string;
+  /** Total yards */
+  totalYards?: number;
+  /** Par for the course */
+  par: number;
+  /** Whether this is the host/main course for the tournament */
+  isHost: boolean;
+  /** Course location */
+  location?: {
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+}
+
+/**
  * Golf player/competitor data
  */
 export interface GolfPlayer {
@@ -417,6 +437,10 @@ export interface GolfPlayer {
   totalStrokes?: number;
   /** Player status (active, cut, withdrawn, disqualified) */
   status: "active" | "cut" | "wd" | "dq";
+  /** Tournament earnings in dollars */
+  earnings?: number;
+  /** FedEx Cup points earned */
+  fedexPoints?: number;
 }
 
 /**
@@ -441,8 +465,16 @@ export interface GolfTournament {
   currentRound?: number;
   /** Total rounds */
   totalRounds: number;
-  /** Prize purse */
+  /** Prize purse (formatted string - deprecated, use purseAmount) */
   purse?: string;
+  /** Prize purse amount in dollars */
+  purseAmount?: number;
+  /** Course information (can be multiple for multi-course events) */
+  courses?: GolfCourse[];
+  /** Defending champion name */
+  defendingChampion?: string;
+  /** Broadcast networks */
+  broadcasts?: string[];
   /** Leaderboard of players */
   players: GolfPlayer[];
 }
