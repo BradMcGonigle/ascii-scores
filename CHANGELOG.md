@@ -1,5 +1,31 @@
 # ascii-scores
 
+## 0.22.0
+
+### Minor Changes
+
+- f76ee3a: feat: Add tournament navigation and enhanced leaderboard for PGA
+- f76ee3a: feat: Add TV broadcast info to game cards and detail pages
+
+### Patch Changes
+
+- 983c1d2: fix: Improve color contrast ratios to meet WCAG AA accessibility standards
+
+  - Dark theme: Updated muted text color from #5c6370 to #8b949e (5.5:1 contrast ratio)
+  - Dark theme: Updated border color from #1a1f29 to #30363d (3:1 contrast ratio)
+  - Light theme: Updated muted text color from #6b7280 to #57606a (6:1 contrast ratio)
+  - Light theme: Updated border color from #d1d5db to #9ca3af (3:1 contrast ratio)
+  - Animation: Increased glow-pulse minimum opacity from 0.7 to 0.85 to maintain contrast
+
+- 9e0518d: fix: resolve score loading errors on past dates
+
+  Fixed issues causing "Error loading scoreboard" on NHL, NBA, and other league pages when viewing yesterday's scores:
+
+  - Removed revalidateTag call that threw errors during Server Component rendering (not allowed in Next.js 16)
+  - Changed past date caching strategy from "cache forever with manual invalidation" to 5-minute time-based revalidation
+  - Fixed timezone inconsistencies: ESPNContent and validateDate now use league-appropriate timezone (Eastern for US sports, UK for EPL) instead of server UTC time
+  - Exported getTodayForLeague and getTimezoneForLeague functions from ESPN API module for reuse
+
 ## 0.21.0
 
 ### Minor Changes
