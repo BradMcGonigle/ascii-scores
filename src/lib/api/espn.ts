@@ -364,7 +364,7 @@ function mapEvent(event: ESPNEvent, league: League): Game {
     startTime: new Date(event.date),
     venue: competition.venue?.fullName,
     venueLocation: formatVenueLocation(competition.venue),
-    broadcast: competition.broadcasts?.[0]?.names?.[0],
+    broadcasts: competition.broadcasts?.flatMap((b) => b.names).filter(Boolean),
     homeTeam: mapTeam(homeCompetitor),
     awayTeam: mapTeam(awayCompetitor),
     homeScore: parseInt(homeCompetitor.score ?? "0", 10),

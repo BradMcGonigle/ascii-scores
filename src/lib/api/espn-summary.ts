@@ -146,6 +146,12 @@ interface ESPNHeader {
   competitions: Array<{
     id: string;
     date: string;
+    broadcasts?: Array<{
+      media?: {
+        shortName?: string;
+      };
+      names?: string[];
+    }>;
     competitors: Array<{
       id: string;
       homeAway: "home" | "away";
@@ -289,6 +295,15 @@ function mapGame(header: ESPNHeader, league: League): Game {
     }
   }
 
+  // Extract broadcasts - ESPN Summary API can have either media.shortName or names[] format
+  const broadcasts = competition.broadcasts
+    ?.flatMap((b) => {
+      if (b.media?.shortName) return [b.media.shortName];
+      if (b.names) return b.names;
+      return [];
+    })
+    .filter(Boolean);
+
   return {
     id: header.id,
     league,
@@ -302,6 +317,7 @@ function mapGame(header: ESPNHeader, league: League): Game {
     clock: status.displayClock,
     detail: status.type.shortDetail,
     periodScores: mapPeriodScores(homeCompetitor, awayCompetitor),
+    broadcasts: broadcasts && broadcasts.length > 0 ? broadcasts : undefined,
   };
 }
 

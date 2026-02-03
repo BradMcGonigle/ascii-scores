@@ -185,13 +185,27 @@ export function GameCard({ game }: GameCardProps) {
             )}
             {statusText}
           </div>
-          {/* Game type badge (preseason, playoff, etc.) */}
-          {game.gameType && getGameTypeBadge(game.gameType) && (
-            <span className={`text-xs ${getGameTypeBadge(game.gameType)!.className}`}>
-              <span className="sr-only">{game.gameType} game</span>
-              <span aria-hidden="true">[{getGameTypeBadge(game.gameType)!.label}]</span>
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {/* TV broadcast for live and scheduled games */}
+            {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
+              <span className="text-xs text-terminal-muted">
+                <span className="sr-only">Broadcast on {game.broadcasts.join(", ")}</span>
+                <span aria-hidden="true">
+                  <span className="text-terminal-cyan">TV:</span> {game.broadcasts[0]}
+                  {game.broadcasts.length > 1 && (
+                    <span className="ml-1">[+{game.broadcasts.length - 1}]</span>
+                  )}
+                </span>
+              </span>
+            )}
+            {/* Game type badge (preseason, playoff, etc.) */}
+            {game.gameType && getGameTypeBadge(game.gameType) && (
+              <span className={`text-xs ${getGameTypeBadge(game.gameType)!.className}`}>
+                <span className="sr-only">{game.gameType} game</span>
+                <span aria-hidden="true">[{getGameTypeBadge(game.gameType)!.label}]</span>
+              </span>
+            )}
+          </div>
         </div>
         <span className={border.textClass} aria-hidden="true">{border.side}</span>
       </div>
@@ -262,7 +276,7 @@ export function GameCard({ game }: GameCardProps) {
         </>
       )}
 
-      {/* Venue line for scheduled games */}
+      {/* Venue info for scheduled games */}
       {game.status === "scheduled" && game.venue && (
         <>
           <BorderLine
@@ -273,7 +287,7 @@ export function GameCard({ game }: GameCardProps) {
           />
           <div className="flex items-center">
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
-            <div className="flex-1 px-2 py-0.5 text-terminal-muted flex justify-between text-xs">
+            <div className="flex-1 px-2 py-0.5 text-terminal-muted text-xs flex justify-between">
               <span className="truncate">
                 <span className="sr-only">Venue: </span>
                 {game.venue}

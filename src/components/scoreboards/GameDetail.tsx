@@ -67,7 +67,7 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
         venue={game.venue}
         venueLocation={game.venueLocation}
         attendance={attendance}
-        broadcast={game.broadcast}
+        broadcasts={game.broadcasts}
       />
     </div>
   );
@@ -156,6 +156,18 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
         </div>
         <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
       </div>
+
+      {/* TV broadcast for live and scheduled games */}
+      {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
+        <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
+          <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
+          <div className="flex-1 text-center py-1 text-xs text-terminal-muted" style={{ lineHeight: 'normal' }}>
+            <span className="sr-only">Broadcast on </span>
+            <span className="text-terminal-cyan">TV:</span> {game.broadcasts.slice(0, 4).join(", ")}
+          </div>
+          <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
+        </div>
+      )}
 
       {/* Divider */}
       <BorderLine left={border.corners.ml} right={border.corners.mr} fill={border.horizontal} className={border.textClass} />
@@ -690,11 +702,12 @@ interface GameInfoSectionProps {
   venue?: string;
   venueLocation?: string;
   attendance?: number;
-  broadcast?: string;
+  broadcasts?: string[];
 }
 
-function GameInfoSection({ venue, venueLocation, attendance, broadcast }: GameInfoSectionProps) {
-  if (!venue && !attendance && !broadcast) return null;
+function GameInfoSection({ venue, venueLocation, attendance, broadcasts }: GameInfoSectionProps) {
+  const hasBroadcasts = broadcasts && broadcasts.length > 0;
+  if (!venue && !attendance && !hasBroadcasts) return null;
 
   return (
     <div className="font-mono">
@@ -716,10 +729,10 @@ function GameInfoSection({ venue, venueLocation, attendance, broadcast }: GameIn
             <span className="text-terminal-fg">{attendance.toLocaleString()}</span>
           </div>
         )}
-        {broadcast && (
+        {hasBroadcasts && (
           <div className="flex">
-            <span className="text-terminal-muted w-24">Broadcast:</span>
-            <span className="text-terminal-fg">{broadcast}</span>
+            <span className="text-terminal-muted w-24">TV:</span>
+            <span className="text-terminal-fg">{broadcasts.slice(0, 4).join(", ")}</span>
           </div>
         )}
       </div>
