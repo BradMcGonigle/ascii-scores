@@ -18,6 +18,12 @@ interface ChangelogEntry {
 
 const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.20.2",
+    changes: [
+      { type: "fix", description: "Fix timezone bug causing stale game statuses (live games showing as scheduled or vice versa)" },
+    ],
+  },
+  {
     version: "0.20.1",
     changes: [
       { type: "fix", description: "Fix game detail score layout overflowing on mobile devices" },

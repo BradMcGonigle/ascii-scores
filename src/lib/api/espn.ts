@@ -19,6 +19,18 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
 };
 
 /**
+ * Get the timezone used for a league's schedule.
+ * US sports use Eastern time, EPL uses UK time.
+ */
+function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): string {
+  if (league === "epl") {
+    return "Europe/London";
+  }
+  // US sports (NHL, NFL, NBA, MLB, MLS, NCAAM, NCAAW) use Eastern time
+  return "America/New_York";
+}
+
+/**
  * Get "today" in the appropriate timezone for a league's schedule.
  * US sports use Eastern time, EPL uses UK time.
  * This determines which day's games to show, not how times are displayed
@@ -330,7 +342,8 @@ export async function getESPNScoreboard(
   // Determine caching strategy:
   // - Past dates: cache indefinitely (games are final, won't change)
   // - Today/future: revalidate every 30s for live updates
-  const isPastDate = isDateInPast(effectiveDate);
+  // Use league-appropriate timezone for the comparison
+  const isPastDate = isDateInPast(effectiveDate, getTimezoneForLeague(league));
 
   const response = await fetch(url, {
     headers: {
@@ -394,7 +407,8 @@ export async function getDatesWithGames(
       const url = `${ESPN_BASE_URL}/${sportPath}/scoreboard?dates=${dateStr}`;
 
       // Past dates can be cached indefinitely, future/today revalidate every 5 min
-      const isPast = isDateInPast(date);
+      // Use league-appropriate timezone for the comparison
+      const isPast = isDateInPast(date, getTimezoneForLeague(league));
 
       try {
         const response = await fetch(url, {
