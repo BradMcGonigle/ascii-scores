@@ -9,6 +9,15 @@ export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "epl" | "ncaam" | "
 export type GameStatus = "scheduled" | "live" | "final" | "postponed" | "delayed";
 
 /**
+ * Game type classification (season phase)
+ * - preseason: Exhibition/preseason games (NFL preseason, MLB spring training)
+ * - regular: Regular season games
+ * - postseason: Playoff/championship games
+ * - allstar: All-Star games and related events
+ */
+export type GameType = "preseason" | "regular" | "postseason" | "allstar";
+
+/**
  * Period/quarter/inning score data
  */
 export interface PeriodScore {
@@ -83,6 +92,8 @@ export interface Game {
   periodScores?: PeriodScores;
   /** Game statistics (sport-specific) */
   stats?: GameStats;
+  /** Game type (preseason, regular, postseason, allstar) */
+  gameType?: GameType;
 }
 
 /**
@@ -445,15 +456,19 @@ export interface GolfLeaderboard {
 }
 
 /**
- * Season date range (uses month numbers, 1-12)
- * For leagues that span calendar years (e.g., NHL Oct-Apr),
+ * Season date range with day-level precision
+ * For leagues that span calendar years (e.g., NHL Oct-Jun),
  * seasonStart > seasonEnd indicates a wrap-around
  */
 export interface SeasonDates {
   /** Month the season starts (1-12) */
   seasonStart: number;
+  /** Day the season starts (1-31) */
+  seasonStartDay: number;
   /** Month the season ends (1-12) */
   seasonEnd: number;
+  /** Day the season ends (1-31) */
+  seasonEndDay: number;
 }
 
 /**
@@ -481,7 +496,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "National Hockey League",
     color: "nhl",
     sport: "hockey",
-    season: { seasonStart: 10, seasonEnd: 6 }, // October - June
+    season: { seasonStart: 10, seasonStartDay: 7, seasonEnd: 6, seasonEndDay: 30 }, // Oct 7 - Jun 30 (2025-26)
     popularity: 4,
   },
   nfl: {
@@ -490,7 +505,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "National Football League",
     color: "nfl",
     sport: "football",
-    season: { seasonStart: 9, seasonEnd: 2 }, // September - February
+    season: { seasonStart: 9, seasonStartDay: 10, seasonEnd: 2, seasonEndDay: 14 }, // Sep 10 - Feb 14 (2026)
     popularity: 1,
   },
   nba: {
@@ -499,7 +514,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "National Basketball Association",
     color: "nba",
     sport: "basketball",
-    season: { seasonStart: 10, seasonEnd: 6 }, // October - June
+    season: { seasonStart: 10, seasonStartDay: 21, seasonEnd: 6, seasonEndDay: 19 }, // Oct 21 - Jun 19 (2025-26)
     popularity: 2,
   },
   mlb: {
@@ -508,7 +523,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Major League Baseball",
     color: "mlb",
     sport: "baseball",
-    season: { seasonStart: 3, seasonEnd: 10 }, // March - October
+    season: { seasonStart: 3, seasonStartDay: 26, seasonEnd: 11, seasonEndDay: 5 }, // Mar 26 - Nov 5 (2026)
     popularity: 3,
   },
   mls: {
@@ -517,7 +532,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Major League Soccer",
     color: "mls",
     sport: "soccer",
-    season: { seasonStart: 2, seasonEnd: 11 }, // February - November
+    season: { seasonStart: 2, seasonStartDay: 21, seasonEnd: 11, seasonEndDay: 30 }, // Feb 21 - Nov 30
     popularity: 8,
   },
   epl: {
@@ -526,7 +541,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "English Premier League",
     color: "epl",
     sport: "soccer",
-    season: { seasonStart: 8, seasonEnd: 5 }, // August - May
+    season: { seasonStart: 8, seasonStartDay: 15, seasonEnd: 5, seasonEndDay: 24 }, // Aug 15 - May 24 (2025-26)
     popularity: 7,
   },
   ncaam: {
@@ -535,7 +550,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "NCAA Men's Basketball Top 25",
     color: "ncaam",
     sport: "basketball",
-    season: { seasonStart: 11, seasonEnd: 4 }, // November - April
+    season: { seasonStart: 11, seasonStartDay: 3, seasonEnd: 4, seasonEndDay: 6 }, // Nov 3 - Apr 6 (2025-26)
     popularity: 5,
   },
   ncaaw: {
@@ -544,7 +559,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "NCAA Women's Basketball Top 25",
     color: "ncaaw",
     sport: "basketball",
-    season: { seasonStart: 11, seasonEnd: 4 }, // November - April
+    season: { seasonStart: 11, seasonStartDay: 3, seasonEnd: 4, seasonEndDay: 5 }, // Nov 3 - Apr 5 (2025-26)
     popularity: 6,
   },
   f1: {
@@ -553,7 +568,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "Formula 1",
     color: "f1",
     sport: "racing",
-    season: { seasonStart: 3, seasonEnd: 12 }, // March - December
+    season: { seasonStart: 3, seasonStartDay: 6, seasonEnd: 12, seasonEndDay: 6 }, // Mar 6 - Dec 6 (2026)
     popularity: 9,
   },
   pga: {
@@ -562,7 +577,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     fullName: "PGA Tour",
     color: "pga",
     sport: "golf",
-    season: { seasonStart: 1, seasonEnd: 8 }, // January - August (main season)
+    season: { seasonStart: 1, seasonStartDay: 1, seasonEnd: 8, seasonEndDay: 31 }, // Jan 1 - Aug 31 (FedExCup season)
     popularity: 10,
   },
 };
@@ -570,26 +585,34 @@ export const LEAGUES: Record<League, LeagueConfig> = {
 /**
  * Check if a league is currently in season
  * @param league The league configuration to check
- * @param currentMonth Optional month to check (1-12), defaults to current month
+ * @param currentDate Optional date to check, defaults to current date
  */
-export function isLeagueInSeason(league: LeagueConfig, currentMonth?: number): boolean {
-  const month = currentMonth ?? new Date().getMonth() + 1; // getMonth() is 0-indexed
-  const { seasonStart, seasonEnd } = league.season;
+export function isLeagueInSeason(league: LeagueConfig, currentDate?: Date): boolean {
+  const now = currentDate ?? new Date();
+  const month = now.getMonth() + 1; // getMonth() is 0-indexed
+  const day = now.getDate();
+
+  const { seasonStart, seasonStartDay, seasonEnd, seasonEndDay } = league.season;
+
+  // Create comparable date values (MMDD format as numbers for easy comparison)
+  const currentValue = month * 100 + day;
+  const startValue = seasonStart * 100 + seasonStartDay;
+  const endValue = seasonEnd * 100 + seasonEndDay;
 
   // Season spans calendar year (e.g., October to June)
-  if (seasonStart > seasonEnd) {
-    return month >= seasonStart || month <= seasonEnd;
+  if (seasonStart > seasonEnd || (seasonStart === seasonEnd && seasonStartDay > seasonEndDay)) {
+    return currentValue >= startValue || currentValue <= endValue;
   }
 
   // Season within same calendar year (e.g., March to October)
-  return month >= seasonStart && month <= seasonEnd;
+  return currentValue >= startValue && currentValue <= endValue;
 }
 
 /**
  * Get all leagues sorted by status (active first) and popularity
  * Returns { active: League[], inactive: League[] }
  */
-export function getLeaguesByStatus(currentMonth?: number): {
+export function getLeaguesByStatus(currentDate?: Date): {
   active: League[];
   inactive: League[];
 } {
@@ -599,7 +622,7 @@ export function getLeaguesByStatus(currentMonth?: number): {
   const inactive: LeagueConfig[] = [];
 
   for (const league of allLeagues) {
-    if (isLeagueInSeason(league, currentMonth)) {
+    if (isLeagueInSeason(league, currentDate)) {
       active.push(league);
     } else {
       inactive.push(league);
@@ -619,7 +642,19 @@ export function getLeaguesByStatus(currentMonth?: number): {
 /**
  * Get all leagues in a single sorted array (active first by popularity, then inactive by popularity)
  */
-export function getSortedLeagues(currentMonth?: number): League[] {
-  const { active, inactive } = getLeaguesByStatus(currentMonth);
+export function getSortedLeagues(currentDate?: Date): League[] {
+  const { active, inactive } = getLeaguesByStatus(currentDate);
   return [...active, ...inactive];
+}
+
+/**
+ * Get the formatted season start date for a league (e.g., "February 21")
+ */
+export function getSeasonStartDate(league: LeagueConfig): string {
+  const { seasonStart, seasonStartDay } = league.season;
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  return `${monthNames[seasonStart - 1]} ${seasonStartDay}`;
 }

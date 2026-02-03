@@ -14,8 +14,8 @@ import { LeagueJsonLd } from "@/components/seo";
 import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
 import { getF1Standings, getF1RaceWeekends, getF1RaceWeekendSessions } from "@/lib/api/openf1";
 import { getPGALeaderboard } from "@/lib/api/pga";
-import { LEAGUES, type League } from "@/lib/types";
-import { addDays, parseDateFromAPI } from "@/lib/utils/format";
+import { LEAGUES, isLeagueInSeason, getSeasonStartDate, type League } from "@/lib/types";
+import { addDays, formatDateForAPI, getRelativeDateLabel, parseDateFromAPI } from "@/lib/utils/format";
 
 // Leagues that have standings pages
 const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
@@ -119,6 +119,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
   }
 
   const league = LEAGUES[leagueId as League];
+  const isOffSeason = !isLeagueInSeason(league);
 
   // Parse and validate date parameter (for ESPN leagues only)
   const isF1 = leagueId === "f1";
@@ -160,6 +161,13 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                   </Link>
                 )}
               </div>
+              {isOffSeason && (
+                <p className="font-mono text-xs text-terminal-yellow mt-2">
+                  <span className="text-terminal-border">[</span>
+                  <span className="mx-1">⏱ Season starts {getSeasonStartDate(league)}</span>
+                  <span className="text-terminal-border">]</span>
+                </p>
+              )}
             </div>
             <RefreshButton />
           </div>
@@ -249,8 +257,21 @@ async function ESPNContent({
   date?: Date;
 }) {
   try {
-    const scoreboard = await getESPNScoreboard(league, date);
-    return <LeagueScoreboard scoreboard={scoreboard} />;
+    // Fetch scoreboard and dates with games in parallel
+    const [scoreboard, datesWithGames] = await Promise.all([
+      getESPNScoreboard(league, date),
+      getDatesWithGames(league, 0, MAX_DAYS_FUTURE), // Only need future dates
+    ]);
+
+    // Find next date with games (after today)
+    const todayStr = formatDateForAPI(new Date());
+    const sortedDates = [...datesWithGames].sort((a, b) => a.localeCompare(b));
+    const nextDateStr = sortedDates.find((d) => d > todayStr);
+    const nextGameDateLabel = nextDateStr
+      ? getRelativeDateLabel(parseDateFromAPI(nextDateStr)!)
+      : undefined;
+
+    return <LeagueScoreboard scoreboard={scoreboard} nextGameDateLabel={nextGameDateLabel} />;
   } catch (error) {
     console.error(`Failed to fetch ${league} scoreboard:`, error);
     return (
