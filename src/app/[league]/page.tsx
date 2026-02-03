@@ -27,6 +27,9 @@ const MAX_DAYS_FUTURE = 5;
 // Navigation window - dates fetched around the current view (kept small to limit API calls)
 const NAV_WINDOW_DAYS = 5;
 
+// Wider backward search when on "today" view to find recent games during off-season
+const INITIAL_DAYS_BACK = 14;
+
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
   searchParams: Promise<{ date?: string; weekend?: string }>;
@@ -204,7 +207,9 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
 /**
  * Server component wrapper that fetches dates with games (ESPN leagues)
- * Uses a sliding window centered on the current view date to limit API calls
+ * Uses a sliding window centered on the current view date to limit API calls.
+ * When on "today" view (no currentDate), searches further back to find recent
+ * games during off-season periods.
  */
 async function DateNavigationWrapper({
   league,
@@ -213,9 +218,13 @@ async function DateNavigationWrapper({
   league: Exclude<League, "f1" | "pga">;
   currentDate?: Date;
 }) {
+  // When on today's view, search further back to handle off-season
+  // When on a specific past date, use tight window for efficiency
+  const daysBack = currentDate ? NAV_WINDOW_DAYS : INITIAL_DAYS_BACK;
+
   const datesWithGames = await getDatesWithGames(
     league,
-    NAV_WINDOW_DAYS,
+    daysBack,
     NAV_WINDOW_DAYS,
     currentDate
   );
