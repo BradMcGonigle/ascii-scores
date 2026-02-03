@@ -541,35 +541,37 @@ interface PlayerStatsSectionProps {
 
 function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsSectionProps) {
   return (
-    <div className="font-mono space-y-6">
+    <div className="font-mono">
       <SectionHeader title="PLAYER STATISTICS" />
 
-      {/* Away team */}
-      <div>
-        <div className="text-terminal-fg font-bold mb-2">
-          {awayBoxscore.team.displayName}
-        </div>
-        <PlayerStatsTable players={awayBoxscore.players} league={league} />
-        {awayBoxscore.goalies && awayBoxscore.goalies.length > 0 && (
-          <div className="mt-4">
-            <div className="text-terminal-muted text-sm mb-2">Goalies</div>
-            <GoalieStatsTable goalies={awayBoxscore.goalies} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Away team */}
+        <div>
+          <div className="text-terminal-fg font-bold mb-2">
+            {awayBoxscore.team.displayName}
           </div>
-        )}
-      </div>
+          <PlayerStatsTable players={awayBoxscore.players} league={league} />
+          {awayBoxscore.goalies && awayBoxscore.goalies.length > 0 && (
+            <div className="mt-4">
+              <div className="text-terminal-muted text-sm mb-2">Goalies</div>
+              <GoalieStatsTable goalies={awayBoxscore.goalies} />
+            </div>
+          )}
+        </div>
 
-      {/* Home team */}
-      <div>
-        <div className="text-terminal-fg font-bold mb-2">
-          {homeBoxscore.team.displayName}
-        </div>
-        <PlayerStatsTable players={homeBoxscore.players} league={league} />
-        {homeBoxscore.goalies && homeBoxscore.goalies.length > 0 && (
-          <div className="mt-4">
-            <div className="text-terminal-muted text-sm mb-2">Goalies</div>
-            <GoalieStatsTable goalies={homeBoxscore.goalies} />
+        {/* Home team */}
+        <div>
+          <div className="text-terminal-fg font-bold mb-2">
+            {homeBoxscore.team.displayName}
           </div>
-        )}
+          <PlayerStatsTable players={homeBoxscore.players} league={league} />
+          {homeBoxscore.goalies && homeBoxscore.goalies.length > 0 && (
+            <div className="mt-4">
+              <div className="text-terminal-muted text-sm mb-2">Goalies</div>
+              <GoalieStatsTable goalies={homeBoxscore.goalies} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
