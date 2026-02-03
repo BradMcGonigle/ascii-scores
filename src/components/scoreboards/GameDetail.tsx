@@ -380,7 +380,7 @@ function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league }: Te
     <div className="font-mono">
       <SectionHeader title="TEAM STATISTICS" />
 
-      <div className="space-y-1 mt-4">
+      <div className="space-y-1">
         {displayStats.map((statKey) => {
           const homeValue = homeBoxscore.stats[statKey] ?? "-";
           const awayValue = awayBoxscore.stats[statKey] ?? "-";
@@ -426,7 +426,7 @@ function ScoringTimeline({ plays, homeTeamId: _homeTeamId, league }: ScoringTime
     <div className="font-mono">
       <SectionHeader title="SCORING SUMMARY" />
 
-      <div className="mt-4 space-y-4">
+      <div className="space-y-4">
         {periods.map((period) => (
           <div key={period}>
             <div className="text-terminal-yellow text-sm mb-2">
@@ -506,7 +506,7 @@ function GameLeadersDisplay({ leaders }: GameLeadersDisplayProps) {
     <div className="font-mono">
       <SectionHeader title="GAME LEADERS" />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {displayLeaders.map((category) => (
           <div key={category.category}>
             <div className="text-terminal-muted text-sm mb-2 uppercase">
@@ -698,7 +698,7 @@ function GameInfoSection({ venue, venueLocation, attendance, broadcast }: GameIn
     <div className="font-mono">
       <SectionHeader title="GAME INFO" />
 
-      <div className="mt-4 space-y-1 text-sm">
+      <div className="space-y-1 text-sm">
         {venue && (
           <div className="flex">
             <span className="text-terminal-muted w-24">Venue:</span>
@@ -731,11 +731,9 @@ function GameInfoSection({ venue, venueLocation, attendance, broadcast }: GameIn
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="flex text-terminal-border" style={{ lineHeight: 0.85, height: '1em', margin: 0, padding: 0 }} aria-hidden="true">
-      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>╔══</span>
-      <span className="text-terminal-fg mx-2 whitespace-nowrap" style={{ lineHeight: 'normal' }}>{title}</span>
-      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{"═".repeat(200)}</span>
-      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>╗</span>
+    <div className="flex text-terminal-border mb-4" style={{ lineHeight: 0.85, height: '1em', margin: 0, padding: 0, marginBottom: '1rem' }} aria-hidden="true">
+      <span className="text-terminal-fg whitespace-nowrap" style={{ lineHeight: 'normal' }}>{title}</span>
+      <span className="ml-2 flex-1 overflow-hidden whitespace-nowrap tracking-[0]" style={{ lineHeight: 0.85, margin: 0, padding: 0, marginLeft: '0.5rem' }}>{"─".repeat(200)}</span>
     </div>
   );
 }
