@@ -194,7 +194,7 @@ A markdown file is created in `.changeset/` - commit this with your PR.
 
 #### Writing Good Changeset Descriptions
 
-Prefix descriptions with the change type for proper categorization on the changelog page:
+Prefix descriptions with the change type for proper categorization on the changelog page. **Use sentence casing** (capitalize the first letter) since these are displayed to end users:
 
 ```markdown
 feat: Add dark mode toggle to settings
@@ -203,6 +203,8 @@ perf: Optimize API response caching
 style: Improve mobile navigation layout
 refactor: Simplify date parsing logic
 ```
+
+**Note:** Always capitalize the first word after the type prefix (e.g., "Add", "Resolve", "Optimize").
 
 ### When to Skip Changesets
 
@@ -241,7 +243,10 @@ git push
 
 The footer version is read directly from `package.json` at build time - no manual updates needed.
 
-The changelog page (`/changelog`) reads from `CHANGELOG.md` and automatically displays all entries.
+The changelog page (`/changelog`) reads from `CHANGELOG.md` and automatically displays all entries. The parser (`src/lib/changelog.ts`) cleans up entries for end-user display:
+
+- Strips commit SHAs (e.g., `f76ee3a:`) that changesets adds to entries
+- Extracts type prefixes (`feat:`, `fix:`, etc.) to display as tags (`[NEW]`, `[FIX]`, etc.)
 
 ## React Best Practices
 
