@@ -11,7 +11,7 @@ import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { DateNavigation } from "@/components/scoreboards/DateNavigation";
 import { F1RaceWeekendNav } from "@/components/scoreboards/F1RaceWeekendNav";
 import { LeagueJsonLd } from "@/components/seo";
-import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
+import { getESPNScoreboard, getDatesWithGames, getTodayForLeague } from "@/lib/api/espn";
 import { getF1Standings, getF1RaceWeekends, getF1RaceWeekendSessions } from "@/lib/api/openf1";
 import { getPGALeaderboard, getPGATournamentCalendar } from "@/lib/api/pga";
 import { PGATournamentNav } from "@/components/scoreboards/PGATournamentNav";
@@ -86,9 +86,11 @@ export async function generateMetadata({ params }: LeaguePageProps) {
 /**
  * Validate and parse the date parameter
  * Returns the validated date or null if invalid/out of range
+ * Uses league-appropriate timezone to ensure consistent date handling
  */
 function validateDate(
   dateStr: string | undefined,
+  league: Exclude<League, "f1" | "pga">,
   daysBack: number = MAX_DAYS,
   daysForward: number = MAX_DAYS
 ): Date | null {
@@ -98,7 +100,8 @@ function validateDate(
   if (!parsed) return null;
 
   // Check if date is within allowed range
-  const today = new Date();
+  // Use league-appropriate timezone for "today" to match client expectations
+  const today = getTodayForLeague(league);
   const minDate = addDays(today, -daysBack);
   const maxDate = addDays(today, daysForward);
 
@@ -128,7 +131,11 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
   // Parse and validate date parameter (for ESPN leagues only)
   const isF1 = leagueId === "f1";
-  const selectedDate = !isF1 ? validateDate(dateParam) : null;
+  const isPGA = leagueId === "pga";
+  const isESPNLeague = !isF1 && !isPGA;
+  const selectedDate = isESPNLeague
+    ? validateDate(dateParam, leagueId as Exclude<League, "f1" | "pga">)
+    : null;
 
   // Determine if we should show navigation
   // All leagues have navigation, but PGA uses tournament nav instead of date nav
@@ -294,7 +301,8 @@ async function ESPNContent({
     ]);
 
     // Find next date with games (after today)
-    const todayStr = formatDateForAPI(new Date());
+    // Use league-appropriate timezone to ensure consistency with getDatesWithGames
+    const todayStr = formatDateForAPI(getTodayForLeague(league));
     const sortedDates = [...datesWithGames].sort((a, b) => a.localeCompare(b));
     const nextDateStr = sortedDates.find((d) => d > todayStr);
     const nextGameDateLabel = nextDateStr

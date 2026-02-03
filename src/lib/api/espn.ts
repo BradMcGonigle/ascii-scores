@@ -1,4 +1,3 @@
-import { revalidateTag } from "next/cache";
 import type { Game, GameStats, GameStatus, GameType, League, LeagueStandings, NCAAPolls, PeriodScore, PeriodScores, RankedTeam, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
 import { addDays, formatDateForAPI, getTodayInEastern, getTodayInUK, isDateInPast } from "@/lib/utils/format";
 
@@ -23,7 +22,7 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
  * Get the timezone used for a league's schedule.
  * US sports use Eastern time, EPL uses UK time.
  */
-function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): string {
+export function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): string {
   if (league === "epl") {
     return "Europe/London";
   }
@@ -37,7 +36,7 @@ function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): string {
  * This determines which day's games to show, not how times are displayed
  * (game times are always shown in the user's local timezone).
  */
-function getTodayForLeague(league: Exclude<League, "f1" | "pga">): Date {
+export function getTodayForLeague(league: Exclude<League, "f1" | "pga">): Date {
   if (league === "epl") {
     return getTodayInUK();
   }
@@ -398,19 +397,19 @@ export async function getESPNScoreboard(
   const url = `${baseUrl}?dates=${dateStr}`;
 
   // Determine caching strategy:
-  // - Past dates: cache forever with tags (revalidate via tag if games incomplete)
+  // - Past dates: cache for 5 minutes (allows updates if games weren't marked final)
   // - Today/future: revalidate every 30s for live updates
-  // Use league-appropriate timezone for the comparison
+  // Note: revalidateTag cannot be called during Server Component render,
+  // so we use time-based revalidation instead of manual tag invalidation
   const isPastDate = isDateInPast(effectiveDate, getTimezoneForLeague(league));
-  const cacheTag = `scoreboard-${league}-${dateStr}`;
 
   const response = await fetch(url, {
     headers: {
       Accept: "application/json",
     },
     next: isPastDate
-      ? { revalidate: false, tags: [cacheTag] }  // Past: cache forever with tag
-      : { revalidate: 30 },                       // Today/future: 30s refresh
+      ? { revalidate: 300 }  // Past: 5 minute refresh (in case games weren't final)
+      : { revalidate: 30 },  // Today/future: 30s refresh for live updates
   });
 
   if (!response.ok) {
@@ -427,15 +426,6 @@ export async function getESPNScoreboard(
     };
     return mapEvent(eventWithSeason, league);
   });
-
-  // For past dates: if any games are not final, invalidate cache so next request refetches
-  // This handles stale data that was cached before games completed
-  if (isPastDate && games.length > 0) {
-    const allFinal = games.every((g) => g.status === "final" || g.status === "postponed");
-    if (!allFinal) {
-      revalidateTag(cacheTag, { expire: 0 });
-    }
-  }
 
   return {
     league,
