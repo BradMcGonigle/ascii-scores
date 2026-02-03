@@ -6,14 +6,15 @@ import { Footer } from "@/components/layout/Footer";
 import { LeagueScoreboard } from "@/components/scoreboards/LeagueScoreboard";
 import { F1StandingsDisplay } from "@/components/scoreboards/F1Standings";
 import { F1SessionsList } from "@/components/scoreboards/F1SessionsList";
-import { GolfLeaderboardClient } from "@/components/scoreboards/GolfLeaderboardClient";
+import { GolfLeaderboardDisplay } from "@/components/scoreboards/GolfLeaderboard";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { DateNavigation } from "@/components/scoreboards/DateNavigation";
 import { F1RaceWeekendNav } from "@/components/scoreboards/F1RaceWeekendNav";
 import { LeagueJsonLd } from "@/components/seo";
 import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
 import { getF1Standings, getF1RaceWeekends, getF1RaceWeekendSessions } from "@/lib/api/openf1";
-import { getPGALeaderboard } from "@/lib/api/pga";
+import { getPGALeaderboard, getPGATournamentCalendar } from "@/lib/api/pga";
+import { PGATournamentNav } from "@/components/scoreboards/PGATournamentNav";
 import { LEAGUES, isLeagueInSeason, getSeasonStartDate, type League } from "@/lib/types";
 import { addDays, formatDateForAPI, getRelativeDateLabel, parseDateFromAPI } from "@/lib/utils/format";
 
@@ -29,7 +30,7 @@ const NAV_WINDOW = 30;
 
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
-  searchParams: Promise<{ date?: string; weekend?: string }>;
+  searchParams: Promise<{ date?: string; weekend?: string; event?: string }>;
 }
 
 // Generate static params for all leagues
@@ -115,7 +116,7 @@ function validateDate(
 
 export default async function LeaguePage({ params, searchParams }: LeaguePageProps) {
   const { league: leagueId } = await params;
-  const { date: dateParam, weekend: weekendParam } = await searchParams;
+  const { date: dateParam, weekend: weekendParam, event: eventParam } = await searchParams;
 
   // Validate league
   if (!Object.keys(LEAGUES).includes(leagueId)) {
@@ -130,8 +131,8 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
   const selectedDate = !isF1 ? validateDate(dateParam) : null;
 
   // Determine if we should show navigation
-  // PGA doesn't use navigation
-  const showNavigation = leagueId !== "pga";
+  // All leagues have navigation, but PGA uses tournament nav instead of date nav
+  const showNavigation = true;
 
   return (
     <>
@@ -150,7 +151,9 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                 {league.name}
                 <span className="text-terminal-border">]</span>
                 {" "}
-                <span className="text-terminal-muted">Scores</span>
+                <span className="text-terminal-muted">
+                  {leagueId === "pga" ? "Leaderboard" : "Scores"}
+                </span>
               </h1>
               <div className="flex items-center gap-4 mt-1">
                 <p className="text-terminal-muted font-mono text-sm">
@@ -182,6 +185,8 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
               <Suspense fallback={<DateNavigationSkeleton />}>
                 {isF1 ? (
                   <F1RaceWeekendNavWrapper />
+                ) : leagueId === "pga" ? (
+                  <PGATournamentNavWrapper />
                 ) : (
                   <DateNavigationWrapper
                     league={leagueId as Exclude<League, "f1" | "pga">}
@@ -196,7 +201,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
           {leagueId === "f1" ? (
             <F1Content weekendId={weekendParam} />
           ) : leagueId === "pga" ? (
-            <PGAContent />
+            <PGAContent eventId={eventParam} />
           ) : (
             <ESPNContent
               league={leagueId as Exclude<League, "f1" | "pga">}
@@ -238,6 +243,14 @@ async function DateNavigationWrapper({
 async function F1RaceWeekendNavWrapper() {
   const weekends = await getF1RaceWeekends();
   return <F1RaceWeekendNav weekends={weekends} />;
+}
+
+/**
+ * Server component wrapper that fetches PGA tournament calendar
+ */
+async function PGATournamentNavWrapper() {
+  const calendar = await getPGATournamentCalendar();
+  return <PGATournamentNav tournaments={calendar.tournaments} />;
 }
 
 /**
@@ -384,11 +397,11 @@ async function F1Content({ weekendId }: { weekendId?: string }) {
 /**
  * PGA Tour leaderboard content
  */
-async function PGAContent() {
+async function PGAContent({ eventId }: { eventId?: string }) {
   try {
-    const leaderboard = await getPGALeaderboard();
+    const leaderboard = await getPGALeaderboard(eventId);
 
-    return <GolfLeaderboardClient leaderboard={leaderboard} />;
+    return <GolfLeaderboardDisplay leaderboard={leaderboard} />;
   } catch (error) {
     console.error("Failed to fetch PGA leaderboard:", error);
     return (
