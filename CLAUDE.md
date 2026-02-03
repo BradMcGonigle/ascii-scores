@@ -207,22 +207,22 @@ Not every PR needs a changeset. Skip for:
 - Dependency updates (unless they affect functionality)
 - Chore/maintenance tasks
 
-### Releasing a New Version
+### Releasing a New Version (Automated)
 
-When ready to release (typically after merging PRs to main):
+A GitHub Action (`.github/workflows/release.yml`) automatically manages releases:
+
+1. When PRs with changesets merge to main, the action creates/updates a "Version Packages" PR
+2. This PR shows the pending version bump and changelog preview
+3. When you're ready to release, merge that PR
+4. The version is bumped and `CHANGELOG.md` is updated automatically
+
+**Manual alternative** (if needed):
 
 ```bash
-pnpm version
+pnpm version  # Bumps version, updates CHANGELOG.md
+git add . && git commit -m "chore: release"
+git push
 ```
-
-This command:
-
-1. Consumes all pending changesets in `.changeset/`
-2. Bumps the version in `package.json` based on collected changesets
-3. Updates `CHANGELOG.md` with all changes
-4. Deletes the consumed changeset files
-
-Then commit and push the version bump.
 
 ### How Version Numbers Work
 
