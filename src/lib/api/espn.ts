@@ -147,7 +147,7 @@ function mapStatus(status: ESPNStatus): GameStatus {
   const name = status.type.name.toLowerCase();
 
   if (state === "in") return "live";
-  if (state === "post" || status.type.completed) return "final";
+  if (state === "post" || status.type.completed || name.includes("final")) return "final";
   if (name === "postponed") return "postponed";
   if (name === "delayed") return "delayed";
   return "scheduled";
@@ -341,10 +341,25 @@ function mapEvent(event: ESPNEvent, league: League): Game {
   )!;
   const status = competition.status;
 
+  // Determine game status with fallback for ESPN data quality issues
+  let gameStatus = mapStatus(status);
+
+  // Fallback: if game shows as "scheduled" but has scores defined and start time
+  // is in the past, it's almost certainly final (ESPN doesn't always set status correctly)
+  if (gameStatus === "scheduled") {
+    const hasScores = homeCompetitor.score !== undefined && awayCompetitor.score !== undefined;
+    const startTime = new Date(event.date);
+    const isInPast = startTime < new Date();
+
+    if (hasScores && isInPast) {
+      gameStatus = "final";
+    }
+  }
+
   return {
     id: event.id,
     league,
-    status: mapStatus(status),
+    status: gameStatus,
     startTime: new Date(event.date),
     venue: competition.venue?.fullName,
     venueLocation: formatVenueLocation(competition.venue),
