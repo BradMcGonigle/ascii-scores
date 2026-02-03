@@ -23,7 +23,7 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
  * Get the timezone used for a league's schedule.
  * US sports use Eastern time, EPL uses UK time.
  */
-function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): string {
+export function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): string {
   if (league === "epl") {
     return "Europe/London";
   }
@@ -37,7 +37,7 @@ function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): string {
  * This determines which day's games to show, not how times are displayed
  * (game times are always shown in the user's local timezone).
  */
-function getTodayForLeague(league: Exclude<League, "f1" | "pga">): Date {
+export function getTodayForLeague(league: Exclude<League, "f1" | "pga">): Date {
   if (league === "epl") {
     return getTodayInUK();
   }
