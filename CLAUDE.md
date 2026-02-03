@@ -148,12 +148,13 @@ If you find yourself on `main` with uncommitted changes, stash or create a branc
 Before committing any changes, you MUST complete these steps:
 
 1. **Run code checks**: `pnpm lint && pnpm typecheck`
-2. **Evaluate documentation needs** for the branch/PR (see decision tree below)
-3. **Create or update documentation** as needed (one ADR per decision, not per commit)
+2. **Add a changeset** if the PR includes user-visible changes (see Versioning section below)
+3. **Evaluate documentation needs** for the branch/PR (see decision tree below)
+4. **Create or update documentation** as needed (one ADR per decision, not per commit)
 
-## Versioning with Changesets
+## Versioning with Changesets (MANDATORY for features/fixes)
 
-This project uses [Changesets](https://github.com/changesets/changesets) to manage versioning and changelog generation. This approach eliminates merge conflicts when multiple PRs are in flight.
+This project uses [Changesets](https://github.com/changesets/changesets) to manage versioning and changelog generation. **Every PR with user-visible changes MUST include a changeset file.** This approach eliminates merge conflicts when multiple PRs are in flight.
 
 ### How It Works
 
@@ -162,7 +163,13 @@ This project uses [Changesets](https://github.com/changesets/changesets) to mana
 3. **Version bumping happens separately** when ready to release
 4. **Changelog is auto-generated** from changeset descriptions
 
-### For Each PR: Add a Changeset
+### For Each PR: Add a Changeset (REQUIRED)
+
+**You MUST add a changeset for any PR that includes:**
+- New features (`feat:`)
+- Bug fixes (`fix:`)
+- Performance improvements (`perf:`)
+- Style/UI changes visible to users
 
 When your PR includes changes that should be noted in the changelog, run:
 
@@ -507,6 +514,7 @@ Relates to: ADR-001, ADR-003
 Before merging a PR (or on final commit of a branch), verify:
 
 - [ ] Code checks pass: `pnpm lint && pnpm typecheck`
+- [ ] **Changeset added** for user-visible changes (features, fixes, perf, style)
 - [ ] Documentation decision tree evaluated for the branch as a whole
 - [ ] Required ADRs created/updated and tables updated
 - [ ] Historical Context Log updated if applicable
