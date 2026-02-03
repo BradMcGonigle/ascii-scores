@@ -20,15 +20,10 @@ import { addDays, parseDateFromAPI } from "@/lib/utils/format";
 // Leagues that have standings pages
 const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
-// URL validation limits - how far users can navigate
+// How far users can navigate in each direction
+// Past dates are cached indefinitely, so the API cost is only on first visit
 const MAX_DAYS_PAST = 365;
 const MAX_DAYS_FUTURE = 5;
-
-// Navigation window - dates fetched around the current view (kept small to limit API calls)
-const NAV_WINDOW_DAYS = 5;
-
-// Wider backward search when on "today" view to find recent games during off-season
-const INITIAL_DAYS_BACK = 14;
 
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
@@ -207,9 +202,8 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
 /**
  * Server component wrapper that fetches dates with games (ESPN leagues)
- * Uses a sliding window centered on the current view date to limit API calls.
- * When on "today" view (no currentDate), searches further back to find recent
- * games during off-season periods.
+ * Fetches the full year of past dates plus upcoming dates.
+ * Past dates are cached indefinitely, so the cost is only on first discovery.
  */
 async function DateNavigationWrapper({
   league,
@@ -218,14 +212,10 @@ async function DateNavigationWrapper({
   league: Exclude<League, "f1" | "pga">;
   currentDate?: Date;
 }) {
-  // When on today's view, search further back to handle off-season
-  // When on a specific past date, use tight window for efficiency
-  const daysBack = currentDate ? NAV_WINDOW_DAYS : INITIAL_DAYS_BACK;
-
   const datesWithGames = await getDatesWithGames(
     league,
-    daysBack,
-    NAV_WINDOW_DAYS,
+    MAX_DAYS_PAST,
+    MAX_DAYS_FUTURE,
     currentDate
   );
   return <DateNavigation league={league} datesWithGames={datesWithGames} />;
