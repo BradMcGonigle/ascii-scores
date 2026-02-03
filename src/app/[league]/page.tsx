@@ -20,9 +20,12 @@ import { addDays, parseDateFromAPI } from "@/lib/utils/format";
 // Leagues that have standings pages
 const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
-// How far users can navigate in each direction
-// Past dates are cached indefinitely, future dates use short cache (5 min)
+// How far users can navigate via URL (validates date param)
 const MAX_DAYS = 365;
+
+// How many dates to check for navigation hints (PREV/NEXT buttons)
+// Kept smaller to limit API calls - users navigate in "hops"
+const NAV_WINDOW = 30;
 
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
@@ -201,8 +204,9 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
 
 /**
  * Server component wrapper that fetches dates with games (ESPN leagues)
- * Fetches a full year of dates in both directions.
- * Past dates are cached indefinitely, future dates cached for 5 minutes.
+ * Fetches NAV_WINDOW days in each direction from the current view.
+ * Users navigate in "hops" - each page load checks ±30 days, allowing
+ * them to eventually reach any date within MAX_DAYS (365).
  */
 async function DateNavigationWrapper({
   league,
@@ -213,8 +217,8 @@ async function DateNavigationWrapper({
 }) {
   const datesWithGames = await getDatesWithGames(
     league,
-    MAX_DAYS,
-    MAX_DAYS,
+    NAV_WINDOW,
+    NAV_WINDOW,
     currentDate
   );
   return <DateNavigation league={league} datesWithGames={datesWithGames} />;
