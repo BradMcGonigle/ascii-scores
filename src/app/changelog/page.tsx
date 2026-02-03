@@ -2,234 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { parseChangelog, type ChangelogEntry } from "@/lib/changelog";
 
 export const metadata: Metadata = {
   title: "Changelog",
   description: "View the complete history of changes and updates to ASCII Scores.",
 };
-
-interface ChangelogEntry {
-  version: string;
-  changes: {
-    type: "feat" | "fix" | "refactor" | "chore" | "docs" | "style" | "perf" | "revert";
-    description: string;
-  }[];
-}
-
-const CHANGELOG: ChangelogEntry[] = [
-  {
-    version: "0.21.0",
-    changes: [
-      { type: "feat", description: "Extend date navigation to allow browsing up to 1 year of past games" },
-      { type: "feat", description: "Extend F1 race weekend navigation to show full year of past races" },
-      { type: "perf", description: "Implement sliding window navigation to minimize API calls while allowing deep history browsing" },
-    ],
-  },
-  {
-    version: "0.20.2",
-    changes: [
-      { type: "fix", description: "Fix timezone bug causing stale game statuses (live games showing as scheduled or vice versa)" },
-    ],
-  },
-  {
-    version: "0.20.1",
-    changes: [
-      { type: "fix", description: "Fix game detail score layout overflowing on mobile devices" },
-    ],
-  },
-  {
-    version: "0.20.0",
-    changes: [
-      { type: "feat", description: "Add game detail pages with full boxscore, scoring summary, and player stats for all ESPN leagues" },
-      { type: "feat", description: "Add ESPN Summary API integration with sport-specific data mapping (NBA, NHL, NFL, MLB, MLS, EPL, NCAAM, NCAAW)" },
-      { type: "feat", description: "Add period-by-period scoring breakdown with sport-specific labels (periods, quarters, innings, halves)" },
-      { type: "feat", description: "Add scoring timeline with assists and strength indicators (power play, short-handed, etc.)" },
-      { type: "feat", description: "Add team statistics comparison side-by-side (shots, possession, faceoffs, etc.)" },
-      { type: "feat", description: "Add game leaders display for top performers in key stat categories" },
-      { type: "feat", description: "Add detailed player stats tables with goalie-specific stats for hockey" },
-      { type: "feat", description: "Make game cards clickable to navigate to detail pages" },
-      { type: "feat", description: "Implement ISR caching with 30s revalidation (effectively infinite cache for final games)" },
-      { type: "feat", description: "Add responsive ASCII borders that adapt to desktop and mobile widths" },
-      { type: "feat", description: "Add expanded stats to standings pages (streak, home/away, L10, etc.)" },
-      { type: "feat", description: "Add horizontally scrollable standings tables with sticky team column" },
-      { type: "fix", description: "Handle sport-specific ESPN API data structures (NBA displayValue vs NHL value)" },
-      { type: "fix", description: "Add defensive data parsing with null checks for incomplete API responses" },
-      { type: "fix", description: "Remove redundant 'View Details' text from game cards (entire card is clickable)" },
-      { type: "style", description: "Optimize ASCII border rendering with tight line-height for seamless appearance" },
-    ],
-  },
-  {
-    version: "0.19.0",
-    changes: [
-      { type: "feat", description: "Add day-level precision for league season dates (e.g., MLS starts Feb 21, not Mar 1)" },
-      { type: "feat", description: "Add division/conference toggle to standings pages" },
-      { type: "style", description: "Improve homepage layout with equal-height league cards" },
-      { type: "style", description: "Remove terminal-style pre-header for cleaner interface" },
-      { type: "style", description: "Move theme selector to footer with consistent styling" },
-      { type: "style", description: "Make 'no games' message responsive on mobile" },
-      { type: "fix", description: "Limit homepage grid to 3 columns for wide league names (NCAAM/NCAAW)" },
-    ],
-  },
-  {
-    version: "0.18.1",
-    changes: [
-      { type: "fix", description: "Fix stale 'today' view showing yesterday's games after midnight" },
-      { type: "fix", description: "Use league-appropriate timezones for schedules (US Eastern for US sports, UK for EPL)" },
-    ],
-  },
-  {
-    version: "0.18.0",
-    changes: [
-      { type: "feat", description: "Add league standings pages for all ESPN sports" },
-      { type: "feat", description: "Display division/conference standings with ASCII tables" },
-      { type: "feat", description: "Add standings link to league score pages" },
-    ],
-  },
-  {
-    version: "0.17.0",
-    changes: [
-      { type: "feat", description: "Sort leagues by season status and popularity" },
-      { type: "feat", description: "Add separate 'In Season' and 'Off-Season' sections on homepage" },
-      { type: "feat", description: "Add season dates and popularity rankings to league configuration" },
-    ],
-  },
-  {
-    version: "0.16.0",
-    changes: [
-      { type: "feat", description: "Add English Premier League (EPL) support" },
-      { type: "refactor", description: "Sort leagues alphabetically in navigation and homepage" },
-    ],
-  },
-  {
-    version: "0.15.0",
-    changes: [
-      { type: "feat", description: "Add changelog page with full history of changes" },
-    ],
-  },
-  {
-    version: "0.14.0",
-    changes: [
-      { type: "feat", description: "Add countdown to next auto-refresh in sync status" },
-      { type: "fix", description: "Display last synced time in user's local timezone" },
-    ],
-  },
-  {
-    version: "0.13.1",
-    changes: [
-      { type: "fix", description: "Pad ASCII art lines to equal length for consistent rendering" },
-      { type: "revert", description: "Remove Fira Code web font - made rendering worse" },
-    ],
-  },
-  {
-    version: "0.13.0",
-    changes: [
-      { type: "feat", description: "Add NCAA men's and women's basketball support" },
-      { type: "feat", description: "Add ASCII block letters for NCAAM and NCAAW leagues" },
-      { type: "fix", description: "Add college basketball to mobile navigation" },
-      { type: "fix", description: "Only show top 25 rankings for college basketball" },
-      { type: "fix", description: "Use NBA stats format for college basketball game cards" },
-    ],
-  },
-  {
-    version: "0.12.1",
-    changes: [
-      { type: "feat", description: "Add accessible stat definitions with abbr elements" },
-      { type: "fix", description: "Restore NHL, NFL, NBA block letters styling" },
-    ],
-  },
-  {
-    version: "0.12.0",
-    changes: [
-      { type: "feat", description: "Replace sport icons with ASCII block letter league names" },
-      { type: "feat", description: "Implement large ASCII league icons on homepage" },
-    ],
-  },
-  {
-    version: "0.11.0",
-    changes: [
-      { type: "feat", description: "Add team records to game cards" },
-      { type: "feat", description: "Update NHL game stats to show G, A, SV%" },
-      { type: "feat", description: "Update NBA live stats and scheduled game venue display" },
-      { type: "feat", description: "Update NBA final game stats to show shooting percentages" },
-      { type: "fix", description: "Align period scores borders with other card rows" },
-    ],
-  },
-  {
-    version: "0.10.0",
-    changes: [
-      { type: "fix", description: "Display scheduled game times in user's local timezone" },
-    ],
-  },
-  {
-    version: "0.9.0",
-    changes: [
-      { type: "feat", description: "Add PGA to navigation and enable full-width layout for PGA/F1" },
-    ],
-  },
-  {
-    version: "0.8.0",
-    changes: [
-      { type: "feat", description: "Add race weekend navigation for F1" },
-      { type: "feat", description: "Cache F1 historical races and add date navigation" },
-      { type: "feat", description: "Cache historical scores indefinitely to reduce API calls" },
-    ],
-  },
-  {
-    version: "0.7.0",
-    changes: [
-      { type: "feat", description: "Implement comprehensive SEO best practices" },
-      { type: "feat", description: "Improve golf leaderboard with round tabs and better formatting" },
-      { type: "feat", description: "Add PGA Tour golf support" },
-      { type: "fix", description: "Improve PGA API with multiple endpoint fallbacks" },
-    ],
-  },
-  {
-    version: "0.6.0",
-    changes: [
-      { type: "fix", description: "Comprehensive accessibility improvements for WCAG 2.1 AA compliance" },
-    ],
-  },
-  {
-    version: "0.5.0",
-    changes: [
-      { type: "refactor", description: "Convert Navigation to server component with minimal client boundary" },
-    ],
-  },
-  {
-    version: "0.4.0",
-    changes: [
-      { type: "feat", description: "Add period/quarter/inning score breakdowns to game cards" },
-      { type: "feat", description: "Add game statistics and update README examples" },
-      { type: "style", description: "Simplify CRT effects for cleaner ASCII aesthetic" },
-    ],
-  },
-  {
-    version: "0.3.0",
-    changes: [
-      { type: "feat", description: "Add light theme with system/dark/light selector" },
-      { type: "fix", description: "Use theme-aware colors for cards, shadows, and patterns" },
-      { type: "fix", description: "Show theme selector on mobile screens" },
-    ],
-  },
-  {
-    version: "0.2.0",
-    changes: [
-      { type: "feat", description: "Add smart date navigation that skips to days with games" },
-      { type: "feat", description: "Add date navigation for viewing past and upcoming scores" },
-      { type: "fix", description: "Make scoreboard cards responsive with flexible alignment" },
-    ],
-  },
-  {
-    version: "0.1.0",
-    changes: [
-      { type: "feat", description: "Enhance ASCII art styling with retro CRT terminal aesthetic" },
-      { type: "feat", description: "Adopt Vercel React best practices" },
-      { type: "fix", description: "Add mobile hamburger menu to navigation" },
-      { type: "fix", description: "Improve mobile responsive layout to prevent horizontal scrolling" },
-      { type: "feat", description: "Scaffold Next.js 16 application structure" },
-    ],
-  },
-];
 
 const TYPE_LABELS: Record<ChangelogEntry["changes"][0]["type"], { label: string; color: string }> = {
   feat: { label: "NEW", color: "text-terminal-green" },
@@ -243,6 +21,8 @@ const TYPE_LABELS: Record<ChangelogEntry["changes"][0]["type"], { label: string;
 };
 
 export default function ChangelogPage() {
+  const changelog = parseChangelog();
+
   return (
     <>
       <Header />
@@ -286,7 +66,7 @@ export default function ChangelogPage() {
 
           {/* Changelog entries */}
           <div className="space-y-8">
-            {CHANGELOG.map((entry) => (
+            {changelog.map((entry) => (
               <article key={entry.version} className="font-mono">
                 <div className="retro-card p-6">
                   {/* Version header */}
