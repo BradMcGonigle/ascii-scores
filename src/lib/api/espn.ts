@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import type { Game, GameStats, GameStatus, GameType, League, LeagueStandings, NCAAPolls, PeriodScore, PeriodScores, RankedTeam, Scoreboard, StandingsEntry, StandingsGroup, Team } from "@/lib/types";
 import { addDays, formatDateForAPI, getTodayInEastern, getTodayInUK, isDateInPast } from "@/lib/utils/format";
 
@@ -147,7 +148,7 @@ function mapStatus(status: ESPNStatus): GameStatus {
   const name = status.type.name.toLowerCase();
 
   if (state === "in") return "live";
-  if (state === "post" || status.type.completed) return "final";
+  if (state === "post" || status.type.completed || name.includes("final")) return "final";
   if (name === "postponed") return "postponed";
   if (name === "delayed") return "delayed";
   return "scheduled";
@@ -341,10 +342,25 @@ function mapEvent(event: ESPNEvent, league: League): Game {
   )!;
   const status = competition.status;
 
+  // Determine game status with fallback for ESPN data quality issues
+  let gameStatus = mapStatus(status);
+
+  // Fallback: if game shows as "scheduled" but has scores defined and start time
+  // is in the past, it's almost certainly final (ESPN doesn't always set status correctly)
+  if (gameStatus === "scheduled") {
+    const hasScores = homeCompetitor.score !== undefined && awayCompetitor.score !== undefined;
+    const startTime = new Date(event.date);
+    const isInPast = startTime < new Date();
+
+    if (hasScores && isInPast) {
+      gameStatus = "final";
+    }
+  }
+
   return {
     id: event.id,
     league,
-    status: mapStatus(status),
+    status: gameStatus,
     startTime: new Date(event.date),
     venue: competition.venue?.fullName,
     venueLocation: formatVenueLocation(competition.venue),
@@ -378,21 +394,23 @@ export async function getESPNScoreboard(
   // Without explicit date, the cache key stays the same and stale data persists
   // Use league-appropriate timezone for "today" (Eastern for US sports, UK for EPL)
   const effectiveDate = date ?? getTodayForLeague(league);
-  const url = `${baseUrl}?dates=${formatDateForAPI(effectiveDate)}`;
+  const dateStr = formatDateForAPI(effectiveDate);
+  const url = `${baseUrl}?dates=${dateStr}`;
 
   // Determine caching strategy:
-  // - Past dates: cache indefinitely (games are final, won't change)
+  // - Past dates: cache forever with tags (revalidate via tag if games incomplete)
   // - Today/future: revalidate every 30s for live updates
   // Use league-appropriate timezone for the comparison
   const isPastDate = isDateInPast(effectiveDate, getTimezoneForLeague(league));
+  const cacheTag = `scoreboard-${league}-${dateStr}`;
 
   const response = await fetch(url, {
     headers: {
       Accept: "application/json",
     },
-    next: {
-      revalidate: isPastDate ? false : 30,
-    },
+    next: isPastDate
+      ? { revalidate: false, tags: [cacheTag] }  // Past: cache forever with tag
+      : { revalidate: 30 },                       // Today/future: 30s refresh
   });
 
   if (!response.ok) {
@@ -409,6 +427,15 @@ export async function getESPNScoreboard(
     };
     return mapEvent(eventWithSeason, league);
   });
+
+  // For past dates: if any games are not final, invalidate cache so next request refetches
+  // This handles stale data that was cached before games completed
+  if (isPastDate && games.length > 0) {
+    const allFinal = games.every((g) => g.status === "final" || g.status === "postponed");
+    if (!allFinal) {
+      revalidateTag(cacheTag, { expire: 0 });
+    }
+  }
 
   return {
     league,
@@ -455,7 +482,8 @@ export async function getDatesWithGames(
       const dateStr = formatDateForAPI(date);
       const url = `${ESPN_BASE_URL}/${sportPath}/scoreboard?dates=${dateStr}`;
 
-      // Past dates can be cached indefinitely, future/today revalidate every 5 min
+      // Past dates: cache forever (game count won't change)
+      // Today/future: revalidate every 5 min
       // Use league-appropriate timezone for the comparison
       const isPast = isDateInPast(date, getTimezoneForLeague(league));
 
