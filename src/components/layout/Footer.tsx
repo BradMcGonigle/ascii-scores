@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeSelector } from "./ThemeSelector";
+import { version } from "../../../package.json";
 
 export function Footer() {
   return (
@@ -52,7 +53,7 @@ export function Footer() {
               href="/changelog"
               className="text-terminal-fg hover:text-terminal-green transition-colors"
             >
-              v0.21.0
+              v{version}
             </Link>
             <span className="text-terminal-muted">•</span>
             <span className="text-terminal-muted">&copy; {new Date().getFullYear()}</span>

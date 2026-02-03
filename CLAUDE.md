@@ -151,90 +151,90 @@ Before committing any changes, you MUST complete these steps:
 2. **Evaluate documentation needs** for the branch/PR (see decision tree below)
 3. **Create or update documentation** as needed (one ADR per decision, not per commit)
 
-## Versioning
+## Versioning with Changesets
 
-This project uses [Semantic Versioning (semver)](https://semver.org/). **Agents must automatically update the version in `package.json` and add a changelog entry when making changes that require a version bump.**
+This project uses [Changesets](https://github.com/changesets/changesets) to manage versioning and changelog generation. This approach eliminates merge conflicts when multiple PRs are in flight.
 
-### Version Bump Rules
+### How It Works
 
-| Commit Type | Version Bump | Example |
-|-------------|--------------|---------|
-| `feat:` | MINOR (0.X.0) | New feature, new page, new component |
-| `fix:` | PATCH (0.0.X) | Bug fix, correction |
-| `refactor:` | No bump | Code restructuring without behavior change |
-| `chore:` | No bump | Dependencies, tooling, configs |
-| `docs:` | No bump | Documentation only |
-| `style:` | No bump | Formatting, whitespace |
-| `test:` | No bump | Adding/updating tests |
-| `perf:` | PATCH (0.0.X) | Performance improvement |
+1. **PRs add changeset files** (not version bumps)
+2. **Changesets are additive** - multiple PRs can add changesets without conflicts
+3. **Version bumping happens separately** when ready to release
+4. **Changelog is auto-generated** from changeset descriptions
 
-### How to Update Version
+### For Each PR: Add a Changeset
 
-1. Determine the highest-priority commit type in your PR (feat > fix > perf > others)
-2. Update `package.json` version accordingly:
-   - **MINOR bump**: Increment middle number, reset patch to 0 (e.g., 0.12.1 → 0.13.0)
-   - **PATCH bump**: Increment last number (e.g., 0.12.1 → 0.12.2)
-3. **Add a changelog entry** (see below)
-4. **Update the footer version** in `src/components/layout/Footer.tsx` to match
-5. Include the version bump, changelog update, and footer update in your commit
+When your PR includes changes that should be noted in the changelog, run:
 
-### Changelog Maintenance
-
-**IMPORTANT:** Every version bump MUST include a corresponding changelog entry.
-
-The changelog is maintained in `src/app/changelog/page.tsx` in the `CHANGELOG` constant array.
-
-#### How to Add a Changelog Entry
-
-1. Open `src/app/changelog/page.tsx`
-2. Add a new entry at the **top** of the `CHANGELOG` array (entries are in reverse chronological order)
-3. Include all changes for this version with appropriate types
-
-```typescript
-// Add new entry at the TOP of the CHANGELOG array
-const CHANGELOG: ChangelogEntry[] = [
-  {
-    version: "0.X.0",  // The new version number
-    changes: [
-      { type: "feat", description: "Description of new feature" },
-      { type: "fix", description: "Description of bug fix" },
-      // Add all changes for this version
-    ],
-  },
-  // ... existing entries
-];
+```bash
+pnpm changeset
 ```
 
-#### Change Types
+This will prompt you to:
 
-| Type | Label | When to Use |
-|------|-------|-------------|
-| `feat` | NEW | New features, pages, or components |
-| `fix` | FIX | Bug fixes, corrections |
-| `refactor` | REFACTOR | Code restructuring without behavior change |
-| `chore` | CHORE | Dependencies, tooling, configs |
-| `docs` | DOCS | Documentation updates |
-| `style` | STYLE | Formatting, visual changes |
-| `perf` | PERF | Performance improvements |
-| `revert` | REVERT | Reverting previous changes |
+1. Select the type of change (major/minor/patch)
+2. Write a description of the change
 
-### Important Notes
+A markdown file is created in `.changeset/` - commit this with your PR.
 
-- Only bump version once per PR, based on the highest-priority change type
-- Breaking changes (when v1.0.0+) would bump MAJOR, but we're in 0.x development
-- The version in `package.json` is the source of truth
-- **Never forget to add a changelog entry when bumping the version**
-- **Never forget to update the footer version** in `src/components/layout/Footer.tsx`
+#### Changeset Types
 
-### Version Sync Checklist
+| Type      | When to Use                                                           |
+| --------- | --------------------------------------------------------------------- |
+| **minor** | New features (`feat:`), new pages, new components                     |
+| **patch** | Bug fixes (`fix:`), performance improvements (`perf:`), style changes |
+| **none**  | Refactoring, docs, chore, tests (no version bump needed)              |
 
-When bumping the version, ensure ALL of these locations are updated:
+#### Writing Good Changeset Descriptions
 
-| File | What to Update |
-|------|----------------|
-| `package.json` | `"version": "X.Y.Z"` field |
-| `src/app/changelog/page.tsx` | Add new entry to top of `CHANGELOG` array |
-| `src/components/layout/Footer.tsx` | Update version link text (e.g., `v0.17.0`) |
+Prefix descriptions with the change type for proper categorization on the changelog page:
+
+```markdown
+feat: Add dark mode toggle to settings
+fix: Resolve timezone bug in game status display
+perf: Optimize API response caching
+style: Improve mobile navigation layout
+refactor: Simplify date parsing logic
+```
+
+### When to Skip Changesets
+
+Not every PR needs a changeset. Skip for:
+
+- Documentation-only changes
+- Refactoring with no user-visible changes
+- Test additions/updates
+- Dependency updates (unless they affect functionality)
+- Chore/maintenance tasks
+
+### Releasing a New Version (Automated)
+
+A GitHub Action (`.github/workflows/release.yml`) automatically manages releases:
+
+1. When PRs with changesets merge to main, the action creates/updates a "Version Packages" PR
+2. This PR shows the pending version bump and changelog preview
+3. When you're ready to release, merge that PR
+4. The version is bumped and `CHANGELOG.md` is updated automatically
+
+**Manual alternative** (if needed):
+
+```bash
+pnpm version  # Bumps version, updates CHANGELOG.md
+git add . && git commit -m "chore: release"
+git push
+```
+
+### How Version Numbers Work
+
+- **Minor changes** (features) bump 0.X.0 → 0.(X+1).0
+- **Patch changes** (fixes) bump 0.0.X → 0.0.(X+1)
+- Multiple changesets are combined - the highest bump type wins
+
+### Automatic Version Display
+
+The footer version is read directly from `package.json` at build time - no manual updates needed.
+
+The changelog page (`/changelog`) reads from `CHANGELOG.md` and automatically displays all entries.
 
 ## React Best Practices
 
