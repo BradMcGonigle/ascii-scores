@@ -129,13 +129,32 @@ function getBorderStyle(status: GameSummary["game"]["status"]) {
 }
 
 /**
- * Vertical border that fills the height of its container
+ * Content section with ASCII vertical borders on sides
+ * Uses absolute positioning so borders stretch to match content height
  */
-function VerticalBorder({ char, className }: { char: string; className: string }) {
+function BorderedSection({
+  children,
+  vertical,
+  className
+}: {
+  children: React.ReactNode;
+  vertical: string;
+  className: string;
+}) {
   return (
-    <div className={`${className} leading-none overflow-hidden flex flex-col`} aria-hidden="true">
-      {/* Repeat character many times to fill any height, overflow-hidden clips excess */}
-      <span className="whitespace-pre">{(char + "\n").repeat(50)}</span>
+    <div className="relative">
+      {/* Left border - absolute positioned, full height */}
+      <div className={`absolute left-0 top-0 bottom-0 ${className} leading-none overflow-hidden`} aria-hidden="true">
+        <span className="whitespace-pre">{(vertical + "\n").repeat(100)}</span>
+      </div>
+      {/* Content with padding for borders */}
+      <div className="px-3">
+        {children}
+      </div>
+      {/* Right border - absolute positioned, full height */}
+      <div className={`absolute right-0 top-0 bottom-0 ${className} leading-none overflow-hidden`} aria-hidden="true">
+        <span className="whitespace-pre">{(vertical + "\n").repeat(100)}</span>
+      </div>
     </div>
   );
 }
@@ -189,75 +208,67 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
       <BorderLine left={border.corners.tl} right={border.corners.tr} fill={border.horizontal} className={border.textClass} />
 
       {/* Upper section with ASCII side borders */}
-      <div className="flex">
-        <VerticalBorder char={border.vertical} className={border.textClass} />
-        <div className="flex-1">
-          {/* Status line */}
-          <div className={`text-center py-2 ${statusClass}`}>
-            {isLive && <span className="text-terminal-green mr-2">●</span>}
-            {statusText}
-          </div>
-
-          {/* TV broadcast for live and scheduled games */}
-          {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
-            <div className="text-center py-1 text-xs text-terminal-muted">
-              <span className="sr-only">Broadcast on </span>
-              <span className="text-terminal-cyan">TV:</span> {game.broadcasts.slice(0, 4).join(", ")}
-            </div>
-          )}
+      <BorderedSection vertical={border.vertical} className={border.textClass}>
+        {/* Status line */}
+        <div className={`text-center py-2 ${statusClass}`}>
+          {isLive && <span className="text-terminal-green mr-2">●</span>}
+          {statusText}
         </div>
-        <VerticalBorder char={border.vertical} className={border.textClass} />
-      </div>
+
+        {/* TV broadcast for live and scheduled games */}
+        {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
+          <div className="text-center py-1 text-xs text-terminal-muted">
+            <span className="sr-only">Broadcast on </span>
+            <span className="text-terminal-cyan">TV:</span> {game.broadcasts.slice(0, 4).join(", ")}
+          </div>
+        )}
+      </BorderedSection>
 
       {/* Divider */}
       <BorderLine left={border.corners.ml} right={border.corners.mr} fill={border.horizontal} className={border.textClass} />
 
       {/* Lower section with ASCII side borders */}
-      <div className="flex">
-        <VerticalBorder char={border.vertical} className={border.textClass} />
-        <div className="flex-1">
-          {/* Team scores */}
-          <div className="py-4">
-            <div className="flex justify-center items-center gap-3 sm:gap-8">
-              {/* Away team */}
-              <div className="text-center min-w-[60px] sm:min-w-[120px]">
-                <div className={`text-xl sm:text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
-                  {isCollege && game.awayTeam.rank && (
-                    <span className="text-terminal-yellow text-sm sm:text-lg mr-1">#{game.awayTeam.rank}</span>
-                  )}
-                  {game.awayTeam.abbreviation}
-                </div>
-                <div className="text-terminal-muted text-xs sm:text-sm">{game.awayTeam.record}</div>
+      <BorderedSection vertical={border.vertical} className={border.textClass}>
+        {/* Team scores */}
+        <div className="py-4">
+          <div className="flex justify-center items-center gap-3 sm:gap-8">
+            {/* Away team */}
+            <div className="text-center min-w-[60px] sm:min-w-[120px]">
+              <div className={`text-xl sm:text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+                {isCollege && game.awayTeam.rank && (
+                  <span className="text-terminal-yellow text-sm sm:text-lg mr-1">#{game.awayTeam.rank}</span>
+                )}
+                {game.awayTeam.abbreviation}
               </div>
+              <div className="text-terminal-muted text-xs sm:text-sm">{game.awayTeam.record}</div>
+            </div>
 
-              {/* Score */}
-              <div className="text-center">
-                <div className="flex items-center gap-2 sm:gap-4 text-2xl sm:text-4xl font-bold">
-                  <span className={awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
-                    {game.awayScore}
-                  </span>
-                  <span className="text-terminal-muted text-lg sm:text-2xl">-</span>
-                  <span className={homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
-                    {game.homeScore}
-                  </span>
-                </div>
+            {/* Score */}
+            <div className="text-center">
+              <div className="flex items-center gap-2 sm:gap-4 text-2xl sm:text-4xl font-bold">
+                <span className={awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
+                  {game.awayScore}
+                </span>
+                <span className="text-terminal-muted text-lg sm:text-2xl">-</span>
+                <span className={homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}>
+                  {game.homeScore}
+                </span>
               </div>
+            </div>
 
-              {/* Home team */}
-              <div className="text-center min-w-[60px] sm:min-w-[120px]">
-                <div className={`text-xl sm:text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
-                  {isCollege && game.homeTeam.rank && (
-                    <span className="text-terminal-yellow text-sm sm:text-lg mr-1">#{game.homeTeam.rank}</span>
-                  )}
-                  {game.homeTeam.abbreviation}
-                </div>
-                <div className="text-terminal-muted text-xs sm:text-sm">{game.homeTeam.record}</div>
+            {/* Home team */}
+            <div className="text-center min-w-[60px] sm:min-w-[120px]">
+              <div className={`text-xl sm:text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+                {isCollege && game.homeTeam.rank && (
+                  <span className="text-terminal-yellow text-sm sm:text-lg mr-1">#{game.homeTeam.rank}</span>
+                )}
+                {game.homeTeam.abbreviation}
               </div>
+              <div className="text-terminal-muted text-xs sm:text-sm">{game.homeTeam.record}</div>
             </div>
           </div>
         </div>
-        <VerticalBorder char={border.vertical} className={border.textClass} />
-      </div>
+      </BorderedSection>
 
       {/* Bottom border */}
       <BorderLine left={border.corners.bl} right={border.corners.br} fill={border.horizontal} className={border.textClass} />
