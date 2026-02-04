@@ -557,12 +557,12 @@ function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league, isSc
           return (
             <div key={statKey}>
               <div className="text-center text-terminal-muted truncate">{displayName}</div>
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center gap-2">
                 <span className="w-8 sm:w-12 text-right text-terminal-fg shrink-0">{awayValue}</span>
                 <AsciiStatBar
                   awayValue={awayNumeric}
                   homeValue={homeNumeric}
-                  width={24}
+                  className="flex-1"
                 />
                 <span className="w-8 sm:w-12 text-left text-terminal-fg shrink-0">{homeValue}</span>
               </div>
