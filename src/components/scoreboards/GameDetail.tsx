@@ -365,63 +365,50 @@ function PeriodScoresTable({
   const periods = Array.from({ length: periodCount }, (_, i) => i + 1);
 
   return (
-    <div className="font-mono overflow-x-auto">
-      <div className="text-terminal-border" aria-hidden="true">
-        ┌─────────{"─".repeat(periods.length * 6)}──────┐
-      </div>
+    <div className="font-mono text-sm">
+      {/* Use a proper table for better responsive behavior */}
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="text-terminal-muted border-b border-terminal-border">
+            <th className="text-left py-1 pr-2 w-12 sm:w-16">Team</th>
+            {periods.map((p) => (
+              <th key={p} className="text-center py-1 w-6 sm:w-10">
+                {getPeriodLabel(p, league)}
+              </th>
+            ))}
+            <th className="text-center py-1 w-8 sm:w-12 font-bold">T</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* Away team row */}
+          <tr className="text-terminal-fg border-b border-terminal-border/30">
+            <td className="py-1 pr-2">{awayTeam}</td>
+            {periods.map((p) => {
+              const score = periodScores.away.find((ps) => ps.period === p)?.score ?? "-";
+              return (
+                <td key={p} className="text-center py-1">
+                  {score}
+                </td>
+              );
+            })}
+            <td className="text-center py-1 font-bold">{awayScore}</td>
+          </tr>
 
-      {/* Header row */}
-      <div className="flex">
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-        <span className="w-16 px-2 text-terminal-muted">Team</span>
-        {periods.map((p) => (
-          <span key={p} className="w-10 text-center text-terminal-muted">
-            {getPeriodLabel(p, league)}
-          </span>
-        ))}
-        <span className="w-12 text-center text-terminal-muted font-bold">T</span>
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-      </div>
-
-      <div className="text-terminal-border" aria-hidden="true">
-        ├─────────{"─".repeat(periods.length * 6)}──────┤
-      </div>
-
-      {/* Away team row */}
-      <div className="flex">
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-        <span className="w-16 px-2 text-terminal-fg">{awayTeam}</span>
-        {periods.map((p) => {
-          const score = periodScores.away.find((ps) => ps.period === p)?.score ?? "-";
-          return (
-            <span key={p} className="w-10 text-center text-terminal-fg">
-              {score}
-            </span>
-          );
-        })}
-        <span className="w-12 text-center text-terminal-fg font-bold">{awayScore}</span>
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-      </div>
-
-      {/* Home team row */}
-      <div className="flex">
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-        <span className="w-16 px-2 text-terminal-fg">{homeTeam}</span>
-        {periods.map((p) => {
-          const score = periodScores.home.find((ps) => ps.period === p)?.score ?? "-";
-          return (
-            <span key={p} className="w-10 text-center text-terminal-fg">
-              {score}
-            </span>
-          );
-        })}
-        <span className="w-12 text-center text-terminal-fg font-bold">{homeScore}</span>
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-      </div>
-
-      <div className="text-terminal-border" aria-hidden="true">
-        └─────────{"─".repeat(periods.length * 6)}──────┘
-      </div>
+          {/* Home team row */}
+          <tr className="text-terminal-fg">
+            <td className="py-1 pr-2">{homeTeam}</td>
+            {periods.map((p) => {
+              const score = periodScores.home.find((ps) => ps.period === p)?.score ?? "-";
+              return (
+                <td key={p} className="text-center py-1">
+                  {score}
+                </td>
+              );
+            })}
+            <td className="text-center py-1 font-bold">{homeScore}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }
