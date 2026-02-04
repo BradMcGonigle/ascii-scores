@@ -167,6 +167,7 @@ interface ESPNHeader {
       linescores?: Array<{ value: number }>;
       record?: Array<{ summary: string; type: string }>;
       curatedRank?: { current: number };
+      rank?: number;
     }>;
     status: {
       type: {
@@ -213,7 +214,8 @@ function mapTeam(competitor: ESPNHeader["competitions"][0]["competitors"][0]): T
     ?? competitor.record?.[0]?.summary;
 
   // Get team ranking for college sports (only include if in top 25)
-  const rawRank = competitor.curatedRank?.current;
+  // ESPN Summary API may use either 'curatedRank.current' or 'rank' directly
+  const rawRank = competitor.curatedRank?.current ?? competitor.rank;
   const rank = rawRank && rawRank > 0 && rawRank <= 25 ? rawRank : undefined;
 
   return {
