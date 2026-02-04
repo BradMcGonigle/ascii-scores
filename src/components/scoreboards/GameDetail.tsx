@@ -20,6 +20,7 @@ interface GameDetailDisplayProps {
 export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
   const { game, scoringPlays, homeBoxscore, awayBoxscore, leaders, attendance } = summary;
   const isScheduled = game.status === "scheduled";
+  const hasPeriodScores = !!game.periodScores;
 
   return (
     <div className="space-y-6">
@@ -35,25 +36,32 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
         />
       )}
 
-      {/* Period scores */}
-      {game.periodScores && (
-        <PeriodScoresTable
-          periodScores={game.periodScores}
-          homeTeam={game.homeTeam.abbreviation}
-          awayTeam={game.awayTeam.abbreviation}
-          homeScore={game.homeScore}
-          awayScore={game.awayScore}
-          league={game.league}
-        />
-      )}
+      {/* Period scores and Team stats - two column on desktop */}
+      <div className={`grid gap-6 ${hasPeriodScores ? "lg:grid-cols-2" : ""}`}>
+        {/* Period scores - full width on mobile */}
+        {game.periodScores && (
+          <div className="w-full">
+            <PeriodScoresTable
+              periodScores={game.periodScores}
+              homeTeam={game.homeTeam.abbreviation}
+              awayTeam={game.awayTeam.abbreviation}
+              homeScore={game.homeScore}
+              awayScore={game.awayScore}
+              league={game.league}
+            />
+          </div>
+        )}
 
-      {/* Team stats comparison */}
-      <TeamStatsComparison
-        homeBoxscore={homeBoxscore}
-        awayBoxscore={awayBoxscore}
-        league={game.league}
-        isScheduled={isScheduled}
-      />
+        {/* Team stats comparison */}
+        <div className="w-full">
+          <TeamStatsComparison
+            homeBoxscore={homeBoxscore}
+            awayBoxscore={awayBoxscore}
+            league={game.league}
+            isScheduled={isScheduled}
+          />
+        </div>
+      </div>
 
       {/* Scoring timeline */}
       {scoringPlays.length > 0 && (
