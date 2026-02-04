@@ -394,7 +394,12 @@ export async function getESPNScoreboard(
   // Use league-appropriate timezone for "today" (Eastern for US sports, UK for EPL)
   const effectiveDate = date ?? getTodayForLeague(league);
   const dateStr = formatDateForAPI(effectiveDate);
-  const url = `${baseUrl}?dates=${dateStr}`;
+
+  // For college basketball, add groups=50 to get all Division I games
+  // Without this, ESPN only returns games involving top 25 teams
+  const isCollegeBasketball = league === "ncaam" || league === "ncaaw";
+  const groupsParam = isCollegeBasketball ? "&groups=50" : "";
+  const url = `${baseUrl}?dates=${dateStr}${groupsParam}`;
 
   // Determine caching strategy:
   // - Past dates: cache for 5 minutes (allows updates if games weren't marked final)
