@@ -384,6 +384,7 @@ function PeriodScoresTable({
           </span>
         ))}
         <span className="w-10 sm:w-12 shrink-0 text-center font-bold">T</span>
+        <span className="flex-1" />
         <span className="text-terminal-border">│</span>
       </div>
 
@@ -407,6 +408,7 @@ function PeriodScoresTable({
           );
         })}
         <span className="w-10 sm:w-12 shrink-0 text-center font-bold">{awayScore}</span>
+        <span className="flex-1" />
         <span className="text-terminal-border">│</span>
       </div>
 
@@ -423,6 +425,7 @@ function PeriodScoresTable({
           );
         })}
         <span className="w-10 sm:w-12 shrink-0 text-center font-bold">{homeScore}</span>
+        <span className="flex-1" />
         <span className="text-terminal-border">│</span>
       </div>
 
