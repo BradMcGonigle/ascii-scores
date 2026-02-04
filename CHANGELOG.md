@@ -1,5 +1,11 @@
 # ascii-scores
 
+## 0.23.2
+
+### Patch Changes
+
+- 41758a5: fix: Improve loading screen border alignment and preserve page layout during loading
+
 ## 0.23.1
 
 ### Patch Changes
