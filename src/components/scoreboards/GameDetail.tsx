@@ -370,7 +370,7 @@ function PeriodScoresTable({
       {/* Top border */}
       <div className="flex text-terminal-border" aria-hidden="true">
         <span>┌</span>
-        <span className="flex-1 overflow-hidden">{"─".repeat(50)}</span>
+        <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(200)}</span>
         <span>┐</span>
       </div>
 
@@ -391,7 +391,7 @@ function PeriodScoresTable({
       {/* Divider */}
       <div className="flex text-terminal-border" aria-hidden="true">
         <span>├</span>
-        <span className="flex-1 overflow-hidden">{"─".repeat(50)}</span>
+        <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(200)}</span>
         <span>┤</span>
       </div>
 
@@ -432,7 +432,7 @@ function PeriodScoresTable({
       {/* Bottom border */}
       <div className="flex text-terminal-border" aria-hidden="true">
         <span>└</span>
-        <span className="flex-1 overflow-hidden">{"─".repeat(50)}</span>
+        <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(200)}</span>
         <span>┘</span>
       </div>
     </div>
