@@ -1,5 +1,13 @@
 # ascii-scores
 
+## 0.24.0
+
+### Minor Changes
+
+- 75f03d2: feat: Add ASCII stat comparison bars to game detail pages
+
+  Team statistics on game detail pages now display visual comparison bars below each stat, showing the proportional split between away and home teams. The leading team's bar is highlighted in a distinct color for quick visual comparison.
+
 ## 0.23.2
 
 ### Patch Changes
