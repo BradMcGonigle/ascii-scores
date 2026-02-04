@@ -367,45 +367,76 @@ function PeriodScoresTable({
 
   return (
     <div className="font-mono text-xs sm:text-sm overflow-x-auto">
-      <table className="w-full border-collapse border border-terminal-border">
-        <thead>
-          <tr className="text-terminal-muted border-b border-terminal-border">
-            <th className="text-left py-1 px-2 border-r border-terminal-border">Team</th>
-            {periods.map((p) => (
-              <th key={p} className="text-center py-1 px-1 sm:px-2 border-r border-terminal-border">
-                {getPeriodLabel(p, league)}
-              </th>
-            ))}
-            <th className="text-center py-1 px-1 sm:px-2 font-bold">T</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="text-terminal-fg border-b border-terminal-border">
-            <td className="py-1 px-2 border-r border-terminal-border">{awayTeam}</td>
-            {periods.map((p) => {
-              const score = periodScores.away.find((ps) => ps.period === p)?.score ?? "-";
-              return (
-                <td key={p} className="text-center py-1 px-1 sm:px-2 border-r border-terminal-border">
-                  {score}
-                </td>
-              );
-            })}
-            <td className="text-center py-1 px-1 sm:px-2 font-bold">{awayScore}</td>
-          </tr>
-          <tr className="text-terminal-fg">
-            <td className="py-1 px-2 border-r border-terminal-border">{homeTeam}</td>
-            {periods.map((p) => {
-              const score = periodScores.home.find((ps) => ps.period === p)?.score ?? "-";
-              return (
-                <td key={p} className="text-center py-1 px-1 sm:px-2 border-r border-terminal-border">
-                  {score}
-                </td>
-              );
-            })}
-            <td className="text-center py-1 px-1 sm:px-2 font-bold">{homeScore}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div className="inline-block min-w-full">
+        {/* Top border */}
+        <div className="flex text-terminal-border" aria-hidden="true">
+          <span>┌</span>
+          <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(100)}</span>
+          <span>┐</span>
+        </div>
+
+        {/* Header row */}
+        <div className="flex text-terminal-muted">
+          <span className="text-terminal-border">│</span>
+          <span className="px-1 sm:px-2 py-0.5">Team</span>
+          <span className="flex-1" />
+          {periods.map((p) => (
+            <span key={p} className="w-6 sm:w-8 text-center py-0.5">
+              {getPeriodLabel(p, league)}
+            </span>
+          ))}
+          <span className="w-8 sm:w-10 text-center py-0.5 font-bold">T</span>
+          <span className="text-terminal-border">│</span>
+        </div>
+
+        {/* Divider */}
+        <div className="flex text-terminal-border" aria-hidden="true">
+          <span>├</span>
+          <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(100)}</span>
+          <span>┤</span>
+        </div>
+
+        {/* Away team row */}
+        <div className="flex text-terminal-fg">
+          <span className="text-terminal-border">│</span>
+          <span className="px-1 sm:px-2 py-0.5">{awayTeam}</span>
+          <span className="flex-1" />
+          {periods.map((p) => {
+            const score = periodScores.away.find((ps) => ps.period === p)?.score ?? "-";
+            return (
+              <span key={p} className="w-6 sm:w-8 text-center py-0.5">
+                {score}
+              </span>
+            );
+          })}
+          <span className="w-8 sm:w-10 text-center py-0.5 font-bold">{awayScore}</span>
+          <span className="text-terminal-border">│</span>
+        </div>
+
+        {/* Home team row */}
+        <div className="flex text-terminal-fg">
+          <span className="text-terminal-border">│</span>
+          <span className="px-1 sm:px-2 py-0.5">{homeTeam}</span>
+          <span className="flex-1" />
+          {periods.map((p) => {
+            const score = periodScores.home.find((ps) => ps.period === p)?.score ?? "-";
+            return (
+              <span key={p} className="w-6 sm:w-8 text-center py-0.5">
+                {score}
+              </span>
+            );
+          })}
+          <span className="w-8 sm:w-10 text-center py-0.5 font-bold">{homeScore}</span>
+          <span className="text-terminal-border">│</span>
+        </div>
+
+        {/* Bottom border */}
+        <div className="flex text-terminal-border" aria-hidden="true">
+          <span>└</span>
+          <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(100)}</span>
+          <span>┘</span>
+        </div>
+      </div>
     </div>
   );
 }
