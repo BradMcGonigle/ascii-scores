@@ -150,10 +150,10 @@ function BorderLine({
   className: string;
 }) {
   return (
-    <div className={`flex ${className}`} style={{ lineHeight: 0.85, height: '1em', margin: 0, padding: 0 }} aria-hidden="true">
-      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{left}</span>
-      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{fill.repeat(200)}</span>
-      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{right}</span>
+    <div className={`flex ${className} leading-none`} aria-hidden="true">
+      <span>{left}</span>
+      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]">{fill.repeat(200)}</span>
+      <span>{right}</span>
     </div>
   );
 }
@@ -172,29 +172,29 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
   const isCollege = isCollegeLeague(game.league);
 
   return (
-    <div className="font-mono" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
+    <div className="font-mono">
       {/* Top border */}
       <BorderLine left={border.corners.tl} right={border.corners.tr} fill={border.horizontal} className={border.textClass} />
 
       {/* Status line */}
-      <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
-        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
-        <div className={`flex-1 text-center py-2 ${statusClass}`} style={{ lineHeight: 'normal' }}>
+      <div className="flex">
+        <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
+        <div className={`flex-1 text-center py-2 ${statusClass}`}>
           {isLive && <span className="text-terminal-green mr-2">●</span>}
           {statusText}
         </div>
-        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
+        <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
       </div>
 
       {/* TV broadcast for live and scheduled games */}
       {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
-        <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
-          <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
-          <div className="flex-1 text-center py-1 text-xs text-terminal-muted" style={{ lineHeight: 'normal' }}>
+        <div className="flex">
+          <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
+          <div className="flex-1 text-center py-1 text-xs text-terminal-muted">
             <span className="sr-only">Broadcast on </span>
             <span className="text-terminal-cyan">TV:</span> {game.broadcasts.slice(0, 4).join(", ")}
           </div>
-          <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
+          <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
         </div>
       )}
 
@@ -202,9 +202,9 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
       <BorderLine left={border.corners.ml} right={border.corners.mr} fill={border.horizontal} className={border.textClass} />
 
       {/* Team scores */}
-      <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
-        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
-        <div className="flex-1 py-4" style={{ lineHeight: 'normal' }}>
+      <div className="flex">
+        <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
+        <div className="flex-1 py-4">
           <div className="flex justify-center items-center gap-3 sm:gap-8">
             {/* Away team */}
             <div className="text-center min-w-[60px] sm:min-w-[120px]">
@@ -242,7 +242,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             </div>
           </div>
         </div>
-        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
+        <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
       </div>
 
       {/* Bottom border */}
