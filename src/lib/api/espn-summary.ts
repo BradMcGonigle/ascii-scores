@@ -213,10 +213,10 @@ function mapTeam(competitor: ESPNHeader["competitions"][0]["competitors"][0]): T
   const record = competitor.record?.find((r) => r.type === "total")?.summary
     ?? competitor.record?.[0]?.summary;
 
-  // Get team ranking for college sports (only include if in top 25)
+  // Get team ranking for college sports
   // ESPN Summary API may use either 'curatedRank.current' or 'rank' directly
   const rawRank = competitor.curatedRank?.current ?? competitor.rank;
-  const rank = rawRank && rawRank > 0 && rawRank <= 25 ? rawRank : undefined;
+  const rank = rawRank && rawRank > 0 ? rawRank : undefined;
 
   return {
     id: competitor.team.id,
