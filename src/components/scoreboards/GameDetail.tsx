@@ -86,6 +86,7 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
       <GameInfoSection
         venue={game.venue}
         venueLocation={game.venueLocation}
+        gameType={game.gameType}
         attendance={attendance}
         broadcasts={game.broadcasts}
       />
@@ -794,19 +795,35 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
 interface GameInfoSectionProps {
   venue?: string;
   venueLocation?: string;
+  gameType?: "preseason" | "regular" | "postseason" | "allstar";
   attendance?: number;
   broadcasts?: string[];
 }
 
-function GameInfoSection({ venue, venueLocation, attendance, broadcasts }: GameInfoSectionProps) {
+function GameInfoSection({ venue, venueLocation, gameType, attendance, broadcasts }: GameInfoSectionProps) {
   const hasBroadcasts = broadcasts && broadcasts.length > 0;
-  if (!venue && !attendance && !hasBroadcasts) return null;
+  const hasGameType = gameType && gameType !== "regular"; // Only show non-regular game types
+  if (!venue && !attendance && !hasBroadcasts && !hasGameType) return null;
+
+  const gameTypeLabels: Record<string, { label: string; className: string }> = {
+    preseason: { label: "PRESEASON", className: "text-terminal-yellow" },
+    postseason: { label: "POSTSEASON", className: "text-terminal-green" },
+    allstar: { label: "ALL-STAR", className: "text-terminal-cyan" },
+  };
 
   return (
     <div className="font-mono">
       <SectionHeader title="GAME INFO" />
 
       <div className="space-y-1 text-sm">
+        {hasGameType && (
+          <div className="flex">
+            <span className="text-terminal-muted w-24">Type:</span>
+            <span className={gameTypeLabels[gameType]?.className ?? "text-terminal-fg"}>
+              {gameTypeLabels[gameType]?.label ?? gameType.toUpperCase()}
+            </span>
+          </div>
+        )}
         {venue && (
           <div className="flex">
             <span className="text-terminal-muted w-24">Venue:</span>
