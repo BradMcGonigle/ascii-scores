@@ -250,7 +250,7 @@ function isCollegeLeague(league: string): boolean {
  * Shows full team names, rankings, and team colors
  */
 function TeamMatchupSection({ homeTeam, awayTeam, league }: TeamMatchupSectionProps) {
-  const showRankings = isCollegeLeague(league);
+  const isCollege = isCollegeLeague(league);
 
   return (
     <div className="font-mono">
@@ -258,10 +258,10 @@ function TeamMatchupSection({ homeTeam, awayTeam, league }: TeamMatchupSectionPr
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Away team */}
-        <TeamMatchupCard team={awayTeam} label="AWAY" showRank={showRankings} />
+        <TeamMatchupCard team={awayTeam} label="AWAY" isCollege={isCollege} />
 
         {/* Home team */}
-        <TeamMatchupCard team={homeTeam} label="HOME" showRank={showRankings} />
+        <TeamMatchupCard team={homeTeam} label="HOME" isCollege={isCollege} />
       </div>
     </div>
   );
@@ -270,14 +270,17 @@ function TeamMatchupSection({ homeTeam, awayTeam, league }: TeamMatchupSectionPr
 interface TeamMatchupCardProps {
   team: Team;
   label: string;
-  showRank: boolean;
+  isCollege: boolean;
 }
 
-function TeamMatchupCard({ team, label, showRank }: TeamMatchupCardProps) {
+function TeamMatchupCard({ team, label, isCollege }: TeamMatchupCardProps) {
   // Generate CSS custom property for team color accent
   const teamColorStyle = team.color
     ? { borderColor: `#${team.color}` }
     : {};
+
+  // Always show rank for college teams that have one
+  const showRank = isCollege && team.rank;
 
   return (
     <div
@@ -286,7 +289,7 @@ function TeamMatchupCard({ team, label, showRank }: TeamMatchupCardProps) {
     >
       <div className="text-terminal-muted text-xs mb-1">{label}</div>
       <div className="flex items-baseline gap-2">
-        {showRank && team.rank && (
+        {showRank && (
           <span className="text-terminal-yellow text-sm">#{team.rank}</span>
         )}
         <span className="text-terminal-fg font-bold">{team.displayName}</span>
