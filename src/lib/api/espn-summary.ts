@@ -227,7 +227,7 @@ function mapStatus(status: ESPNHeader["competitions"][0]["status"]): GameStatus 
 /**
  * Format venue location from city and state
  */
-function formatVenueLocation(venue?: ESPNHeader["competitions"][0]["venue"]): string | undefined {
+function formatVenueLocation(venue?: { address?: { city?: string; state?: string } }): string | undefined {
   const city = venue?.address?.city;
   const state = venue?.address?.state;
   if (city && state) {
@@ -650,6 +650,13 @@ export async function getGameSummary(
         const game = mapGame(data.header, league);
         const homeTeamId = game.homeTeam.id;
         const awayTeamId = game.awayTeam.id;
+
+        // Fallback to gameInfo for venue if not in header
+        const gameInfoVenue = data.gameInfo?.venue;
+        if (!game.venue && gameInfoVenue?.fullName) {
+          game.venue = gameInfoVenue.fullName;
+          game.venueLocation = formatVenueLocation(gameInfoVenue);
+        }
 
         return {
           game,
