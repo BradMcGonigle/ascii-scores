@@ -367,19 +367,22 @@ function PeriodScoresTable({
 
   return (
     <div className="font-mono text-xs sm:text-sm overflow-x-auto">
-      <div className="inline-block min-w-full">
+      <div className="inline-block">
         {/* Top border */}
         <div className="flex text-terminal-border" aria-hidden="true">
           <span>┌</span>
-          <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(100)}</span>
+          <span className="w-10 sm:w-14 text-center">{"─".repeat(10)}</span>
+          {periods.map((p) => (
+            <span key={p} className="w-6 sm:w-8">{"──────".slice(0, 6)}</span>
+          ))}
+          <span className="w-8 sm:w-10">{"────────".slice(0, 8)}</span>
           <span>┐</span>
         </div>
 
         {/* Header row */}
         <div className="flex text-terminal-muted">
           <span className="text-terminal-border">│</span>
-          <span className="px-1 sm:px-2 py-0.5">Team</span>
-          <span className="flex-1" />
+          <span className="w-10 sm:w-14 px-1 py-0.5">Team</span>
           {periods.map((p) => (
             <span key={p} className="w-6 sm:w-8 text-center py-0.5">
               {getPeriodLabel(p, league)}
@@ -392,15 +395,18 @@ function PeriodScoresTable({
         {/* Divider */}
         <div className="flex text-terminal-border" aria-hidden="true">
           <span>├</span>
-          <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(100)}</span>
+          <span className="w-10 sm:w-14 text-center">{"─".repeat(10)}</span>
+          {periods.map((p) => (
+            <span key={p} className="w-6 sm:w-8">{"──────".slice(0, 6)}</span>
+          ))}
+          <span className="w-8 sm:w-10">{"────────".slice(0, 8)}</span>
           <span>┤</span>
         </div>
 
         {/* Away team row */}
         <div className="flex text-terminal-fg">
           <span className="text-terminal-border">│</span>
-          <span className="px-1 sm:px-2 py-0.5">{awayTeam}</span>
-          <span className="flex-1" />
+          <span className="w-10 sm:w-14 px-1 py-0.5">{awayTeam}</span>
           {periods.map((p) => {
             const score = periodScores.away.find((ps) => ps.period === p)?.score ?? "-";
             return (
@@ -416,8 +422,7 @@ function PeriodScoresTable({
         {/* Home team row */}
         <div className="flex text-terminal-fg">
           <span className="text-terminal-border">│</span>
-          <span className="px-1 sm:px-2 py-0.5">{homeTeam}</span>
-          <span className="flex-1" />
+          <span className="w-10 sm:w-14 px-1 py-0.5">{homeTeam}</span>
           {periods.map((p) => {
             const score = periodScores.home.find((ps) => ps.period === p)?.score ?? "-";
             return (
@@ -433,7 +438,11 @@ function PeriodScoresTable({
         {/* Bottom border */}
         <div className="flex text-terminal-border" aria-hidden="true">
           <span>└</span>
-          <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(100)}</span>
+          <span className="w-10 sm:w-14 text-center">{"─".repeat(10)}</span>
+          {periods.map((p) => (
+            <span key={p} className="w-6 sm:w-8">{"──────".slice(0, 6)}</span>
+          ))}
+          <span className="w-8 sm:w-10">{"────────".slice(0, 8)}</span>
           <span>┘</span>
         </div>
       </div>
