@@ -32,10 +32,10 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Enable auto-merge for Version Packages PR
         if: steps.changesets.outputs.pullRequestNumber
         run: gh pr merge ${{ steps.changesets.outputs.pullRequestNumber }} --auto --squash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
