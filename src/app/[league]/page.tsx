@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { LeagueScoreboard } from "@/components/scoreboards/LeagueScoreboard";
 import { F1StandingsDisplay } from "@/components/scoreboards/F1Standings";
 import { F1SessionsList } from "@/components/scoreboards/F1SessionsList";
@@ -147,9 +145,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
         leagueName={`${league.name} Scores`}
         leagueUrl={`${SITE_URL}/${leagueId}`}
       />
-      <Header activeLeague={leagueId} />
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8">
           {/* Page header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
@@ -215,9 +211,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
               date={selectedDate ?? undefined}
             />
           )}
-        </div>
-      </main>
-      <Footer />
+      </div>
     </>
   );
 }
