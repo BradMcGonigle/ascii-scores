@@ -75,7 +75,7 @@ export default function ChangelogPage() {
                   </h2>
 
                   {/* Divider */}
-                  <div className="text-terminal-border text-xs mb-4" aria-hidden="true">
+                  <div className="text-terminal-border text-xs mb-4 overflow-hidden" aria-hidden="true">
                     ────────────────────────────────────────────────────
                   </div>
 
