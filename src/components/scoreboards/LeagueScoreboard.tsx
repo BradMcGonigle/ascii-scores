@@ -152,7 +152,7 @@ export function LeagueScoreboard({ scoreboard, nextGameDateLabel }: LeagueScoreb
       {liveGames.length > 0 && (
         <section aria-label="Live games" className="relative">
           <SectionHeader title="LIVE" count={liveGames.length} variant="live" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {liveGames.map((game) => (
               <GameCard key={game.id} game={game} />
             ))}
@@ -164,7 +164,7 @@ export function LeagueScoreboard({ scoreboard, nextGameDateLabel }: LeagueScoreb
       {scheduledGames.length > 0 && (
         <section aria-label="Scheduled games">
           <SectionHeader title="SCHEDULED" count={scheduledGames.length} variant="scheduled" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {scheduledGames.map((game) => (
               <GameCard key={game.id} game={game} />
             ))}
@@ -176,7 +176,7 @@ export function LeagueScoreboard({ scoreboard, nextGameDateLabel }: LeagueScoreb
       {finalGames.length > 0 && (
         <section aria-label="Final games">
           <SectionHeader title="FINAL" count={finalGames.length} variant="final" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {finalGames.map((game) => (
               <GameCard key={game.id} game={game} />
             ))}
