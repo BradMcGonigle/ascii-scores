@@ -3,6 +3,7 @@ import type {
   GameLeaders,
   GameStatus,
   GameSummary,
+  GameType,
   GoalieStats,
   League,
   PeriodScore,
@@ -143,9 +144,23 @@ interface ESPNGameInfo {
 
 interface ESPNHeader {
   id: string;
+  season?: {
+    type: number; // 1=preseason, 2=regular, 3=postseason, 4=off-season
+    year: number;
+  };
   competitions: Array<{
     id: string;
     date: string;
+    venue?: {
+      fullName: string;
+      address?: {
+        city?: string;
+        state?: string;
+      };
+    };
+    type?: {
+      abbreviation?: string; // "REG", "POST", "EXH", etc.
+    };
     broadcasts?: Array<{
       media?: {
         shortName?: string;
@@ -166,6 +181,8 @@ interface ESPNHeader {
       score?: string;
       linescores?: Array<{ value: number }>;
       record?: Array<{ summary: string; type: string }>;
+      curatedRank?: { current: number };
+      rank?: number;
     }>;
     status: {
       type: {
@@ -207,9 +224,54 @@ function mapStatus(status: ESPNHeader["competitions"][0]["status"]): GameStatus 
   return "scheduled";
 }
 
+/**
+ * Format venue location from city and state
+ */
+function formatVenueLocation(venue?: { address?: { city?: string; state?: string } }): string | undefined {
+  const city = venue?.address?.city;
+  const state = venue?.address?.state;
+  if (city && state) {
+    return `${city}, ${state}`;
+  }
+  if (city) {
+    return city;
+  }
+  return undefined;
+}
+
+/**
+ * Map season type and competition type to our GameType
+ */
+function mapGameType(
+  seasonType?: number,
+  competitionTypeAbbr?: string
+): GameType | undefined {
+  // Competition type abbreviation takes precedence (more specific)
+  if (competitionTypeAbbr) {
+    const abbr = competitionTypeAbbr.toUpperCase();
+    if (abbr === "EXH" || abbr === "PRE") return "preseason";
+    if (abbr === "POST" || abbr === "PST") return "postseason";
+    if (abbr === "ASG" || abbr === "ALL") return "allstar";
+    if (abbr === "REG") return "regular";
+  }
+
+  // Fall back to season type
+  if (seasonType === 1) return "preseason";
+  if (seasonType === 2) return "regular";
+  if (seasonType === 3) return "postseason";
+  if (seasonType === 4) return undefined; // off-season
+
+  return undefined;
+}
+
 function mapTeam(competitor: ESPNHeader["competitions"][0]["competitors"][0]): Team {
   const record = competitor.record?.find((r) => r.type === "total")?.summary
     ?? competitor.record?.[0]?.summary;
+
+  // Get team ranking for college sports (only include if in top 25)
+  // ESPN Summary API may use either 'curatedRank.current' or 'rank' directly
+  const rawRank = competitor.curatedRank?.current ?? competitor.rank;
+  const rank = rawRank && rawRank > 0 && rawRank <= 25 ? rawRank : undefined;
 
   return {
     id: competitor.team.id,
@@ -219,6 +281,7 @@ function mapTeam(competitor: ESPNHeader["competitions"][0]["competitors"][0]): T
     logo: competitor.team.logo,
     color: competitor.team.color,
     record,
+    rank,
   };
 }
 
@@ -309,6 +372,8 @@ function mapGame(header: ESPNHeader, league: League): Game {
     league,
     status: gameStatus,
     startTime: new Date(competition.date),
+    venue: competition.venue?.fullName,
+    venueLocation: formatVenueLocation(competition.venue),
     homeTeam: mapTeam(homeCompetitor),
     awayTeam: mapTeam(awayCompetitor),
     homeScore: parseInt(homeCompetitor.score ?? "0", 10),
@@ -318,6 +383,7 @@ function mapGame(header: ESPNHeader, league: League): Game {
     detail: status.type.shortDetail,
     periodScores: mapPeriodScores(homeCompetitor, awayCompetitor),
     broadcasts: broadcasts && broadcasts.length > 0 ? broadcasts : undefined,
+    gameType: mapGameType(header.season?.type, competition.type?.abbreviation),
   };
 }
 
@@ -584,6 +650,13 @@ export async function getGameSummary(
         const game = mapGame(data.header, league);
         const homeTeamId = game.homeTeam.id;
         const awayTeamId = game.awayTeam.id;
+
+        // Fallback to gameInfo for venue if not in header
+        const gameInfoVenue = data.gameInfo?.venue;
+        if (!game.venue && gameInfoVenue?.fullName) {
+          game.venue = gameInfoVenue.fullName;
+          game.venueLocation = formatVenueLocation(gameInfoVenue);
+        }
 
         return {
           game,

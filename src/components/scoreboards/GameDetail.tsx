@@ -5,6 +5,7 @@ import type {
   GoalieStats,
   PlayerStats,
   ScoringPlay,
+  Team,
   TeamBoxscore,
 } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
@@ -18,30 +19,49 @@ interface GameDetailDisplayProps {
  */
 export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
   const { game, scoringPlays, homeBoxscore, awayBoxscore, leaders, attendance } = summary;
+  const isScheduled = game.status === "scheduled";
+  const hasPeriodScores = !!game.periodScores;
 
   return (
     <div className="space-y-6">
       {/* Score header */}
       <GameScoreHeader summary={summary} />
 
-      {/* Period scores */}
-      {game.periodScores && (
-        <PeriodScoresTable
-          periodScores={game.periodScores}
-          homeTeam={game.homeTeam.abbreviation}
-          awayTeam={game.awayTeam.abbreviation}
-          homeScore={game.homeScore}
-          awayScore={game.awayScore}
+      {/* Team matchup details for scheduled games */}
+      {isScheduled && (
+        <TeamMatchupSection
+          homeTeam={game.homeTeam}
+          awayTeam={game.awayTeam}
           league={game.league}
         />
       )}
 
-      {/* Team stats comparison */}
-      <TeamStatsComparison
-        homeBoxscore={homeBoxscore}
-        awayBoxscore={awayBoxscore}
-        league={game.league}
-      />
+      {/* Period scores and Team stats - two column on desktop */}
+      <div className={`grid gap-6 ${hasPeriodScores ? "lg:grid-cols-2" : ""}`}>
+        {/* Period scores - full width on mobile */}
+        {game.periodScores && (
+          <div className="min-w-0">
+            <PeriodScoresTable
+              periodScores={game.periodScores}
+              homeTeam={game.homeTeam.abbreviation}
+              awayTeam={game.awayTeam.abbreviation}
+              homeScore={game.homeScore}
+              awayScore={game.awayScore}
+              league={game.league}
+            />
+          </div>
+        )}
+
+        {/* Team stats comparison */}
+        <div className="min-w-0">
+          <TeamStatsComparison
+            homeBoxscore={homeBoxscore}
+            awayBoxscore={awayBoxscore}
+            league={game.league}
+            isScheduled={isScheduled}
+          />
+        </div>
+      </div>
 
       {/* Scoring timeline */}
       {scoringPlays.length > 0 && (
@@ -66,6 +86,7 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
       <GameInfoSection
         venue={game.venue}
         venueLocation={game.venueLocation}
+        gameType={game.gameType}
         attendance={attendance}
         broadcasts={game.broadcasts}
       />
@@ -86,14 +107,14 @@ function getBorderStyle(status: GameSummary["game"]["status"]) {
       return {
         corners: { tl: "╔", tr: "╗", bl: "╚", br: "╝", ml: "╠", mr: "╣" },
         horizontal: "═",
-        side: "║",
+        vertical: "║",
         textClass: "text-terminal-green",
       };
     case "final":
       return {
         corners: { tl: "┌", tr: "┐", bl: "└", br: "┘", ml: "├", mr: "┤" },
         horizontal: "─",
-        side: "│",
+        vertical: "│",
         textClass: "text-terminal-border",
       };
     case "scheduled":
@@ -101,10 +122,48 @@ function getBorderStyle(status: GameSummary["game"]["status"]) {
       return {
         corners: { tl: "┏", tr: "┓", bl: "┗", br: "┛", ml: "┣", mr: "┫" },
         horizontal: "━",
-        side: "┃",
+        vertical: "┃",
         textClass: "text-terminal-yellow",
       };
   }
+}
+
+/**
+ * Content section with ASCII vertical borders on sides
+ * Uses absolute positioning so borders stretch to match content height
+ */
+function BorderedSection({
+  children,
+  vertical,
+  className
+}: {
+  children: React.ReactNode;
+  vertical: string;
+  className: string;
+}) {
+  return (
+    <div className="relative">
+      {/* Left border - absolute positioned, full height */}
+      <div className={`absolute left-0 top-0 bottom-0 ${className} leading-none overflow-hidden`} aria-hidden="true">
+        <span className="whitespace-pre">{(vertical + "\n").repeat(100)}</span>
+      </div>
+      {/* Content with padding for borders */}
+      <div className="px-3">
+        {children}
+      </div>
+      {/* Right border - absolute positioned, full height */}
+      <div className={`absolute right-0 top-0 bottom-0 ${className} leading-none overflow-hidden`} aria-hidden="true">
+        <span className="whitespace-pre">{(vertical + "\n").repeat(100)}</span>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Check if this is a college sports league
+ */
+function isCollegeLeague(league: string): boolean {
+  return league === "ncaam" || league === "ncaaw";
 }
 
 /**
@@ -122,10 +181,10 @@ function BorderLine({
   className: string;
 }) {
   return (
-    <div className={`flex ${className}`} style={{ lineHeight: 0.85, height: '1em', margin: 0, padding: 0 }} aria-hidden="true">
-      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{left}</span>
-      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{fill.repeat(200)}</span>
-      <span style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>{right}</span>
+    <div className={`flex ${className} leading-none`} aria-hidden="true">
+      <span>{left}</span>
+      <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]">{fill.repeat(200)}</span>
+      <span>{right}</span>
     </div>
   );
 }
@@ -141,45 +200,44 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
   const isFinal = game.status === "final";
 
   const border = getBorderStyle(game.status);
+  const isCollege = isCollegeLeague(game.league);
 
   return (
-    <div className="font-mono" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
+    <div className="font-mono">
       {/* Top border */}
       <BorderLine left={border.corners.tl} right={border.corners.tr} fill={border.horizontal} className={border.textClass} />
 
-      {/* Status line */}
-      <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
-        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
-        <div className={`flex-1 text-center py-2 ${statusClass}`} style={{ lineHeight: 'normal' }}>
+      {/* Upper section with ASCII side borders */}
+      <BorderedSection vertical={border.vertical} className={border.textClass}>
+        {/* Status line */}
+        <div className={`text-center py-2 ${statusClass}`}>
           {isLive && <span className="text-terminal-green mr-2">●</span>}
           {statusText}
         </div>
-        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
-      </div>
 
-      {/* TV broadcast for live and scheduled games */}
-      {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
-        <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
-          <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
-          <div className="flex-1 text-center py-1 text-xs text-terminal-muted" style={{ lineHeight: 'normal' }}>
+        {/* TV broadcast for live and scheduled games */}
+        {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
+          <div className="text-center py-1 text-xs text-terminal-muted">
             <span className="sr-only">Broadcast on </span>
             <span className="text-terminal-cyan">TV:</span> {game.broadcasts.slice(0, 4).join(", ")}
           </div>
-          <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
-        </div>
-      )}
+        )}
+      </BorderedSection>
 
       {/* Divider */}
       <BorderLine left={border.corners.ml} right={border.corners.mr} fill={border.horizontal} className={border.textClass} />
 
-      {/* Team scores */}
-      <div className="flex" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
-        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
-        <div className="flex-1 py-4" style={{ lineHeight: 'normal' }}>
+      {/* Lower section with ASCII side borders */}
+      <BorderedSection vertical={border.vertical} className={border.textClass}>
+        {/* Team scores */}
+        <div className="py-4">
           <div className="flex justify-center items-center gap-3 sm:gap-8">
             {/* Away team */}
             <div className="text-center min-w-[60px] sm:min-w-[120px]">
               <div className={`text-xl sm:text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+                {isCollege && game.awayTeam.rank && (
+                  <span className="text-terminal-yellow text-sm sm:text-lg mr-1">#{game.awayTeam.rank}</span>
+                )}
                 {game.awayTeam.abbreviation}
               </div>
               <div className="text-terminal-muted text-xs sm:text-sm">{game.awayTeam.record}</div>
@@ -201,17 +259,87 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             {/* Home team */}
             <div className="text-center min-w-[60px] sm:min-w-[120px]">
               <div className={`text-xl sm:text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+                {isCollege && game.homeTeam.rank && (
+                  <span className="text-terminal-yellow text-sm sm:text-lg mr-1">#{game.homeTeam.rank}</span>
+                )}
                 {game.homeTeam.abbreviation}
               </div>
               <div className="text-terminal-muted text-xs sm:text-sm">{game.homeTeam.record}</div>
             </div>
           </div>
         </div>
-        <span className={border.textClass} style={{ lineHeight: 0.85, margin: 0, padding: 0 }} aria-hidden="true">{border.side}</span>
-      </div>
+      </BorderedSection>
 
       {/* Bottom border */}
       <BorderLine left={border.corners.bl} right={border.corners.br} fill={border.horizontal} className={border.textClass} />
+    </div>
+  );
+}
+
+// ============================================================================
+// Team Matchup Section (for scheduled games)
+// ============================================================================
+
+interface TeamMatchupSectionProps {
+  homeTeam: Team;
+  awayTeam: Team;
+  league: string;
+}
+
+/**
+ * Display team matchup details for scheduled games
+ * Shows full team names, rankings, and team colors
+ */
+function TeamMatchupSection({ homeTeam, awayTeam, league }: TeamMatchupSectionProps) {
+  const isCollege = isCollegeLeague(league);
+
+  return (
+    <div className="font-mono">
+      <SectionHeader title="MATCHUP" />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Away team */}
+        <TeamMatchupCard team={awayTeam} label="AWAY" isCollege={isCollege} />
+
+        {/* Home team */}
+        <TeamMatchupCard team={homeTeam} label="HOME" isCollege={isCollege} />
+      </div>
+    </div>
+  );
+}
+
+interface TeamMatchupCardProps {
+  team: Team;
+  label: string;
+  isCollege: boolean;
+}
+
+function TeamMatchupCard({ team, label, isCollege }: TeamMatchupCardProps) {
+  // Generate CSS custom property for team color accent
+  const teamColorStyle = team.color
+    ? { borderColor: `#${team.color}` }
+    : {};
+
+  // Always show rank for college teams that have one
+  const showRank = isCollege && team.rank;
+
+  return (
+    <div
+      className="border-l-4 border-terminal-border pl-3 py-2"
+      style={teamColorStyle}
+    >
+      <div className="text-terminal-muted text-xs mb-1">{label}</div>
+      <div className="flex items-baseline gap-2">
+        {showRank && (
+          <span className="text-terminal-yellow text-sm">#{team.rank}</span>
+        )}
+        <span className="text-terminal-fg font-bold">{team.displayName}</span>
+      </div>
+      {team.record && (
+        <div className="text-terminal-muted text-sm mt-1">
+          Record: {team.record}
+        </div>
+      )}
     </div>
   );
 }
@@ -263,62 +391,74 @@ function PeriodScoresTable({
   const periods = Array.from({ length: periodCount }, (_, i) => i + 1);
 
   return (
-    <div className="font-mono overflow-x-auto">
-      <div className="text-terminal-border" aria-hidden="true">
-        ┌─────────{"─".repeat(periods.length * 6)}──────┐
+    <div className="font-mono text-sm">
+      {/* Top border */}
+      <div className="flex text-terminal-border" aria-hidden="true">
+        <span>┌</span>
+        <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(200)}</span>
+        <span>┐</span>
       </div>
 
       {/* Header row */}
-      <div className="flex">
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-        <span className="w-16 px-2 text-terminal-muted">Team</span>
+      <div className="flex text-terminal-muted py-1">
+        <span className="text-terminal-border">│</span>
+        <span className="w-12 sm:w-16 shrink-0 px-2">Team</span>
         {periods.map((p) => (
-          <span key={p} className="w-10 text-center text-terminal-muted">
+          <span key={p} className="w-8 sm:w-10 shrink-0 text-center">
             {getPeriodLabel(p, league)}
           </span>
         ))}
-        <span className="w-12 text-center text-terminal-muted font-bold">T</span>
-        <span className="text-terminal-border" aria-hidden="true">│</span>
+        <span className="w-10 sm:w-12 shrink-0 text-center font-bold">T</span>
+        <span className="flex-1" />
+        <span className="text-terminal-border">│</span>
       </div>
 
-      <div className="text-terminal-border" aria-hidden="true">
-        ├─────────{"─".repeat(periods.length * 6)}──────┤
+      {/* Divider */}
+      <div className="flex text-terminal-border" aria-hidden="true">
+        <span>├</span>
+        <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(200)}</span>
+        <span>┤</span>
       </div>
 
       {/* Away team row */}
-      <div className="flex">
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-        <span className="w-16 px-2 text-terminal-fg">{awayTeam}</span>
+      <div className="flex text-terminal-fg py-1">
+        <span className="text-terminal-border">│</span>
+        <span className="w-12 sm:w-16 shrink-0 px-2">{awayTeam}</span>
         {periods.map((p) => {
           const score = periodScores.away.find((ps) => ps.period === p)?.score ?? "-";
           return (
-            <span key={p} className="w-10 text-center text-terminal-fg">
+            <span key={p} className="w-8 sm:w-10 shrink-0 text-center">
               {score}
             </span>
           );
         })}
-        <span className="w-12 text-center text-terminal-fg font-bold">{awayScore}</span>
-        <span className="text-terminal-border" aria-hidden="true">│</span>
+        <span className="w-10 sm:w-12 shrink-0 text-center font-bold">{awayScore}</span>
+        <span className="flex-1" />
+        <span className="text-terminal-border">│</span>
       </div>
 
       {/* Home team row */}
-      <div className="flex">
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-        <span className="w-16 px-2 text-terminal-fg">{homeTeam}</span>
+      <div className="flex text-terminal-fg py-1">
+        <span className="text-terminal-border">│</span>
+        <span className="w-12 sm:w-16 shrink-0 px-2">{homeTeam}</span>
         {periods.map((p) => {
           const score = periodScores.home.find((ps) => ps.period === p)?.score ?? "-";
           return (
-            <span key={p} className="w-10 text-center text-terminal-fg">
+            <span key={p} className="w-8 sm:w-10 shrink-0 text-center">
               {score}
             </span>
           );
         })}
-        <span className="w-12 text-center text-terminal-fg font-bold">{homeScore}</span>
-        <span className="text-terminal-border" aria-hidden="true">│</span>
+        <span className="w-10 sm:w-12 shrink-0 text-center font-bold">{homeScore}</span>
+        <span className="flex-1" />
+        <span className="text-terminal-border">│</span>
       </div>
 
-      <div className="text-terminal-border" aria-hidden="true">
-        └─────────{"─".repeat(periods.length * 6)}──────┘
+      {/* Bottom border */}
+      <div className="flex text-terminal-border" aria-hidden="true">
+        <span>└</span>
+        <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(200)}</span>
+        <span>┘</span>
       </div>
     </div>
   );
@@ -332,6 +472,7 @@ interface TeamStatsComparisonProps {
   homeBoxscore: TeamBoxscore;
   awayBoxscore: TeamBoxscore;
   league: string;
+  isScheduled?: boolean;
 }
 
 const STAT_DISPLAY_NAMES: Record<string, string> = {
@@ -376,7 +517,7 @@ const STAT_DISPLAY_NAMES: Record<string, string> = {
   saves: "Saves",
 };
 
-function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league }: TeamStatsComparisonProps) {
+function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league, isScheduled }: TeamStatsComparisonProps) {
   // Get all unique stat keys from both teams
   const allKeys = new Set([
     ...Object.keys(homeBoxscore.stats),
@@ -388,21 +529,24 @@ function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league }: Te
 
   if (displayStats.length === 0) return null;
 
+  // Use "SEASON STATS" for scheduled games since these are season-to-date statistics
+  const sectionTitle = isScheduled ? "SEASON STATS" : "TEAM STATISTICS";
+
   return (
     <div className="font-mono">
-      <SectionHeader title="TEAM STATISTICS" />
+      <SectionHeader title={sectionTitle} />
 
-      <div className="space-y-1">
+      <div className="space-y-1 text-xs sm:text-sm">
         {displayStats.map((statKey) => {
           const homeValue = homeBoxscore.stats[statKey] ?? "-";
           const awayValue = awayBoxscore.stats[statKey] ?? "-";
           const displayName = STAT_DISPLAY_NAMES[statKey];
 
           return (
-            <div key={statKey} className="flex items-center text-sm">
-              <span className="w-24 text-right text-terminal-fg pr-4">{awayValue}</span>
-              <span className="flex-1 text-center text-terminal-muted">{displayName}</span>
-              <span className="w-24 text-left text-terminal-fg pl-4">{homeValue}</span>
+            <div key={statKey} className="flex items-center">
+              <span className="w-12 sm:w-16 text-right text-terminal-fg pr-2 sm:pr-4 shrink-0">{awayValue}</span>
+              <span className="flex-1 text-center text-terminal-muted truncate px-1">{displayName}</span>
+              <span className="w-12 sm:w-16 text-left text-terminal-fg pl-2 sm:pl-4 shrink-0">{homeValue}</span>
             </div>
           );
         })}
@@ -553,12 +697,12 @@ interface PlayerStatsSectionProps {
 
 function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsSectionProps) {
   return (
-    <div className="font-mono">
+    <div className="font-mono min-w-0">
       <SectionHeader title="PLAYER STATISTICS" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Away team */}
-        <div>
+        <div className="min-w-0">
           <div className="text-terminal-fg font-bold mb-2">
             {awayBoxscore.team.displayName}
           </div>
@@ -572,7 +716,7 @@ function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsS
         </div>
 
         {/* Home team */}
-        <div>
+        <div className="min-w-0">
           <div className="text-terminal-fg font-bold mb-2">
             {homeBoxscore.team.displayName}
           </div>
@@ -612,12 +756,12 @@ function PlayerStatsTable({ players, league: _league }: { players: PlayerStats[]
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-xs sm:text-sm">
         <thead>
           <tr className="text-terminal-muted border-b border-terminal-border">
-            <th className="text-left py-1 pr-2 min-w-[140px]">Player</th>
+            <th className="text-left py-1 pr-1 sm:pr-2 whitespace-nowrap">Player</th>
             {columns.map((col) => (
-              <th key={col.key} className={`text-center py-1 ${col.width}`}>
+              <th key={col.key} className="text-center py-1 px-1 whitespace-nowrap">
                 {col.label}
               </th>
             ))}
@@ -626,7 +770,7 @@ function PlayerStatsTable({ players, league: _league }: { players: PlayerStats[]
         <tbody>
           {players.map((player) => (
             <tr key={player.player.id} className="border-b border-terminal-border/30">
-              <td className="py-1 pr-2">
+              <td className="py-1 pr-1 sm:pr-2 whitespace-nowrap">
                 <span className="text-terminal-fg">{player.player.shortName}</span>
                 {player.player.position && (
                   <span className="text-terminal-muted ml-1 text-xs">
@@ -635,7 +779,7 @@ function PlayerStatsTable({ players, league: _league }: { players: PlayerStats[]
                 )}
               </td>
               {columns.map((col) => (
-                <td key={col.key} className={`text-center py-1 text-terminal-fg ${col.width}`}>
+                <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
                   {player.stats[col.key] ?? "-"}
                 </td>
               ))}
@@ -658,13 +802,13 @@ const GOALIE_COLUMNS = [
 function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-xs sm:text-sm">
         <thead>
           <tr className="text-terminal-muted border-b border-terminal-border">
-            <th className="text-left py-1 pr-2 min-w-[140px]">Goalie</th>
-            <th className="text-center py-1 w-10">Dec</th>
+            <th className="text-left py-1 pr-1 sm:pr-2 whitespace-nowrap">Goalie</th>
+            <th className="text-center py-1 px-1 whitespace-nowrap">Dec</th>
             {GOALIE_COLUMNS.map((col) => (
-              <th key={col.key} className={`text-center py-1 ${col.width}`}>
+              <th key={col.key} className="text-center py-1 px-1 whitespace-nowrap">
                 {col.label}
               </th>
             ))}
@@ -673,8 +817,8 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
         <tbody>
           {goalies.map((goalie) => (
             <tr key={goalie.player.id} className="border-b border-terminal-border/30">
-              <td className="py-1 pr-2 text-terminal-fg">{goalie.player.shortName}</td>
-              <td className="text-center py-1 w-10">
+              <td className="py-1 pr-1 sm:pr-2 text-terminal-fg whitespace-nowrap">{goalie.player.shortName}</td>
+              <td className="text-center py-1 px-1">
                 {goalie.decision && (
                   <span className={goalie.decision === "W" ? "text-terminal-green" : "text-terminal-red"}>
                     {goalie.decision}
@@ -682,7 +826,7 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
                 )}
               </td>
               {GOALIE_COLUMNS.map((col) => (
-                <td key={col.key} className={`text-center py-1 text-terminal-fg ${col.width}`}>
+                <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
                   {goalie.stats[col.key] ?? "-"}
                 </td>
               ))}
@@ -701,19 +845,35 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
 interface GameInfoSectionProps {
   venue?: string;
   venueLocation?: string;
+  gameType?: "preseason" | "regular" | "postseason" | "allstar";
   attendance?: number;
   broadcasts?: string[];
 }
 
-function GameInfoSection({ venue, venueLocation, attendance, broadcasts }: GameInfoSectionProps) {
+function GameInfoSection({ venue, venueLocation, gameType, attendance, broadcasts }: GameInfoSectionProps) {
   const hasBroadcasts = broadcasts && broadcasts.length > 0;
-  if (!venue && !attendance && !hasBroadcasts) return null;
+  const hasGameType = gameType && gameType !== "regular"; // Only show non-regular game types
+  if (!venue && !attendance && !hasBroadcasts && !hasGameType) return null;
+
+  const gameTypeLabels: Record<string, { label: string; className: string }> = {
+    preseason: { label: "PRESEASON", className: "text-terminal-yellow" },
+    postseason: { label: "POSTSEASON", className: "text-terminal-green" },
+    allstar: { label: "ALL-STAR", className: "text-terminal-cyan" },
+  };
 
   return (
     <div className="font-mono">
       <SectionHeader title="GAME INFO" />
 
       <div className="space-y-1 text-sm">
+        {hasGameType && (
+          <div className="flex">
+            <span className="text-terminal-muted w-24">Type:</span>
+            <span className={gameTypeLabels[gameType]?.className ?? "text-terminal-fg"}>
+              {gameTypeLabels[gameType]?.label ?? gameType.toUpperCase()}
+            </span>
+          </div>
+        )}
         {venue && (
           <div className="flex">
             <span className="text-terminal-muted w-24">Venue:</span>
