@@ -107,23 +107,23 @@ function getBorderStyle(status: GameSummary["game"]["status"]) {
       return {
         corners: { tl: "╔", tr: "╗", bl: "╚", br: "╝", ml: "╠", mr: "╣" },
         horizontal: "═",
-        side: "║",
         textClass: "text-terminal-green",
+        borderClass: "border-terminal-green",
       };
     case "final":
       return {
         corners: { tl: "┌", tr: "┐", bl: "└", br: "┘", ml: "├", mr: "┤" },
         horizontal: "─",
-        side: "│",
         textClass: "text-terminal-border",
+        borderClass: "border-terminal-border",
       };
     case "scheduled":
     default:
       return {
         corners: { tl: "┏", tr: "┓", bl: "┗", br: "┛", ml: "┣", mr: "┫" },
         horizontal: "━",
-        side: "┃",
         textClass: "text-terminal-yellow",
+        borderClass: "border-terminal-yellow",
       };
   }
 }
@@ -176,35 +176,30 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
       {/* Top border */}
       <BorderLine left={border.corners.tl} right={border.corners.tr} fill={border.horizontal} className={border.textClass} />
 
-      {/* Status line */}
-      <div className="flex">
-        <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
-        <div className={`flex-1 text-center py-2 ${statusClass}`}>
+      {/* Upper section with CSS side borders */}
+      <div className={`border-x ${border.borderClass}`}>
+        {/* Status line */}
+        <div className={`text-center py-2 ${statusClass}`}>
           {isLive && <span className="text-terminal-green mr-2">●</span>}
           {statusText}
         </div>
-        <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
-      </div>
 
-      {/* TV broadcast for live and scheduled games */}
-      {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
-        <div className="flex">
-          <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
-          <div className="flex-1 text-center py-1 text-xs text-terminal-muted">
+        {/* TV broadcast for live and scheduled games */}
+        {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
+          <div className="text-center py-1 text-xs text-terminal-muted">
             <span className="sr-only">Broadcast on </span>
             <span className="text-terminal-cyan">TV:</span> {game.broadcasts.slice(0, 4).join(", ")}
           </div>
-          <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Divider */}
       <BorderLine left={border.corners.ml} right={border.corners.mr} fill={border.horizontal} className={border.textClass} />
 
-      {/* Team scores */}
-      <div className="flex">
-        <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
-        <div className="flex-1 py-4">
+      {/* Lower section with CSS side borders */}
+      <div className={`border-x ${border.borderClass}`}>
+        {/* Team scores */}
+        <div className="py-4">
           <div className="flex justify-center items-center gap-3 sm:gap-8">
             {/* Away team */}
             <div className="text-center min-w-[60px] sm:min-w-[120px]">
@@ -242,7 +237,6 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             </div>
           </div>
         </div>
-        <span className={`${border.textClass} leading-none flex items-center`} aria-hidden="true">{border.side}</span>
       </div>
 
       {/* Bottom border */}
