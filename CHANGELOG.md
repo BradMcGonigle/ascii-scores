@@ -1,5 +1,11 @@
 # ascii-scores
 
+## 0.23.1
+
+### Patch Changes
+
+- e8a5d28: style: Change league page grid from 4 to 3 columns on desktop
+
 ## 0.23.0
 
 ### Minor Changes
