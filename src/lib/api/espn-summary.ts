@@ -166,6 +166,7 @@ interface ESPNHeader {
       score?: string;
       linescores?: Array<{ value: number }>;
       record?: Array<{ summary: string; type: string }>;
+      curatedRank?: { current: number };
     }>;
     status: {
       type: {
@@ -211,6 +212,10 @@ function mapTeam(competitor: ESPNHeader["competitions"][0]["competitors"][0]): T
   const record = competitor.record?.find((r) => r.type === "total")?.summary
     ?? competitor.record?.[0]?.summary;
 
+  // Get team ranking for college sports (only include if in top 25)
+  const rawRank = competitor.curatedRank?.current;
+  const rank = rawRank && rawRank > 0 && rawRank <= 25 ? rawRank : undefined;
+
   return {
     id: competitor.team.id,
     name: competitor.team.name,
@@ -219,6 +224,7 @@ function mapTeam(competitor: ESPNHeader["competitions"][0]["competitors"][0]): T
     logo: competitor.team.logo,
     color: competitor.team.color,
     record,
+    rank,
   };
 }
 
