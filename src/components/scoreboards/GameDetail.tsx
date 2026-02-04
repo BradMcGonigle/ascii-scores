@@ -40,7 +40,7 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
       <div className={`grid gap-6 ${hasPeriodScores ? "lg:grid-cols-2" : ""}`}>
         {/* Period scores - full width on mobile */}
         {game.periodScores && (
-          <div className="w-full">
+          <div className="min-w-0">
             <PeriodScoresTable
               periodScores={game.periodScores}
               homeTeam={game.homeTeam.abbreviation}
@@ -53,7 +53,7 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
         )}
 
         {/* Team stats comparison */}
-        <div className="w-full">
+        <div className="min-w-0">
           <TeamStatsComparison
             homeBoxscore={homeBoxscore}
             awayBoxscore={awayBoxscore}
@@ -366,72 +366,46 @@ function PeriodScoresTable({
   const periods = Array.from({ length: periodCount }, (_, i) => i + 1);
 
   return (
-    <div className="font-mono text-xs sm:text-sm">
-      {/* Top border */}
-      <div className="flex text-terminal-border" aria-hidden="true">
-        <span>┌</span>
-        <span className="flex-1 overflow-hidden">{"─".repeat(100)}</span>
-        <span>┐</span>
-      </div>
-
-      {/* Header row */}
-      <div className="flex">
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-        <span className="w-10 sm:w-16 px-1 sm:px-2 text-terminal-muted">Team</span>
-        {periods.map((p) => (
-          <span key={p} className="w-6 sm:w-10 text-center text-terminal-muted">
-            {getPeriodLabel(p, league)}
-          </span>
-        ))}
-        <span className="w-8 sm:w-12 text-center text-terminal-muted font-bold">T</span>
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-      </div>
-
-      {/* Header divider */}
-      <div className="flex text-terminal-border" aria-hidden="true">
-        <span>├</span>
-        <span className="flex-1 overflow-hidden">{"─".repeat(100)}</span>
-        <span>┤</span>
-      </div>
-
-      {/* Away team row */}
-      <div className="flex">
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-        <span className="w-10 sm:w-16 px-1 sm:px-2 text-terminal-fg">{awayTeam}</span>
-        {periods.map((p) => {
-          const score = periodScores.away.find((ps) => ps.period === p)?.score ?? "-";
-          return (
-            <span key={p} className="w-6 sm:w-10 text-center text-terminal-fg">
-              {score}
-            </span>
-          );
-        })}
-        <span className="w-8 sm:w-12 text-center text-terminal-fg font-bold">{awayScore}</span>
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-      </div>
-
-      {/* Home team row */}
-      <div className="flex">
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-        <span className="w-10 sm:w-16 px-1 sm:px-2 text-terminal-fg">{homeTeam}</span>
-        {periods.map((p) => {
-          const score = periodScores.home.find((ps) => ps.period === p)?.score ?? "-";
-          return (
-            <span key={p} className="w-6 sm:w-10 text-center text-terminal-fg">
-              {score}
-            </span>
-          );
-        })}
-        <span className="w-8 sm:w-12 text-center text-terminal-fg font-bold">{homeScore}</span>
-        <span className="text-terminal-border" aria-hidden="true">│</span>
-      </div>
-
-      {/* Bottom border */}
-      <div className="flex text-terminal-border" aria-hidden="true">
-        <span>└</span>
-        <span className="flex-1 overflow-hidden">{"─".repeat(100)}</span>
-        <span>┘</span>
-      </div>
+    <div className="font-mono text-xs sm:text-sm overflow-x-auto">
+      <table className="w-full border-collapse border border-terminal-border">
+        <thead>
+          <tr className="text-terminal-muted border-b border-terminal-border">
+            <th className="text-left py-1 px-2 border-r border-terminal-border">Team</th>
+            {periods.map((p) => (
+              <th key={p} className="text-center py-1 px-1 sm:px-2 border-r border-terminal-border">
+                {getPeriodLabel(p, league)}
+              </th>
+            ))}
+            <th className="text-center py-1 px-1 sm:px-2 font-bold">T</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="text-terminal-fg border-b border-terminal-border">
+            <td className="py-1 px-2 border-r border-terminal-border">{awayTeam}</td>
+            {periods.map((p) => {
+              const score = periodScores.away.find((ps) => ps.period === p)?.score ?? "-";
+              return (
+                <td key={p} className="text-center py-1 px-1 sm:px-2 border-r border-terminal-border">
+                  {score}
+                </td>
+              );
+            })}
+            <td className="text-center py-1 px-1 sm:px-2 font-bold">{awayScore}</td>
+          </tr>
+          <tr className="text-terminal-fg">
+            <td className="py-1 px-2 border-r border-terminal-border">{homeTeam}</td>
+            {periods.map((p) => {
+              const score = periodScores.home.find((ps) => ps.period === p)?.score ?? "-";
+              return (
+                <td key={p} className="text-center py-1 px-1 sm:px-2 border-r border-terminal-border">
+                  {score}
+                </td>
+              );
+            })}
+            <td className="text-center py-1 px-1 sm:px-2 font-bold">{homeScore}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -508,17 +482,17 @@ function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league, isSc
     <div className="font-mono">
       <SectionHeader title={sectionTitle} />
 
-      <div className="space-y-1">
+      <div className="space-y-1 text-xs sm:text-sm">
         {displayStats.map((statKey) => {
           const homeValue = homeBoxscore.stats[statKey] ?? "-";
           const awayValue = awayBoxscore.stats[statKey] ?? "-";
           const displayName = STAT_DISPLAY_NAMES[statKey];
 
           return (
-            <div key={statKey} className="flex items-center text-sm">
-              <span className="w-24 text-right text-terminal-fg pr-4">{awayValue}</span>
-              <span className="flex-1 text-center text-terminal-muted">{displayName}</span>
-              <span className="w-24 text-left text-terminal-fg pl-4">{homeValue}</span>
+            <div key={statKey} className="flex items-center">
+              <span className="w-12 sm:w-16 text-right text-terminal-fg pr-2 sm:pr-4 shrink-0">{awayValue}</span>
+              <span className="flex-1 text-center text-terminal-muted truncate px-1">{displayName}</span>
+              <span className="w-12 sm:w-16 text-left text-terminal-fg pl-2 sm:pl-4 shrink-0">{homeValue}</span>
             </div>
           );
         })}
@@ -669,12 +643,12 @@ interface PlayerStatsSectionProps {
 
 function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsSectionProps) {
   return (
-    <div className="font-mono">
+    <div className="font-mono min-w-0">
       <SectionHeader title="PLAYER STATISTICS" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Away team */}
-        <div>
+        <div className="min-w-0">
           <div className="text-terminal-fg font-bold mb-2">
             {awayBoxscore.team.displayName}
           </div>
@@ -688,7 +662,7 @@ function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsS
         </div>
 
         {/* Home team */}
-        <div>
+        <div className="min-w-0">
           <div className="text-terminal-fg font-bold mb-2">
             {homeBoxscore.team.displayName}
           </div>
@@ -728,12 +702,12 @@ function PlayerStatsTable({ players, league: _league }: { players: PlayerStats[]
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-xs sm:text-sm">
         <thead>
           <tr className="text-terminal-muted border-b border-terminal-border">
-            <th className="text-left py-1 pr-2 min-w-[140px]">Player</th>
+            <th className="text-left py-1 pr-1 sm:pr-2 whitespace-nowrap">Player</th>
             {columns.map((col) => (
-              <th key={col.key} className={`text-center py-1 ${col.width}`}>
+              <th key={col.key} className="text-center py-1 px-1 whitespace-nowrap">
                 {col.label}
               </th>
             ))}
@@ -742,7 +716,7 @@ function PlayerStatsTable({ players, league: _league }: { players: PlayerStats[]
         <tbody>
           {players.map((player) => (
             <tr key={player.player.id} className="border-b border-terminal-border/30">
-              <td className="py-1 pr-2">
+              <td className="py-1 pr-1 sm:pr-2 whitespace-nowrap">
                 <span className="text-terminal-fg">{player.player.shortName}</span>
                 {player.player.position && (
                   <span className="text-terminal-muted ml-1 text-xs">
@@ -751,7 +725,7 @@ function PlayerStatsTable({ players, league: _league }: { players: PlayerStats[]
                 )}
               </td>
               {columns.map((col) => (
-                <td key={col.key} className={`text-center py-1 text-terminal-fg ${col.width}`}>
+                <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
                   {player.stats[col.key] ?? "-"}
                 </td>
               ))}
@@ -774,13 +748,13 @@ const GOALIE_COLUMNS = [
 function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-xs sm:text-sm">
         <thead>
           <tr className="text-terminal-muted border-b border-terminal-border">
-            <th className="text-left py-1 pr-2 min-w-[140px]">Goalie</th>
-            <th className="text-center py-1 w-10">Dec</th>
+            <th className="text-left py-1 pr-1 sm:pr-2 whitespace-nowrap">Goalie</th>
+            <th className="text-center py-1 px-1 whitespace-nowrap">Dec</th>
             {GOALIE_COLUMNS.map((col) => (
-              <th key={col.key} className={`text-center py-1 ${col.width}`}>
+              <th key={col.key} className="text-center py-1 px-1 whitespace-nowrap">
                 {col.label}
               </th>
             ))}
@@ -789,8 +763,8 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
         <tbody>
           {goalies.map((goalie) => (
             <tr key={goalie.player.id} className="border-b border-terminal-border/30">
-              <td className="py-1 pr-2 text-terminal-fg">{goalie.player.shortName}</td>
-              <td className="text-center py-1 w-10">
+              <td className="py-1 pr-1 sm:pr-2 text-terminal-fg whitespace-nowrap">{goalie.player.shortName}</td>
+              <td className="text-center py-1 px-1">
                 {goalie.decision && (
                   <span className={goalie.decision === "W" ? "text-terminal-green" : "text-terminal-red"}>
                     {goalie.decision}
@@ -798,7 +772,7 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
                 )}
               </td>
               {GOALIE_COLUMNS.map((col) => (
-                <td key={col.key} className={`text-center py-1 text-terminal-fg ${col.width}`}>
+                <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
                   {goalie.stats[col.key] ?? "-"}
                 </td>
               ))}
