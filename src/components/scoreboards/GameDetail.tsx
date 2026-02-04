@@ -120,6 +120,13 @@ function getBorderStyle(status: GameSummary["game"]["status"]) {
 }
 
 /**
+ * Check if this is a college sports league
+ */
+function isCollegeLeague(league: string): boolean {
+  return league === "ncaam" || league === "ncaaw";
+}
+
+/**
  * Flexible border line component that fills available width
  */
 function BorderLine({
@@ -153,6 +160,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
   const isFinal = game.status === "final";
 
   const border = getBorderStyle(game.status);
+  const isCollege = isCollegeLeague(game.league);
 
   return (
     <div className="font-mono" style={{ lineHeight: 0.85, margin: 0, padding: 0 }}>
@@ -192,6 +200,9 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             {/* Away team */}
             <div className="text-center min-w-[60px] sm:min-w-[120px]">
               <div className={`text-xl sm:text-3xl font-bold ${awayWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+                {isCollege && game.awayTeam.rank && (
+                  <span className="text-terminal-yellow text-sm sm:text-lg mr-1">#{game.awayTeam.rank}</span>
+                )}
                 {game.awayTeam.abbreviation}
               </div>
               <div className="text-terminal-muted text-xs sm:text-sm">{game.awayTeam.record}</div>
@@ -213,6 +224,9 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
             {/* Home team */}
             <div className="text-center min-w-[60px] sm:min-w-[120px]">
               <div className={`text-xl sm:text-3xl font-bold ${homeWinning && isFinal ? "text-terminal-green" : "text-terminal-fg"}`}>
+                {isCollege && game.homeTeam.rank && (
+                  <span className="text-terminal-yellow text-sm sm:text-lg mr-1">#{game.homeTeam.rank}</span>
+                )}
                 {game.homeTeam.abbreviation}
               </div>
               <div className="text-terminal-muted text-xs sm:text-sm">{game.homeTeam.record}</div>
@@ -236,13 +250,6 @@ interface TeamMatchupSectionProps {
   homeTeam: Team;
   awayTeam: Team;
   league: string;
-}
-
-/**
- * Check if this is a college sports league
- */
-function isCollegeLeague(league: string): boolean {
-  return league === "ncaam" || league === "ncaaw";
 }
 
 /**
