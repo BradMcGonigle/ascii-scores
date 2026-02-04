@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { GameDetailDisplay } from "@/components/scoreboards/GameDetail";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { getGameSummary } from "@/lib/api/espn-summary";
@@ -79,79 +77,67 @@ export default async function GamePage({ params }: GamePageProps) {
 
   if (!summary) {
     return (
-      <>
-        <Header activeLeague={leagueId} />
-        <main className="flex-1">
-          <div className="mx-auto max-w-7xl px-4 py-8">
-            <div className="mb-6">
-              <Link
-                href={`/${leagueId}`}
-                className="font-mono text-sm text-terminal-muted hover:text-terminal-green transition-colors"
-              >
-                ◄ Back to {league.name} Scores
-              </Link>
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <div className="mb-6">
+          <Link
+            href={`/${leagueId}`}
+            className="font-mono text-sm text-terminal-muted hover:text-terminal-green transition-colors"
+          >
+            ◄ Back to {league.name} Scores
+          </Link>
+        </div>
+        <div className="overflow-x-auto">
+          <div className="font-mono text-center py-8 text-terminal-red inline-block min-w-full">
+            <div className="text-terminal-border" aria-hidden="true">
+              ╔══════════════════════════════════════════╗
             </div>
-            <div className="overflow-x-auto">
-              <div className="font-mono text-center py-8 text-terminal-red inline-block min-w-full">
-                <div className="text-terminal-border" aria-hidden="true">
-                  ╔══════════════════════════════════════════╗
-                </div>
-                <div>
-                  <span className="text-terminal-border" aria-hidden="true">║</span>
-                  <span className="px-4">
-                    {"  "}Game not found or unavailable.{"  "}
-                  </span>
-                  <span className="text-terminal-border" aria-hidden="true">║</span>
-                </div>
-                <div className="text-terminal-border" aria-hidden="true">
-                  ╚══════════════════════════════════════════╝
-                </div>
-              </div>
+            <div>
+              <span className="text-terminal-border" aria-hidden="true">║</span>
+              <span className="px-4">
+                {"  "}Game not found or unavailable.{"  "}
+              </span>
+              <span className="text-terminal-border" aria-hidden="true">║</span>
+            </div>
+            <div className="text-terminal-border" aria-hidden="true">
+              ╚══════════════════════════════════════════╝
             </div>
           </div>
-        </main>
-        <Footer />
-      </>
+        </div>
+      </div>
     );
   }
 
   const { game } = summary;
 
   return (
-    <>
-      <Header activeLeague={leagueId} />
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          {/* Back link */}
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <Link
-              href={`/${leagueId}`}
-              className="font-mono text-sm text-terminal-muted hover:text-terminal-green transition-colors"
-            >
-              ◄ Back to {league.name} Scores
-            </Link>
-            <RefreshButton />
-          </div>
+    <div className="mx-auto max-w-7xl px-4 py-8">
+      {/* Back link */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <Link
+          href={`/${leagueId}`}
+          className="font-mono text-sm text-terminal-muted hover:text-terminal-green transition-colors"
+        >
+          ◄ Back to {league.name} Scores
+        </Link>
+        <RefreshButton />
+      </div>
 
-          {/* Page header */}
-          <div className="mb-6">
-            <h1 className="font-mono text-2xl text-terminal-fg">
-              <span className="text-terminal-border">[</span>
-              {game.awayTeam.abbreviation}
-              <span className="text-terminal-muted"> @ </span>
-              {game.homeTeam.abbreviation}
-              <span className="text-terminal-border">]</span>
-            </h1>
-            <p className="text-terminal-muted font-mono text-sm mt-1">
-              {game.awayTeam.displayName} at {game.homeTeam.displayName}
-            </p>
-          </div>
+      {/* Page header */}
+      <div className="mb-6">
+        <h1 className="font-mono text-2xl text-terminal-fg">
+          <span className="text-terminal-border">[</span>
+          {game.awayTeam.abbreviation}
+          <span className="text-terminal-muted"> @ </span>
+          {game.homeTeam.abbreviation}
+          <span className="text-terminal-border">]</span>
+        </h1>
+        <p className="text-terminal-muted font-mono text-sm mt-1">
+          {game.awayTeam.displayName} at {game.homeTeam.displayName}
+        </p>
+      </div>
 
-          {/* Game detail content */}
-          <GameDetailDisplay summary={summary} />
-        </div>
-      </main>
-      <Footer />
-    </>
+      {/* Game detail content */}
+      <GameDetailDisplay summary={summary} />
+    </div>
   );
 }
