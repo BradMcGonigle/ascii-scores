@@ -269,6 +269,72 @@ export function AsciiProgressBar({
 }
 
 /**
+ * ASCII stat comparison bar for comparing two team values
+ * Shows proportional bars for each team, with the away team bar on the left
+ * and the home team bar on the right
+ */
+export function AsciiStatBar({
+  awayValue,
+  homeValue,
+  width = 24,
+  variant = "blocks",
+  className = "",
+}: {
+  awayValue: number;
+  homeValue: number;
+  width?: number;
+  variant?: "blocks" | "bars" | "lines";
+  className?: string;
+}) {
+  const total = awayValue + homeValue;
+
+  // Handle edge cases
+  if (total === 0) {
+    const halfWidth = Math.floor(width / 2);
+    const chars = { blocks: "░", bars: "░", lines: "─" };
+    const emptyChar = chars[variant];
+    return (
+      <div className={`font-mono text-xs ${className}`} aria-hidden="true">
+        <span className="text-terminal-muted">{emptyChar.repeat(halfWidth)}</span>
+        <span className="text-terminal-muted">{emptyChar.repeat(width - halfWidth)}</span>
+      </div>
+    );
+  }
+
+  // Calculate proportional widths
+  const awayWidth = Math.round((awayValue / total) * width);
+  const homeWidth = width - awayWidth;
+
+  const chars = {
+    blocks: "█",
+    bars: "▓",
+    lines: "━",
+  };
+
+  const filled = chars[variant];
+
+  // Determine which team has the lead for coloring
+  const awayColor = awayValue >= homeValue ? "text-terminal-green" : "text-terminal-muted";
+  const homeColor = homeValue >= awayValue ? "text-terminal-cyan" : "text-terminal-muted";
+
+  return (
+    <div
+      className={`font-mono text-xs ${className}`}
+      aria-label={`Away: ${awayValue}, Home: ${homeValue}`}
+    >
+      {/* Away team bar (left side) */}
+      <span className={awayColor}>
+        {awayWidth > 0 ? filled.repeat(awayWidth) : ""}
+      </span>
+      {/* Home team bar (right side) */}
+      <span className={homeColor}>
+        {homeWidth > 0 ? filled.repeat(homeWidth) : ""}
+      </span>
+    </div>
+  );
+}
+
+/**
  * Decorative ASCII frame around content
  */
 export function AsciiFrame({

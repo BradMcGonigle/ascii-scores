@@ -9,6 +9,7 @@ import type {
   TeamBoxscore,
 } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
+import { AsciiStatBar } from "@/components/ascii/AsciiDecorations";
 
 interface GameDetailDisplayProps {
   summary: GameSummary;
@@ -532,21 +533,41 @@ function TeamStatsComparison({ homeBoxscore, awayBoxscore, league: _league, isSc
   // Use "SEASON STATS" for scheduled games since these are season-to-date statistics
   const sectionTitle = isScheduled ? "SEASON STATS" : "TEAM STATISTICS";
 
+  // Helper to parse numeric value from stat (handles "53%", "42", etc.)
+  const parseNumericValue = (value: string | number): number => {
+    if (typeof value === "number") return value;
+    const parsed = parseFloat(value.replace(/[^0-9.-]/g, ""));
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
   return (
     <div className="font-mono">
       <SectionHeader title={sectionTitle} />
 
-      <div className="space-y-1 text-xs sm:text-sm">
+      <div className="space-y-2 text-xs sm:text-sm">
         {displayStats.map((statKey) => {
           const homeValue = homeBoxscore.stats[statKey] ?? "-";
           const awayValue = awayBoxscore.stats[statKey] ?? "-";
           const displayName = STAT_DISPLAY_NAMES[statKey];
 
+          // Parse numeric values for the comparison bar
+          const homeNumeric = parseNumericValue(homeValue);
+          const awayNumeric = parseNumericValue(awayValue);
+
           return (
-            <div key={statKey} className="flex items-center">
-              <span className="w-12 sm:w-16 text-right text-terminal-fg pr-2 sm:pr-4 shrink-0">{awayValue}</span>
-              <span className="flex-1 text-center text-terminal-muted truncate px-1">{displayName}</span>
-              <span className="w-12 sm:w-16 text-left text-terminal-fg pl-2 sm:pl-4 shrink-0">{homeValue}</span>
+            <div key={statKey}>
+              <div className="flex items-center">
+                <span className="w-12 sm:w-16 text-right text-terminal-fg pr-2 sm:pr-4 shrink-0">{awayValue}</span>
+                <span className="flex-1 text-center text-terminal-muted truncate px-1">{displayName}</span>
+                <span className="w-12 sm:w-16 text-left text-terminal-fg pl-2 sm:pl-4 shrink-0">{homeValue}</span>
+              </div>
+              <div className="flex justify-center mt-0.5">
+                <AsciiStatBar
+                  awayValue={awayNumeric}
+                  homeValue={homeNumeric}
+                  width={32}
+                />
+              </div>
             </div>
           );
         })}
