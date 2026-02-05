@@ -547,6 +547,8 @@ function mapPlayerStats(
           },
           starter: athlete.starter,
           stats: statsObj,
+          category: category.name,
+          statKeys: keys,
         });
       }
     }

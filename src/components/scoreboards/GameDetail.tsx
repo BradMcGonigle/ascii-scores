@@ -716,6 +716,17 @@ interface PlayerStatsSectionProps {
 }
 
 function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsSectionProps) {
+  // Check if we have any player stats to show
+  const hasAwayPlayers = awayBoxscore.players.length > 0;
+  const hasHomePlayers = homeBoxscore.players.length > 0;
+  const hasAwayGoalies = awayBoxscore.goalies && awayBoxscore.goalies.length > 0;
+  const hasHomeGoalies = homeBoxscore.goalies && homeBoxscore.goalies.length > 0;
+
+  // Don't render section if no player stats available (common for soccer/EPL)
+  if (!hasAwayPlayers && !hasHomePlayers && !hasAwayGoalies && !hasHomeGoalies) {
+    return null;
+  }
+
   return (
     <div className="font-mono min-w-0">
       <SectionHeader title="PLAYER STATISTICS" />
@@ -727,10 +738,10 @@ function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsS
             {awayBoxscore.team.displayName}
           </div>
           <PlayerStatsTable players={awayBoxscore.players} league={league} />
-          {awayBoxscore.goalies && awayBoxscore.goalies.length > 0 && (
+          {hasAwayGoalies && (
             <div className="mt-4">
               <div className="text-terminal-muted text-sm mb-2">Goalies</div>
-              <GoalieStatsTable goalies={awayBoxscore.goalies} />
+              <GoalieStatsTable goalies={awayBoxscore.goalies!} />
             </div>
           )}
         </div>
@@ -741,10 +752,10 @@ function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsS
             {homeBoxscore.team.displayName}
           </div>
           <PlayerStatsTable players={homeBoxscore.players} league={league} />
-          {homeBoxscore.goalies && homeBoxscore.goalies.length > 0 && (
+          {hasHomeGoalies && (
             <div className="mt-4">
               <div className="text-terminal-muted text-sm mb-2">Goalies</div>
-              <GoalieStatsTable goalies={homeBoxscore.goalies} />
+              <GoalieStatsTable goalies={homeBoxscore.goalies!} />
             </div>
           )}
         </div>
@@ -753,8 +764,10 @@ function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsS
   );
 }
 
-// Hockey stat columns
-const NHL_PLAYER_COLUMNS = [
+// Sport-specific stat columns
+type StatColumn = { key: string; label: string; width: string };
+
+const NHL_PLAYER_COLUMNS: StatColumn[] = [
   { key: "goals", label: "G", width: "w-8" },
   { key: "assists", label: "A", width: "w-8" },
   { key: "points", label: "P", width: "w-8" },
@@ -765,21 +778,308 @@ const NHL_PLAYER_COLUMNS = [
   { key: "timeOnIce", label: "TOI", width: "w-14" },
 ];
 
-function PlayerStatsTable({ players, league: _league }: { players: PlayerStats[]; league: string }) {
+const NBA_PLAYER_COLUMNS: StatColumn[] = [
+  { key: "MIN", label: "MIN", width: "w-10" },
+  { key: "PTS", label: "PTS", width: "w-10" },
+  { key: "REB", label: "REB", width: "w-10" },
+  { key: "AST", label: "AST", width: "w-10" },
+  { key: "STL", label: "STL", width: "w-10" },
+  { key: "BLK", label: "BLK", width: "w-10" },
+  { key: "FG", label: "FG", width: "w-14" },
+  { key: "3PT", label: "3PT", width: "w-14" },
+  { key: "FT", label: "FT", width: "w-14" },
+  { key: "TO", label: "TO", width: "w-10" },
+];
+
+const NFL_PLAYER_COLUMNS: StatColumn[] = [
+  { key: "C/ATT", label: "C/ATT", width: "w-14" },
+  { key: "YDS", label: "YDS", width: "w-12" },
+  { key: "TD", label: "TD", width: "w-10" },
+  { key: "INT", label: "INT", width: "w-10" },
+  { key: "CAR", label: "CAR", width: "w-10" },
+  { key: "REC", label: "REC", width: "w-10" },
+  { key: "TGTS", label: "TGTS", width: "w-10" },
+  { key: "RECYDS", label: "RYDS", width: "w-12" },
+];
+
+const MLB_PLAYER_COLUMNS: StatColumn[] = [
+  { key: "AB", label: "AB", width: "w-10" },
+  { key: "R", label: "R", width: "w-8" },
+  { key: "H", label: "H", width: "w-8" },
+  { key: "RBI", label: "RBI", width: "w-10" },
+  { key: "HR", label: "HR", width: "w-10" },
+  { key: "BB", label: "BB", width: "w-10" },
+  { key: "SO", label: "SO", width: "w-10" },
+  { key: "AVG", label: "AVG", width: "w-12" },
+];
+
+const MLS_PLAYER_COLUMNS: StatColumn[] = [
+  { key: "G", label: "G", width: "w-8" },
+  { key: "A", label: "A", width: "w-8" },
+  { key: "SH", label: "SH", width: "w-10" },
+  { key: "ST", label: "ST", width: "w-10" },
+  { key: "FC", label: "FC", width: "w-10" },
+  { key: "FS", label: "FS", width: "w-10" },
+  { key: "SV", label: "SV", width: "w-10" },
+  { key: "OF", label: "OF", width: "w-10" },
+];
+
+function getPlayerColumnsForLeague(league: string): StatColumn[] {
+  switch (league) {
+    case "nhl":
+      return NHL_PLAYER_COLUMNS;
+    case "nba":
+    case "ncaam":
+    case "ncaaw":
+      return NBA_PLAYER_COLUMNS;
+    case "nfl":
+      return NFL_PLAYER_COLUMNS;
+    case "mlb":
+      return MLB_PLAYER_COLUMNS;
+    case "mls":
+    case "epl":
+      return MLS_PLAYER_COLUMNS;
+    default:
+      return NHL_PLAYER_COLUMNS;
+  }
+}
+
+// Category display names for better readability
+const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
+  passing: "Passing",
+  rushing: "Rushing",
+  receiving: "Receiving",
+  fumbles: "Fumbles",
+  defensive: "Defense",
+  interceptions: "Interceptions",
+  kickReturns: "Kick Returns",
+  puntReturns: "Punt Returns",
+  kicking: "Kicking",
+  punting: "Punting",
+  batting: "Batting",
+  pitching: "Pitching",
+};
+
+// ESPN stat key to abbreviation mapping
+const STAT_ABBREVIATIONS: Record<string, string> = {
+  // NFL Passing
+  "completions/passingAttempts": "C/ATT",
+  passingYards: "YDS",
+  yardsPerPassAttempt: "AVG",
+  passingTouchdowns: "TD",
+  interceptions: "INT",
+  sacks: "SCK",
+  "sacks-sackYardsLost": "SCK-YDS",
+  QBRating: "RTG",
+  adjQBR: "QBR",
+  // NFL Rushing
+  rushingAttempts: "CAR",
+  rushingYards: "YDS",
+  yardsPerRushAttempt: "AVG",
+  rushingTouchdowns: "TD",
+  longRushing: "LNG",
+  // NFL Receiving
+  receptions: "REC",
+  receivingYards: "YDS",
+  yardsPerReception: "AVG",
+  receivingTouchdowns: "TD",
+  longReception: "LNG",
+  targets: "TGTS",
+  receivingTargets: "TGTS",
+  // NFL Defense
+  totalTackles: "TOT",
+  soloTackles: "SOLO",
+  tacklesForLoss: "TFL",
+  passesDefended: "PD",
+  QBHits: "QBH",
+  defensiveTouchdowns: "TD",
+  // NFL Fumbles
+  fumbles: "FUM",
+  fumblesLost: "LST",
+  fumblesRecovered: "REC",
+  // NFL Kicking
+  "fieldGoalsMade/fieldGoalAttempts": "FG",
+  fieldGoalPct: "FG%",
+  longFieldGoalMade: "LNG",
+  "extraPointsMade/extraPointAttempts": "XP",
+  totalKickingPoints: "PTS",
+  // NFL Punting
+  punts: "PUNTS",
+  puntYards: "YDS",
+  grossAvgPuntYards: "AVG",
+  touchbacks: "TB",
+  puntsInside20: "IN20",
+  longPunt: "LNG",
+  // NFL Returns
+  kickReturns: "RET",
+  kickReturnYards: "YDS",
+  yardsPerKickReturn: "AVG",
+  longKickReturn: "LNG",
+  kickReturnTouchdowns: "TD",
+  puntReturns: "RET",
+  puntReturnYards: "YDS",
+  yardsPerPuntReturn: "AVG",
+  longPuntReturn: "LNG",
+  puntReturnTouchdowns: "TD",
+  // MLB Batting
+  atBats: "AB",
+  runs: "R",
+  hits: "H",
+  doubles: "2B",
+  triples: "3B",
+  homeRuns: "HR",
+  RBIs: "RBI",
+  walks: "BB",
+  strikeouts: "SO",
+  stolenBases: "SB",
+  avg: "AVG",
+  OBP: "OBP",
+  SLG: "SLG",
+  OPS: "OPS",
+  // MLB Pitching
+  inningsPitched: "IP",
+  hitsAllowed: "H",
+  runsAllowed: "R",
+  earnedRuns: "ER",
+  walksAllowed: "BB",
+  pitcherStrikeouts: "SO",
+  homeRunsAllowed: "HR",
+  pitchesThrown: "PC",
+  strikes: "ST",
+  ERA: "ERA",
+  // Basketball
+  minutes: "MIN",
+  fieldGoalsMade: "FGM",
+  fieldGoalsAttempted: "FGA",
+  "fieldGoalsMade-fieldGoalsAttempted": "FG",
+  fieldGoalPct2: "FG%",
+  threePointFieldGoalsMade: "3PM",
+  threePointFieldGoalsAttempted: "3PA",
+  "threePointFieldGoalsMade-threePointFieldGoalsAttempted": "3PT",
+  threePointFieldGoalPct: "3P%",
+  freeThrowsMade: "FTM",
+  freeThrowsAttempted: "FTA",
+  "freeThrowsMade-freeThrowsAttempted": "FT",
+  freeThrowPct: "FT%",
+  rebounds: "REB",
+  offensiveRebounds: "OREB",
+  defensiveRebounds: "DREB",
+  assists: "AST",
+  steals: "STL",
+  blocks: "BLK",
+  turnovers: "TO",
+  fouls: "PF",
+  plusMinus: "+/-",
+  points: "PTS",
+  // Hockey
+  goals: "G",
+  // assists already mapped
+  // points already mapped
+  shots: "SOG",
+  blockedShots: "BLK",
+  timeOnIce: "TOI",
+  faceoffWins: "FOW",
+  faceoffLosses: "FOL",
+  penaltyMinutes: "PIM",
+  // Soccer
+  shotsOnTarget: "SOT",
+  foulsCommitted: "FC",
+  foulsSuffered: "FS",
+  yellowCards: "YC",
+  redCards: "RC",
+  offsides: "OFF",
+  saves: "SV",
+};
+
+// Get abbreviation for a stat key
+function getStatAbbreviation(key: string): string {
+  return STAT_ABBREVIATIONS[key] || key;
+}
+
+// Check if league uses category-based stats (different stats per position)
+function leagueUsesCategoryStats(league: string): boolean {
+  return league === "nfl" || league === "mlb";
+}
+
+function PlayerStatsTable({ players, league }: { players: PlayerStats[]; league: string }) {
   if (players.length === 0) {
     return (
       <div className="text-terminal-muted text-sm">No player stats available</div>
     );
   }
 
-  const columns = NHL_PLAYER_COLUMNS; // For now, default to NHL columns
+  // For sports with category-based stats (NFL, MLB), group by category
+  if (leagueUsesCategoryStats(league)) {
+    // Group players by category
+    const playersByCategory = new Map<string, PlayerStats[]>();
+    for (const player of players) {
+      const category = player.category || "other";
+      if (!playersByCategory.has(category)) {
+        playersByCategory.set(category, []);
+      }
+      playersByCategory.get(category)!.push(player);
+    }
+
+    // If no categories found, fall back to default display
+    if (playersByCategory.size === 0 || (playersByCategory.size === 1 && playersByCategory.has("other"))) {
+      return <PlayerStatsCategoryTable players={players} statKeys={null} league={league} />;
+    }
+
+    return (
+      <div className="space-y-4">
+        {Array.from(playersByCategory.entries()).map(([category, categoryPlayers]) => {
+          // Skip empty categories
+          if (categoryPlayers.length === 0) return null;
+
+          // Get stat keys from first player in category (they all share the same keys)
+          const statKeys = categoryPlayers[0].statKeys || null;
+
+          return (
+            <div key={category}>
+              <div className="text-terminal-muted text-xs uppercase mb-1">
+                {CATEGORY_DISPLAY_NAMES[category] || category}
+              </div>
+              <PlayerStatsCategoryTable
+                players={categoryPlayers}
+                statKeys={statKeys}
+                league={league}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // For sports without categories (NBA, NHL, MLS), show all players in one table
+  // Use statKeys from first player if available, otherwise fall back to league defaults
+  const statKeys = players[0]?.statKeys || null;
+  return <PlayerStatsCategoryTable players={players} statKeys={statKeys} league={league} />;
+}
+
+function PlayerStatsCategoryTable({
+  players,
+  statKeys,
+  league
+}: {
+  players: PlayerStats[];
+  statKeys: string[] | null;
+  league: string;
+}) {
+  // Use dynamic statKeys from ESPN if available, otherwise fall back to hardcoded columns
+  // Apply abbreviation mapping to convert long ESPN keys to short labels
+  const columns: StatColumn[] = statKeys
+    ? statKeys.map(key => ({ key, label: getStatAbbreviation(key), width: "w-12" }))
+    : getPlayerColumnsForLeague(league);
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-xs sm:text-sm">
         <thead>
           <tr className="text-terminal-muted border-b border-terminal-border">
-            <th className="text-left py-1 pr-1 sm:pr-2 whitespace-nowrap">Player</th>
+            <th className="text-left py-1 pr-2 sm:pr-4 whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+              Player
+            </th>
             {columns.map((col) => (
               <th key={col.key} className="text-center py-1 px-1 whitespace-nowrap">
                 {col.label}
@@ -788,23 +1088,27 @@ function PlayerStatsTable({ players, league: _league }: { players: PlayerStats[]
           </tr>
         </thead>
         <tbody>
-          {players.map((player) => (
-            <tr key={player.player.id} className="border-b border-terminal-border/30">
-              <td className="py-1 pr-1 sm:pr-2 whitespace-nowrap">
-                <span className="text-terminal-fg">{player.player.shortName}</span>
-                {player.player.position && (
-                  <span className="text-terminal-muted ml-1 text-xs">
-                    {player.player.position}
-                  </span>
-                )}
-              </td>
-              {columns.map((col) => (
-                <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
-                  {player.stats[col.key] ?? "-"}
+          {players.map((player) => {
+            // Use shortName if available, fall back to displayName or name
+            const playerName = player.player.shortName || player.player.displayName || player.player.name;
+            return (
+              <tr key={player.player.id} className="border-b border-terminal-border/30">
+                <td className="py-1 pr-2 sm:pr-4 whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+                  <span className="text-terminal-fg">{playerName}</span>
+                  {player.player.position && (
+                    <span className="text-terminal-muted ml-1 text-xs">
+                      {player.player.position}
+                    </span>
+                  )}
                 </td>
-              ))}
-            </tr>
-          ))}
+                {columns.map((col) => (
+                  <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
+                    {player.stats[col.key] ?? "-"}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -825,7 +1129,9 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
       <table className="w-full text-xs sm:text-sm">
         <thead>
           <tr className="text-terminal-muted border-b border-terminal-border">
-            <th className="text-left py-1 pr-1 sm:pr-2 whitespace-nowrap">Goalie</th>
+            <th className="text-left py-1 pr-2 sm:pr-4 whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+              Goalie
+            </th>
             <th className="text-center py-1 px-1 whitespace-nowrap">Dec</th>
             {GOALIE_COLUMNS.map((col) => (
               <th key={col.key} className="text-center py-1 px-1 whitespace-nowrap">
@@ -835,23 +1141,28 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
           </tr>
         </thead>
         <tbody>
-          {goalies.map((goalie) => (
-            <tr key={goalie.player.id} className="border-b border-terminal-border/30">
-              <td className="py-1 pr-1 sm:pr-2 text-terminal-fg whitespace-nowrap">{goalie.player.shortName}</td>
-              <td className="text-center py-1 px-1">
-                {goalie.decision && (
-                  <span className={goalie.decision === "W" ? "text-terminal-green" : "text-terminal-red"}>
-                    {goalie.decision}
-                  </span>
-                )}
-              </td>
-              {GOALIE_COLUMNS.map((col) => (
-                <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
-                  {goalie.stats[col.key] ?? "-"}
+          {goalies.map((goalie) => {
+            const goalieName = goalie.player.shortName || goalie.player.displayName || goalie.player.name;
+            return (
+              <tr key={goalie.player.id} className="border-b border-terminal-border/30">
+                <td className="py-1 pr-2 sm:pr-4 text-terminal-fg whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+                  {goalieName}
                 </td>
-              ))}
-            </tr>
-          ))}
+                <td className="text-center py-1 px-1">
+                  {goalie.decision && (
+                    <span className={goalie.decision === "W" ? "text-terminal-green" : "text-terminal-red"}>
+                      {goalie.decision}
+                    </span>
+                  )}
+                </td>
+                {GOALIE_COLUMNS.map((col) => (
+                  <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
+                    {goalie.stats[col.key] ?? "-"}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

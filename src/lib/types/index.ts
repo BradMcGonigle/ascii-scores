@@ -207,6 +207,10 @@ export interface PlayerStats {
   starter: boolean;
   /** Sport-specific stats as key-value pairs */
   stats: Record<string, string | number>;
+  /** Category name (e.g., "passing", "rushing", "batting") - used for sports with position-specific stats */
+  category?: string;
+  /** Stat keys/columns for this category - preserves ESPN's column order */
+  statKeys?: string[];
 }
 
 /**
