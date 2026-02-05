@@ -753,8 +753,10 @@ function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsS
   );
 }
 
-// Hockey stat columns
-const NHL_PLAYER_COLUMNS = [
+// Sport-specific stat columns
+type StatColumn = { key: string; label: string; width: string };
+
+const NHL_PLAYER_COLUMNS: StatColumn[] = [
   { key: "goals", label: "G", width: "w-8" },
   { key: "assists", label: "A", width: "w-8" },
   { key: "points", label: "P", width: "w-8" },
@@ -765,14 +767,80 @@ const NHL_PLAYER_COLUMNS = [
   { key: "timeOnIce", label: "TOI", width: "w-14" },
 ];
 
-function PlayerStatsTable({ players, league: _league }: { players: PlayerStats[]; league: string }) {
+const NBA_PLAYER_COLUMNS: StatColumn[] = [
+  { key: "MIN", label: "MIN", width: "w-10" },
+  { key: "PTS", label: "PTS", width: "w-10" },
+  { key: "REB", label: "REB", width: "w-10" },
+  { key: "AST", label: "AST", width: "w-10" },
+  { key: "STL", label: "STL", width: "w-10" },
+  { key: "BLK", label: "BLK", width: "w-10" },
+  { key: "FG", label: "FG", width: "w-14" },
+  { key: "3PT", label: "3PT", width: "w-14" },
+  { key: "FT", label: "FT", width: "w-14" },
+  { key: "TO", label: "TO", width: "w-10" },
+];
+
+const NFL_PLAYER_COLUMNS: StatColumn[] = [
+  { key: "C/ATT", label: "C/ATT", width: "w-14" },
+  { key: "YDS", label: "YDS", width: "w-12" },
+  { key: "TD", label: "TD", width: "w-10" },
+  { key: "INT", label: "INT", width: "w-10" },
+  { key: "CAR", label: "CAR", width: "w-10" },
+  { key: "REC", label: "REC", width: "w-10" },
+  { key: "TGTS", label: "TGTS", width: "w-10" },
+  { key: "RECYDS", label: "RYDS", width: "w-12" },
+];
+
+const MLB_PLAYER_COLUMNS: StatColumn[] = [
+  { key: "AB", label: "AB", width: "w-10" },
+  { key: "R", label: "R", width: "w-8" },
+  { key: "H", label: "H", width: "w-8" },
+  { key: "RBI", label: "RBI", width: "w-10" },
+  { key: "HR", label: "HR", width: "w-10" },
+  { key: "BB", label: "BB", width: "w-10" },
+  { key: "SO", label: "SO", width: "w-10" },
+  { key: "AVG", label: "AVG", width: "w-12" },
+];
+
+const MLS_PLAYER_COLUMNS: StatColumn[] = [
+  { key: "G", label: "G", width: "w-8" },
+  { key: "A", label: "A", width: "w-8" },
+  { key: "SH", label: "SH", width: "w-10" },
+  { key: "ST", label: "ST", width: "w-10" },
+  { key: "FC", label: "FC", width: "w-10" },
+  { key: "FS", label: "FS", width: "w-10" },
+  { key: "SV", label: "SV", width: "w-10" },
+  { key: "OF", label: "OF", width: "w-10" },
+];
+
+function getPlayerColumnsForLeague(league: string): StatColumn[] {
+  switch (league) {
+    case "nhl":
+      return NHL_PLAYER_COLUMNS;
+    case "nba":
+    case "ncaam":
+    case "ncaaw":
+      return NBA_PLAYER_COLUMNS;
+    case "nfl":
+      return NFL_PLAYER_COLUMNS;
+    case "mlb":
+      return MLB_PLAYER_COLUMNS;
+    case "mls":
+    case "epl":
+      return MLS_PLAYER_COLUMNS;
+    default:
+      return NHL_PLAYER_COLUMNS;
+  }
+}
+
+function PlayerStatsTable({ players, league }: { players: PlayerStats[]; league: string }) {
   if (players.length === 0) {
     return (
       <div className="text-terminal-muted text-sm">No player stats available</div>
     );
   }
 
-  const columns = NHL_PLAYER_COLUMNS; // For now, default to NHL columns
+  const columns = getPlayerColumnsForLeague(league);
 
   return (
     <div className="overflow-x-auto">
