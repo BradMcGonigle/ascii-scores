@@ -833,6 +833,27 @@ function getPlayerColumnsForLeague(league: string): StatColumn[] {
   }
 }
 
+// Category display names for better readability
+const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
+  passing: "Passing",
+  rushing: "Rushing",
+  receiving: "Receiving",
+  fumbles: "Fumbles",
+  defensive: "Defense",
+  interceptions: "Interceptions",
+  kickReturns: "Kick Returns",
+  puntReturns: "Punt Returns",
+  kicking: "Kicking",
+  punting: "Punting",
+  batting: "Batting",
+  pitching: "Pitching",
+};
+
+// Check if league uses category-based stats (different stats per position)
+function leagueUsesCategoryStats(league: string): boolean {
+  return league === "nfl" || league === "mlb";
+}
+
 function PlayerStatsTable({ players, league }: { players: PlayerStats[]; league: string }) {
   if (players.length === 0) {
     return (
@@ -840,7 +861,68 @@ function PlayerStatsTable({ players, league }: { players: PlayerStats[]; league:
     );
   }
 
-  const columns = getPlayerColumnsForLeague(league);
+  // For sports with category-based stats (NFL, MLB), group by category
+  if (leagueUsesCategoryStats(league)) {
+    // Group players by category
+    const playersByCategory = new Map<string, PlayerStats[]>();
+    for (const player of players) {
+      const category = player.category || "other";
+      if (!playersByCategory.has(category)) {
+        playersByCategory.set(category, []);
+      }
+      playersByCategory.get(category)!.push(player);
+    }
+
+    // If no categories found, fall back to default display
+    if (playersByCategory.size === 0 || (playersByCategory.size === 1 && playersByCategory.has("other"))) {
+      return <PlayerStatsCategoryTable players={players} statKeys={null} league={league} />;
+    }
+
+    return (
+      <div className="space-y-4">
+        {Array.from(playersByCategory.entries()).map(([category, categoryPlayers]) => {
+          // Skip empty categories
+          if (categoryPlayers.length === 0) return null;
+
+          // Get stat keys from first player in category (they all share the same keys)
+          const statKeys = categoryPlayers[0].statKeys || null;
+
+          return (
+            <div key={category}>
+              <div className="text-terminal-muted text-xs uppercase mb-1">
+                {CATEGORY_DISPLAY_NAMES[category] || category}
+              </div>
+              <PlayerStatsCategoryTable
+                players={categoryPlayers}
+                statKeys={statKeys}
+                league={league}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // For sports without categories (NBA, NHL, MLS), show all players in one table
+  // Use statKeys from first player if available, otherwise fall back to league defaults
+  const statKeys = players[0]?.statKeys || null;
+  return <PlayerStatsCategoryTable players={players} statKeys={statKeys} league={league} />;
+}
+
+function PlayerStatsCategoryTable({
+  players,
+  statKeys,
+  league
+}: {
+  players: PlayerStats[];
+  statKeys: string[] | null;
+  league: string;
+}) {
+  // Use dynamic statKeys from ESPN if available, otherwise fall back to hardcoded columns
+  const columns: StatColumn[] = statKeys
+    ? statKeys.map(key => ({ key, label: key, width: "w-12" }))
+    : getPlayerColumnsForLeague(league);
 
   return (
     <div className="overflow-x-auto">
