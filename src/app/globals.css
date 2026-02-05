@@ -320,6 +320,21 @@
     border-width: 0;
   }
 
+  /* ASCII responsive line utilities */
+  /* Container for flexible ASCII border lines */
+  .ascii-line {
+    display: flex;
+    line-height: 1;
+  }
+
+  /* Fill element that expands to available width and clips overflow */
+  .ascii-fill {
+    flex: 1 1 0%;
+    overflow: hidden;
+    white-space: nowrap;
+    letter-spacing: 0;
+  }
+
   /* Skip to content link */
   .skip-to-content {
     position: absolute;
