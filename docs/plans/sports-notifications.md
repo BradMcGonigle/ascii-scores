@@ -30,7 +30,7 @@ This plan outlines the architecture and implementation approach for adding user-
 
 ### Recommended Approach: Hybrid Push Architecture
 
-The system uses Web Push API with a lightweight polling backend hosted on Vercel:
+The system uses Web Push API with a lightweight polling backend hosted on Vercel, using Upstash Redis for state storage:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -39,11 +39,11 @@ The system uses Web Push API with a lightweight polling backend hosted on Vercel
 │                                                                              │
 │  ┌─────────────┐      ┌─────────────────┐      ┌─────────────────────────┐  │
 │  │   Browser   │◄────▶│  Service Worker │◄─────│    Web Push Server      │  │
-│  │             │      │  (Background)   │      │    (Vercel Edge/KV)     │  │
+│  │             │      │  (Background)   │      │  (Vercel Edge/Upstash)  │  │
 │  └─────────────┘      └─────────────────┘      └───────────┬─────────────┘  │
 │                                                             │                │
 │  User subscribes to game ─► Subscription stored ─► Server polls ESPN        │
-│                                                             │                │
+│                                    (Upstash Redis)          │                │
 │                                                             ▼                │
 │                                              ┌─────────────────────────────┐ │
 │                                              │  ESPN API (existing)        │ │
@@ -308,9 +308,10 @@ self.addEventListener('notificationclick', (event) => {
 
 **Goal:** Build notification delivery infrastructure
 
-1. **Vercel KV Setup**
-   - Configure Vercel KV for subscription storage
+1. **Upstash Redis Setup**
+   - Configure Upstash Redis for subscription storage
    - Create data models for subscriptions and game state
+   - Install via Vercel Marketplace for easy integration
 
 2. **API Routes**
    - `POST /api/notifications/subscribe`
@@ -373,7 +374,7 @@ self.addEventListener('notificationclick', (event) => {
 ```json
 {
   "dependencies": {
-    "@vercel/kv": "^1.0.0",
+    "@upstash/redis": "^1.34.0",
     "web-push": "^3.6.0"
   }
 }
@@ -382,12 +383,48 @@ self.addEventListener('notificationclick', (event) => {
 ### Environment Variables
 
 ```bash
-VAPID_PUBLIC_KEY=...           # For client subscription
-VAPID_PRIVATE_KEY=...          # For server push sending
-VAPID_SUBJECT=mailto:...       # Contact for push service
-KV_REST_API_URL=...            # Vercel KV endpoint
-KV_REST_API_TOKEN=...          # Vercel KV auth
+VAPID_PUBLIC_KEY=...              # For client subscription
+VAPID_PRIVATE_KEY=...             # For server push sending
+VAPID_SUBJECT=mailto:...          # Contact for push service
+UPSTASH_REDIS_REST_URL=...        # Upstash Redis endpoint
+UPSTASH_REDIS_REST_TOKEN=...      # Upstash Redis auth token
 ```
+
+---
+
+## Cost Estimation
+
+### Upstash Redis Pricing
+
+| Tier | Cost | Includes |
+|------|------|----------|
+| **Free** | $0/month | 500K commands/month, 256MB storage, 10 databases |
+| **Pay-as-You-Go** | Usage-based | $0.20/100K commands (regional) |
+| **Fixed Plans** | $10+/month | Predictable pricing with set limits |
+
+### Expected Usage
+
+For the notification system:
+
+| Operation | Frequency | Commands/Month |
+|-----------|-----------|----------------|
+| Poll active games | Every 30s per game | ~86K/game/day |
+| Store/retrieve subscriptions | Per subscribe action | Minimal |
+| Cache game state | Per poll | ~86K/game/day |
+
+**With smart aggregation** (one poll serves all subscribers to a game), the free tier should handle:
+- ~5 concurrent games being monitored
+- Hundreds of subscribers per game
+
+**Scaling estimate**: At $0.20/100K commands, monitoring 20 games continuously for a month costs ~$10.
+
+### Why Upstash over Vercel KV
+
+- Vercel KV is **no longer available for new projects**
+- Upstash is the recommended replacement (and was the underlying provider)
+- More generous free tier (500K vs 30K commands)
+- Direct Vercel Marketplace integration
+- Same Redis-compatible API
 
 ---
 
@@ -398,7 +435,7 @@ KV_REST_API_TOKEN=...          # Vercel KV auth
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Delivery method | Server-side push | Better UX, works in background |
-| Storage | Vercel KV | Low-latency, Vercel-native, Redis-compatible |
+| Storage | Upstash Redis | Generous free tier (500K commands/mo), Vercel integration, Redis-compatible |
 | Polling interval | 30 seconds | Matches existing cache TTL; faster would strain API |
 | Subscription scope | Per-game | Simpler than per-team; can extend later |
 
@@ -445,7 +482,7 @@ KV_REST_API_TOKEN=...          # Vercel KV auth
 
 Create `docs/decisions/010-sports-notifications.md`:
 - Document push vs pull decision
-- Explain Vercel KV choice
+- Explain Upstash Redis choice
 - Detail event detection approach
 
 ### Updates Needed
