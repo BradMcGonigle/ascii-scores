@@ -1065,7 +1065,9 @@ function PlayerStatsCategoryTable({
       <table className="w-full text-xs sm:text-sm">
         <thead>
           <tr className="text-terminal-muted border-b border-terminal-border">
-            <th className="text-left py-1 pr-1 sm:pr-2 whitespace-nowrap">Player</th>
+            <th className="text-left py-1 pr-2 sm:pr-4 whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+              Player
+            </th>
             {columns.map((col) => (
               <th key={col.key} className="text-center py-1 px-1 whitespace-nowrap">
                 {col.label}
@@ -1079,7 +1081,7 @@ function PlayerStatsCategoryTable({
             const playerName = player.player.shortName || player.player.displayName || player.player.name;
             return (
               <tr key={player.player.id} className="border-b border-terminal-border/30">
-                <td className="py-1 pr-1 sm:pr-2 whitespace-nowrap">
+                <td className="py-1 pr-2 sm:pr-4 whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
                   <span className="text-terminal-fg">{playerName}</span>
                   {player.player.position && (
                     <span className="text-terminal-muted ml-1 text-xs">
@@ -1115,7 +1117,9 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
       <table className="w-full text-xs sm:text-sm">
         <thead>
           <tr className="text-terminal-muted border-b border-terminal-border">
-            <th className="text-left py-1 pr-1 sm:pr-2 whitespace-nowrap">Goalie</th>
+            <th className="text-left py-1 pr-2 sm:pr-4 whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+              Goalie
+            </th>
             <th className="text-center py-1 px-1 whitespace-nowrap">Dec</th>
             {GOALIE_COLUMNS.map((col) => (
               <th key={col.key} className="text-center py-1 px-1 whitespace-nowrap">
@@ -1125,23 +1129,28 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
           </tr>
         </thead>
         <tbody>
-          {goalies.map((goalie) => (
-            <tr key={goalie.player.id} className="border-b border-terminal-border/30">
-              <td className="py-1 pr-1 sm:pr-2 text-terminal-fg whitespace-nowrap">{goalie.player.shortName}</td>
-              <td className="text-center py-1 px-1">
-                {goalie.decision && (
-                  <span className={goalie.decision === "W" ? "text-terminal-green" : "text-terminal-red"}>
-                    {goalie.decision}
-                  </span>
-                )}
-              </td>
-              {GOALIE_COLUMNS.map((col) => (
-                <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
-                  {goalie.stats[col.key] ?? "-"}
+          {goalies.map((goalie) => {
+            const goalieName = goalie.player.shortName || goalie.player.displayName || goalie.player.name;
+            return (
+              <tr key={goalie.player.id} className="border-b border-terminal-border/30">
+                <td className="py-1 pr-2 sm:pr-4 text-terminal-fg whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+                  {goalieName}
                 </td>
-              ))}
-            </tr>
-          ))}
+                <td className="text-center py-1 px-1">
+                  {goalie.decision && (
+                    <span className={goalie.decision === "W" ? "text-terminal-green" : "text-terminal-red"}>
+                      {goalie.decision}
+                    </span>
+                  )}
+                </td>
+                {GOALIE_COLUMNS.map((col) => (
+                  <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
+                    {goalie.stats[col.key] ?? "-"}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
