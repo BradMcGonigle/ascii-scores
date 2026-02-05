@@ -101,29 +101,30 @@ export function GameDetailDisplay({ summary }: GameDetailDisplayProps) {
 
 /**
  * Get the appropriate border style based on game status
+ * All statuses use double-line borders with color differentiation
  */
 function getBorderStyle(status: GameSummary["game"]["status"]) {
+  const doubleBorder = {
+    corners: { tl: "╔", tr: "╗", bl: "╚", br: "╝", ml: "╠", mr: "╣" },
+    horizontal: "═",
+    vertical: "║",
+  };
+
   switch (status) {
     case "live":
       return {
-        corners: { tl: "╔", tr: "╗", bl: "╚", br: "╝", ml: "╠", mr: "╣" },
-        horizontal: "═",
-        vertical: "║",
+        ...doubleBorder,
         textClass: "text-terminal-green",
       };
     case "final":
       return {
-        corners: { tl: "┌", tr: "┐", bl: "└", br: "┘", ml: "├", mr: "┤" },
-        horizontal: "─",
-        vertical: "│",
+        ...doubleBorder,
         textClass: "text-terminal-border",
       };
     case "scheduled":
     default:
       return {
-        corners: { tl: "┏", tr: "┓", bl: "┗", br: "┛", ml: "┣", mr: "┫" },
-        horizontal: "━",
-        vertical: "┃",
+        ...doubleBorder,
         textClass: "text-terminal-yellow",
       };
   }
@@ -395,14 +396,14 @@ function PeriodScoresTable({
     <div className="font-mono text-sm">
       {/* Top border */}
       <div className="flex text-terminal-border" aria-hidden="true">
-        <span>┌</span>
-        <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(200)}</span>
-        <span>┐</span>
+        <span>╔</span>
+        <span className="flex-1 overflow-hidden whitespace-nowrap">{"═".repeat(200)}</span>
+        <span>╗</span>
       </div>
 
       {/* Header row */}
       <div className="flex text-terminal-muted py-1">
-        <span className="text-terminal-border">│</span>
+        <span className="text-terminal-border">║</span>
         <span className="w-12 sm:w-16 shrink-0 px-2">Team</span>
         {periods.map((p) => (
           <span key={p} className="w-8 sm:w-10 shrink-0 text-center">
@@ -411,19 +412,19 @@ function PeriodScoresTable({
         ))}
         <span className="w-10 sm:w-12 shrink-0 text-center font-bold">T</span>
         <span className="flex-1" />
-        <span className="text-terminal-border">│</span>
+        <span className="text-terminal-border">║</span>
       </div>
 
       {/* Divider */}
       <div className="flex text-terminal-border" aria-hidden="true">
-        <span>├</span>
-        <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(200)}</span>
-        <span>┤</span>
+        <span>╠</span>
+        <span className="flex-1 overflow-hidden whitespace-nowrap">{"═".repeat(200)}</span>
+        <span>╣</span>
       </div>
 
       {/* Away team row */}
       <div className="flex text-terminal-fg py-1">
-        <span className="text-terminal-border">│</span>
+        <span className="text-terminal-border">║</span>
         <span className="w-12 sm:w-16 shrink-0 px-2">{awayTeam}</span>
         {periods.map((p) => {
           const score = periodScores.away.find((ps) => ps.period === p)?.score ?? "-";
@@ -435,12 +436,12 @@ function PeriodScoresTable({
         })}
         <span className="w-10 sm:w-12 shrink-0 text-center font-bold">{awayScore}</span>
         <span className="flex-1" />
-        <span className="text-terminal-border">│</span>
+        <span className="text-terminal-border">║</span>
       </div>
 
       {/* Home team row */}
       <div className="flex text-terminal-fg py-1">
-        <span className="text-terminal-border">│</span>
+        <span className="text-terminal-border">║</span>
         <span className="w-12 sm:w-16 shrink-0 px-2">{homeTeam}</span>
         {periods.map((p) => {
           const score = periodScores.home.find((ps) => ps.period === p)?.score ?? "-";
@@ -452,14 +453,14 @@ function PeriodScoresTable({
         })}
         <span className="w-10 sm:w-12 shrink-0 text-center font-bold">{homeScore}</span>
         <span className="flex-1" />
-        <span className="text-terminal-border">│</span>
+        <span className="text-terminal-border">║</span>
       </div>
 
       {/* Bottom border */}
       <div className="flex text-terminal-border" aria-hidden="true">
-        <span>└</span>
-        <span className="flex-1 overflow-hidden whitespace-nowrap">{"─".repeat(200)}</span>
-        <span>┘</span>
+        <span>╚</span>
+        <span className="flex-1 overflow-hidden whitespace-nowrap">{"═".repeat(200)}</span>
+        <span>╝</span>
       </div>
     </div>
   );
