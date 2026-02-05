@@ -4,6 +4,7 @@ import path from "path";
 export interface ChangelogChange {
   type: "feat" | "fix" | "refactor" | "chore" | "docs" | "style" | "perf" | "revert";
   description: string;
+  details?: string[];
 }
 
 export interface ChangelogEntry {
@@ -57,6 +58,7 @@ export function parseChangelog(): ChangelogEntry[] {
   const entries: ChangelogEntry[] = [];
   let currentVersion: string | null = null;
   let currentChanges: ChangelogChange[] = [];
+  let currentChange: ChangelogChange | null = null;
 
   for (const line of lines) {
     // Match version headers like "## 0.21.0"
@@ -71,13 +73,28 @@ export function parseChangelog(): ChangelogEntry[] {
       }
       currentVersion = versionMatch[1];
       currentChanges = [];
+      currentChange = null;
       continue;
     }
 
     // Match change items like "- feat: description"
     const changeMatch = line.match(/^- (.+)$/);
     if (changeMatch && currentVersion) {
-      currentChanges.push(parseChangeType(changeMatch[1]));
+      currentChange = parseChangeType(changeMatch[1]);
+      currentChanges.push(currentChange);
+      continue;
+    }
+
+    // Collect indented detail lines under the current change
+    if (currentChange && currentVersion && line.match(/^ {2,}/)) {
+      const detailLine = line.replace(/^ {2,}/, "");
+      if (!currentChange.details) {
+        currentChange.details = [];
+      }
+      currentChange.details.push(detailLine);
+    } else if (line.trim() !== "" && !line.match(/^###/)) {
+      // Non-indented, non-empty, non-section-header line ends the current change
+      currentChange = null;
     }
   }
 

@@ -20,6 +20,42 @@ const TYPE_LABELS: Record<ChangelogEntry["changes"][0]["type"], { label: string;
   revert: { label: "REVERT", color: "text-terminal-red" },
 };
 
+function formatDetailText(text: string) {
+  // Strip markdown bold markers for display
+  return text.replace(/\*\*/g, "");
+}
+
+function ChangeDetails({ details }: { details: string[] }) {
+  return (
+    <div className="mt-2 ml-14 space-y-1 text-xs text-terminal-muted">
+      {details.map((line, index) => {
+        const key = `${index}-${line.slice(0, 40)}`;
+        if (line.startsWith("- ")) {
+          return (
+            <div key={key} className="flex items-start gap-2">
+              <span className="text-terminal-border shrink-0">·</span>
+              <span>{formatDetailText(line.slice(2))}</span>
+            </div>
+          );
+        }
+        if (line.startsWith("### ")) {
+          return (
+            <div key={key} className="text-terminal-fg font-bold mt-2">
+              {line.slice(4)}
+            </div>
+          );
+        }
+        if (line.trim() === "") {
+          return null;
+        }
+        return (
+          <p key={key}>{formatDetailText(line)}</p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ChangelogPage() {
   const changelog = parseChangelog();
 
@@ -80,15 +116,20 @@ export default function ChangelogPage() {
                   </div>
 
                   {/* Changes list */}
-                  <ul className="space-y-2 text-sm">
+                  <ul className="space-y-4 text-sm">
                     {entry.changes.map((change) => {
                       const typeInfo = TYPE_LABELS[change.type];
                       return (
-                        <li key={`${change.type}-${change.description}`} className="flex items-start gap-2">
-                          <span className={`${typeInfo.color} font-bold shrink-0`}>
-                            [{typeInfo.label}]
-                          </span>
-                          <span className="text-terminal-fg">{change.description}</span>
+                        <li key={`${change.type}-${change.description}`}>
+                          <div className="flex items-start gap-2">
+                            <span className={`${typeInfo.color} font-bold shrink-0`}>
+                              [{typeInfo.label}]
+                            </span>
+                            <span className="text-terminal-fg">{change.description}</span>
+                          </div>
+                          {change.details && change.details.length > 0 && (
+                            <ChangeDetails details={change.details} />
+                          )}
                         </li>
                       );
                     })}
