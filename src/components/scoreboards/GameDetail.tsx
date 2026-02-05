@@ -874,6 +874,7 @@ const STAT_ABBREVIATIONS: Record<string, string> = {
   receivingTouchdowns: "TD",
   longReception: "LNG",
   targets: "TGTS",
+  receivingTargets: "TGTS",
   // NFL Defense
   totalTackles: "TOT",
   soloTackles: "SOLO",
