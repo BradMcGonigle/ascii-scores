@@ -921,10 +921,9 @@ const STAT_ABBREVIATIONS: Record<string, string> = {
   yardsPerPuntReturn: "AVG",
   longPuntReturn: "LNG",
   puntReturnTouchdowns: "TD",
-  // MLB Batting
+  // MLB Batting (ESPN uses uppercase keys for MLB)
   atBats: "AB",
   runs: "R",
-  hits: "H",
   doubles: "2B",
   triples: "3B",
   homeRuns: "HR",
@@ -964,23 +963,31 @@ const STAT_ABBREVIATIONS: Record<string, string> = {
   rebounds: "REB",
   offensiveRebounds: "OREB",
   defensiveRebounds: "DREB",
-  assists: "AST",
   steals: "STL",
   blocks: "BLK",
   turnovers: "TO",
   fouls: "PF",
   plusMinus: "+/-",
   points: "PTS",
-  // Hockey
+  // Hockey (lowercase keys from ESPN)
   goals: "G",
-  // assists already mapped
-  // points already mapped
+  assists: "A",
+  hits: "HIT",
   shots: "SOG",
   blockedShots: "BLK",
   timeOnIce: "TOI",
   faceoffWins: "FOW",
   faceoffLosses: "FOL",
   penaltyMinutes: "PIM",
+  powerPlayGoals: "PPG",
+  powerPlayAssists: "PPA",
+  shortHandedGoals: "SHG",
+  shortHandedAssists: "SHA",
+  gameWinningGoals: "GWG",
+  overtimeGoals: "OTG",
+  shotPct: "S%",
+  faceoffPct: "FO%",
+  avgTimeOnIce: "ATOI",
   // Soccer
   shotsOnTarget: "SOT",
   foulsCommitted: "FC",
