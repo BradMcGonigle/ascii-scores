@@ -218,7 +218,10 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
   );
 
   // Get individual round scores from linescores
-  const rounds = competitor.linescores?.map((ls) => ls.value) ?? [];
+  // Filter out undefined/null values to avoid NaN in calculations
+  const rounds = competitor.linescores
+    ?.map((ls) => ls.value)
+    .filter((v): v is number => v !== undefined && v !== null && !isNaN(v)) ?? [];
 
   // Get thru value
   let thru: string | undefined;
@@ -226,7 +229,7 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
     thru = competitor.status.thru === 18 ? "F" : competitor.status.thru.toString();
   }
 
-  // Calculate total strokes from rounds
+  // Calculate total strokes from completed rounds only
   const totalStrokes = rounds.length > 0 ? rounds.reduce((sum, r) => sum + r, 0) : undefined;
 
   // Get earnings (directly from competitor or from statistics)
