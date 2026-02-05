@@ -716,6 +716,17 @@ interface PlayerStatsSectionProps {
 }
 
 function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsSectionProps) {
+  // Check if we have any player stats to show
+  const hasAwayPlayers = awayBoxscore.players.length > 0;
+  const hasHomePlayers = homeBoxscore.players.length > 0;
+  const hasAwayGoalies = awayBoxscore.goalies && awayBoxscore.goalies.length > 0;
+  const hasHomeGoalies = homeBoxscore.goalies && homeBoxscore.goalies.length > 0;
+
+  // Don't render section if no player stats available (common for soccer/EPL)
+  if (!hasAwayPlayers && !hasHomePlayers && !hasAwayGoalies && !hasHomeGoalies) {
+    return null;
+  }
+
   return (
     <div className="font-mono min-w-0">
       <SectionHeader title="PLAYER STATISTICS" />
@@ -727,10 +738,10 @@ function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsS
             {awayBoxscore.team.displayName}
           </div>
           <PlayerStatsTable players={awayBoxscore.players} league={league} />
-          {awayBoxscore.goalies && awayBoxscore.goalies.length > 0 && (
+          {hasAwayGoalies && (
             <div className="mt-4">
               <div className="text-terminal-muted text-sm mb-2">Goalies</div>
-              <GoalieStatsTable goalies={awayBoxscore.goalies} />
+              <GoalieStatsTable goalies={awayBoxscore.goalies!} />
             </div>
           )}
         </div>
@@ -741,10 +752,10 @@ function PlayerStatsSection({ homeBoxscore, awayBoxscore, league }: PlayerStatsS
             {homeBoxscore.team.displayName}
           </div>
           <PlayerStatsTable players={homeBoxscore.players} league={league} />
-          {homeBoxscore.goalies && homeBoxscore.goalies.length > 0 && (
+          {hasHomeGoalies && (
             <div className="mt-4">
               <div className="text-terminal-muted text-sm mb-2">Goalies</div>
-              <GoalieStatsTable goalies={homeBoxscore.goalies} />
+              <GoalieStatsTable goalies={homeBoxscore.goalies!} />
             </div>
           )}
         </div>
