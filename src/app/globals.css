@@ -17,6 +17,7 @@
   --color-terminal-magenta: var(--theme-magenta);
   --color-terminal-border: var(--theme-border);
   --color-terminal-muted: var(--theme-muted);
+  --color-terminal-zebra: var(--theme-zebra);
 
   /* Phosphor glow colors */
   --color-glow-green: var(--theme-glow-green);
@@ -53,6 +54,7 @@
   --theme-magenta: #ff00ff;
   --theme-border: #30363d; /* Increased from #1a1f29 for 3:1 contrast ratio (WCAG AA) */
   --theme-muted: #8b949e; /* Increased from #5c6370 for 5.5:1 contrast ratio (WCAG AA) */
+  --theme-zebra: #0e1218; /* Opaque equivalent of border/10 over bg for table striping */
   --theme-glow-green: #00ff41;
   --theme-glow-amber: #ffb000;
   --theme-glow-blue: #00d4ff;
@@ -73,6 +75,7 @@
   --theme-magenta: #c026d3;
   --theme-border: #9ca3af; /* Increased from #d1d5db for 3:1 contrast ratio (WCAG AA) */
   --theme-muted: #57606a; /* Darkened from #6b7280 for 6:1 contrast ratio (WCAG AA) */
+  --theme-zebra: #ecede9; /* Opaque equivalent of border/10 over bg for table striping */
   --theme-glow-green: #059669;
   --theme-glow-amber: #d97706;
   --theme-glow-blue: #0284c7;
