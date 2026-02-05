@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, type MouseEvent } from "react";
+import { useCallback, useState, useEffect, type MouseEvent } from "react";
 import { useNotifications } from "@/components/notifications";
 import type { GameStatus } from "@/lib/types";
 
@@ -32,10 +32,16 @@ export function GameCardNotificationButton({
   } = useNotifications();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const isSubscribed = isSubscribedToGame(gameId);
 
   // Only show for scheduled or live games
   const isAvailable = gameStatus === "scheduled" || gameStatus === "live";
+
+  // Wait for client-side mount to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleClick = useCallback(
     async (e: MouseEvent) => {
@@ -44,6 +50,17 @@ export function GameCardNotificationButton({
       e.stopPropagation();
 
       if (isLoading) return;
+
+      // Check if notifications are supported
+      if (!isSupported) {
+        // Show a helpful message for unsupported browsers
+        alert(
+          "Push notifications require this site to be installed as an app. " +
+            "On iOS: tap Share → Add to Home Screen. " +
+            "On Android: tap the menu → Install app."
+        );
+        return;
+      }
 
       setIsLoading(true);
       try {
@@ -58,6 +75,7 @@ export function GameCardNotificationButton({
     },
     [
       isLoading,
+      isSupported,
       isSubscribed,
       gameId,
       league,
@@ -68,12 +86,17 @@ export function GameCardNotificationButton({
     ]
   );
 
-  // Don't render if notifications aren't supported or game has ended
-  if (!isSupported || !isAvailable) {
+  // Don't render until mounted (prevents hydration mismatch)
+  if (!mounted) {
     return null;
   }
 
-  // Don't render if permission was denied
+  // Don't render if game has ended
+  if (!isAvailable) {
+    return null;
+  }
+
+  // Don't render if permission was explicitly denied
   if (permission === "denied") {
     return null;
   }
