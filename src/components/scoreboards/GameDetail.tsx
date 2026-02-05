@@ -1124,12 +1124,14 @@ function PlayerStatsCategoryTable({
           </tr>
         </thead>
         <tbody>
-          {players.map((player) => {
+          {players.map((player, index) => {
             // Use shortName if available, fall back to displayName or name
             const playerName = player.player.shortName || player.player.displayName || player.player.name;
+            const isEvenRow = index % 2 === 0;
+            const rowBgClass = isEvenRow ? "bg-terminal-bg" : "bg-terminal-border/10";
             return (
-              <tr key={player.player.id} className="border-b border-terminal-border/30">
-                <td className="py-1 pr-2 sm:pr-4 whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+              <tr key={player.player.id} className={`border-b border-terminal-border/30 ${rowBgClass}`}>
+                <td className={`py-1 pr-2 sm:pr-4 whitespace-nowrap sticky left-0 ${rowBgClass} z-10`}>
                   <span className="text-terminal-fg">{playerName}</span>
                   {player.player.position && (
                     <span className="text-terminal-muted ml-1 text-xs">
@@ -1177,11 +1179,13 @@ function GoalieStatsTable({ goalies }: { goalies: GoalieStats[] }) {
           </tr>
         </thead>
         <tbody>
-          {goalies.map((goalie) => {
+          {goalies.map((goalie, index) => {
             const goalieName = goalie.player.shortName || goalie.player.displayName || goalie.player.name;
+            const isEvenRow = index % 2 === 0;
+            const rowBgClass = isEvenRow ? "bg-terminal-bg" : "bg-terminal-border/10";
             return (
-              <tr key={goalie.player.id} className="border-b border-terminal-border/30">
-                <td className="py-1 pr-2 sm:pr-4 text-terminal-fg whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+              <tr key={goalie.player.id} className={`border-b border-terminal-border/30 ${rowBgClass}`}>
+                <td className={`py-1 pr-2 sm:pr-4 text-terminal-fg whitespace-nowrap sticky left-0 ${rowBgClass} z-10`}>
                   {goalieName}
                 </td>
                 <td className="text-center py-1 px-1">
