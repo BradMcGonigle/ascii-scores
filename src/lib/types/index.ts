@@ -115,10 +115,15 @@ export interface F1Driver {
   position: number;
   driverNumber: number;
   driverCode: string;
+  driverName?: string;
   teamName: string;
   gap?: string;
   interval?: string;
   lastLapTime?: string;
+  fastestLap?: string;
+  lapsCompleted?: number;
+  pitStops?: number;
+  currentTyre?: string;
   status: "running" | "pit" | "out" | "finished";
 }
 

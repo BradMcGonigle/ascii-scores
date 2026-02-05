@@ -1,125 +1,123 @@
 import type { F1Standings } from "@/lib/types";
-import { getStatusClass, getStatusText, padString } from "@/lib/utils/format";
+import { getStatusClass, getStatusText } from "@/lib/utils/format";
 
 interface F1StandingsProps {
   standings: F1Standings;
 }
 
 /**
- * Displays F1 session standings in ASCII table format
+ * Displays F1 session standings in a responsive table format
+ * Shows different columns based on session type (matching ESPN layout)
  */
 export function F1StandingsDisplay({ standings }: F1StandingsProps) {
   const { session } = standings;
   const statusClass = getStatusClass(session.status);
 
+  // Determine session type for column layout
+  const sessionName = session.name?.toLowerCase() ?? "";
+  const isRace = sessionName.includes("race") && !sessionName.includes("sprint");
+  const isSprint = sessionName.includes("sprint") && !sessionName.includes("shootout");
+  const isPractice = sessionName.includes("practice") || sessionName.includes("fp");
+
+  const getColumnCount = () => {
+    if (isRace) return 7;
+    if (isSprint) return 6;
+    return 5;
+  };
+
   return (
-    <div className="font-mono overflow-x-auto">
-      <div className="w-full">
+    <div className="font-mono">
       {/* Session header */}
-      <div className="mb-4">
-        <div className="text-terminal-border" aria-hidden="true">
-          ╔══════════════════════════════════════════════════════════╗
+      <div className="mb-3 border-b border-terminal-border pb-2">
+        <div className="text-terminal-fg font-bold">
+          {session.name} - {session.circuitName}
         </div>
-        <div>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-          <span className="text-terminal-fg px-2">
-            {padString(`${session.name} - ${session.circuitName}`, 56)}
-          </span>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-        </div>
-        <div>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-          <span className={`${statusClass} px-2`}>
-            {padString(getStatusText(session.status), 56)}
-          </span>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-        </div>
-        <div className="text-terminal-border" aria-hidden="true">
-          ╠══════════════════════════════════════════════════════════╣
-        </div>
+        <div className={`${statusClass} text-sm`}>{getStatusText(session.status)}</div>
       </div>
 
       {/* Standings table */}
-      <div role="table" aria-label="F1 standings">
-        {/* Header */}
-        <div className="text-terminal-cyan" role="row">
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-          <span role="columnheader">{padString("POS", 4)}</span>
-          <span className="text-terminal-border" aria-hidden="true">│</span>
-          <span role="columnheader">{padString("DRIVER", 6)}</span>
-          <span className="text-terminal-border" aria-hidden="true">│</span>
-          <span role="columnheader">{padString("TEAM", 25)}</span>
-          <span className="text-terminal-border" aria-hidden="true">│</span>
-          <span role="columnheader">{padString("GAP", 10)}</span>
-          <span className="text-terminal-border" aria-hidden="true">│</span>
-          <span role="columnheader">{padString("STATUS", 6)}</span>
-          <span className="text-terminal-border" aria-hidden="true">║</span>
-        </div>
-        <div className="text-terminal-border" aria-hidden="true">
-          ╠════╪══════╪═════════════════════════╪══════════╪══════╣
-        </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs sm:text-sm" aria-label="F1 standings">
+          <thead>
+            <tr className="text-terminal-cyan border-b border-terminal-border">
+              <th className="text-center py-1 px-2 whitespace-nowrap w-10">POS</th>
+              <th className="text-left py-1 px-2 whitespace-nowrap sticky left-0 bg-terminal-bg z-10">
+                DRIVER
+              </th>
+              <th className="text-left py-1 px-2 whitespace-nowrap hidden sm:table-cell">TEAM</th>
+              <th className="text-right py-1 px-2 whitespace-nowrap">
+                {isRace || isSprint ? "RACE TIME" : isPractice ? "BEST TIME" : "TIME"}
+              </th>
+              <th className="text-center py-1 px-2 whitespace-nowrap">LAPS</th>
+              {isRace && <th className="text-center py-1 px-2 whitespace-nowrap">PITS</th>}
+              {(isRace || isSprint) && (
+                <th className="text-right py-1 px-2 whitespace-nowrap">FASTEST LAP</th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {session.drivers.length > 0 ? (
+              session.drivers.map((driver, index) => {
+                const isEvenRow = index % 2 === 0;
+                const rowBg = isEvenRow ? "bg-terminal-bg" : "bg-terminal-zebra";
+                const driverDisplay = driver.driverName || driver.driverCode;
 
-        {/* Driver rows */}
-        {session.drivers.length > 0 ? (
-          session.drivers.map((driver) => {
-            const positionLabel = driver.position <= 3 ? ` (podium position)` : '';
-            const statusLabel = driver.status === "pit"
-              ? " - In pit lane"
-              : driver.status === "out"
-              ? " - Out of session"
-              : " - On track";
+                const timeDisplay =
+                  driver.position === 1 ? driver.fastestLap ?? "-" : driver.gap ?? "-";
 
-            return (
-              <div key={driver.driverNumber} role="row">
-                <span className="text-terminal-border" aria-hidden="true">║</span>
-                <span role="cell" className={driver.position <= 3 ? "text-terminal-green" : ""}>
-                  <span className="sr-only">Position {driver.position}{positionLabel}</span>
-                  <span aria-hidden="true">{padString(driver.position.toString(), 4, "right")}</span>
-                </span>
-                <span className="text-terminal-border" aria-hidden="true">│</span>
-                <span role="cell">{padString(driver.driverCode, 6)}</span>
-                <span className="text-terminal-border" aria-hidden="true">│</span>
-                <span role="cell" className="text-terminal-muted">
-                  {padString(driver.teamName, 25)}
-                </span>
-                <span className="text-terminal-border" aria-hidden="true">│</span>
-                <span role="cell">{padString(driver.gap ?? "-", 10)}</span>
-                <span className="text-terminal-border" aria-hidden="true">│</span>
-                <span
-                  role="cell"
-                  className={
-                    driver.status === "pit"
-                      ? "text-terminal-yellow"
-                      : driver.status === "out"
-                      ? "text-terminal-red"
-                      : ""
-                  }
-                >
-                  <span className="sr-only">{statusLabel}</span>
-                  <span aria-hidden="true">{padString(driver.status.toUpperCase(), 6)}</span>
-                </span>
-                <span className="text-terminal-border" aria-hidden="true">║</span>
-              </div>
-            );
-          })
-        ) : (
-          <div role="row" className="text-terminal-muted">
-            <span className="text-terminal-border" aria-hidden="true">║</span>
-            <span role="cell">{padString("No position data available", 56, "center")}</span>
-            <span className="text-terminal-border" aria-hidden="true">║</span>
-          </div>
-        )}
-
-        {/* Bottom border */}
-        <div className="text-terminal-border" aria-hidden="true">
-          ╚══════════════════════════════════════════════════════════╝
-        </div>
+                return (
+                  <tr
+                    key={driver.driverNumber}
+                    className={`border-b border-terminal-border/30 ${rowBg}`}
+                  >
+                    <td
+                      className={`text-center py-1 px-2 ${
+                        driver.position <= 3 ? "text-terminal-green font-bold" : "text-terminal-fg"
+                      }`}
+                    >
+                      <span className="sr-only">Position </span>
+                      {driver.position}
+                      {driver.position <= 3 && <span className="sr-only"> (podium)</span>}
+                    </td>
+                    <td className={`py-1 px-2 whitespace-nowrap sticky left-0 ${rowBg} z-10`}>
+                      <span className="text-terminal-fg font-medium">{driverDisplay}</span>
+                    </td>
+                    <td className="py-1 px-2 whitespace-nowrap text-terminal-muted hidden sm:table-cell">
+                      {driver.teamName}
+                    </td>
+                    <td className="text-right py-1 px-2 whitespace-nowrap text-terminal-fg">
+                      {timeDisplay}
+                    </td>
+                    <td className="text-center py-1 px-2 whitespace-nowrap text-terminal-fg">
+                      {driver.lapsCompleted ?? "-"}
+                    </td>
+                    {isRace && (
+                      <td className="text-center py-1 px-2 whitespace-nowrap text-terminal-fg">
+                        {driver.pitStops ?? 0}
+                      </td>
+                    )}
+                    {(isRace || isSprint) && (
+                      <td className="text-right py-1 px-2 whitespace-nowrap text-terminal-muted">
+                        {driver.fastestLap ?? "--"}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={getColumnCount()} className="text-center py-4 text-terminal-muted">
+                  No position data available
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Last updated */}
       <div className="text-terminal-muted text-sm text-center pt-4">
         Last updated: {standings.lastUpdated.toLocaleTimeString()}
-      </div>
       </div>
     </div>
   );
