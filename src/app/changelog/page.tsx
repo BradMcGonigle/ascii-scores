@@ -75,8 +75,8 @@ export default function ChangelogPage() {
                   </h2>
 
                   {/* Divider */}
-                  <div className="text-terminal-border text-xs mb-4" aria-hidden="true">
-                    ────────────────────────────────────────────────────
+                  <div className="ascii-line text-terminal-border text-xs mb-4" aria-hidden="true">
+                    <span className="ascii-fill">{"─".repeat(200)}</span>
                   </div>
 
                   {/* Changes list */}

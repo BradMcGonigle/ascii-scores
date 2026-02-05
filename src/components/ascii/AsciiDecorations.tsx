@@ -4,6 +4,7 @@
 
 interface AsciiDividerProps {
   variant?: "simple" | "double" | "fancy" | "circuit" | "wave" | "dots" | "arrows" | "stars";
+  /** Fixed width in characters. If not provided, divider will be responsive and fill available width. */
   width?: number;
   className?: string;
 }
@@ -20,23 +21,39 @@ const DIVIDER_PATTERNS = {
 };
 
 /**
- * Renders a decorative ASCII divider line
+ * Renders a decorative ASCII divider line.
+ * By default, uses responsive CSS-based width that fills available space.
+ * Pass a width prop for fixed character width (legacy behavior).
  */
 export function AsciiDivider({
   variant = "simple",
-  width = 60,
+  width,
   className = "",
 }: AsciiDividerProps) {
   const pattern = DIVIDER_PATTERNS[variant];
-  const repeatCount = Math.ceil(width / pattern.length);
-  const line = pattern.repeat(repeatCount).slice(0, width);
 
+  // Fixed width mode (legacy behavior)
+  if (width !== undefined) {
+    const repeatCount = Math.ceil(width / pattern.length);
+    const line = pattern.repeat(repeatCount).slice(0, width);
+
+    return (
+      <div
+        className={`font-mono text-terminal-border ${className}`}
+        aria-hidden="true"
+      >
+        {line}
+      </div>
+    );
+  }
+
+  // Responsive mode - fills available width using CSS
   return (
     <div
-      className={`font-mono text-terminal-border ${className}`}
+      className={`ascii-line font-mono text-terminal-border ${className}`}
       aria-hidden="true"
     >
-      {line}
+      <span className="ascii-fill">{pattern.repeat(200)}</span>
     </div>
   );
 }

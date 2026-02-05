@@ -30,31 +30,32 @@ const DETAIL_SUPPORTED_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "nca
 
 /**
  * Get the appropriate border style based on game status
+ * All statuses use double-line borders with color differentiation
  */
 function getBorderStyle(status: Game["status"]) {
+  const doubleBorder = {
+    corners: { tl: "╔", tr: "╗", bl: "╚", br: "╝", ml: "╠", mr: "╣" },
+    horizontal: "═",
+    side: "║",
+  };
+
   switch (status) {
     case "live":
       return {
-        corners: { tl: "╔", tr: "╗", bl: "╚", br: "╝", ml: "╠", mr: "╣" },
-        horizontal: "═",
-        side: "║",
+        ...doubleBorder,
         borderClass: "border-terminal-green/70",
         textClass: "text-terminal-green",
       };
     case "final":
       return {
-        corners: { tl: "┌", tr: "┐", bl: "└", br: "┘", ml: "├", mr: "┤" },
-        horizontal: "─",
-        side: "│",
+        ...doubleBorder,
         borderClass: "border-terminal-border",
         textClass: "text-terminal-border",
       };
     case "scheduled":
     default:
       return {
-        corners: { tl: "┏", tr: "┓", bl: "┗", br: "┛", ml: "┣", mr: "┫" },
-        horizontal: "━",
-        side: "┃",
+        ...doubleBorder,
         borderClass: "border-terminal-yellow/50",
         textClass: "text-terminal-yellow",
       };
