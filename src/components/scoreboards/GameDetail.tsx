@@ -860,147 +860,176 @@ const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
   pitching: "Pitching",
 };
 
-// ESPN stat key to abbreviation mapping
-const STAT_ABBREVIATIONS: Record<string, string> = {
-  // NFL Passing
-  "completions/passingAttempts": "C/ATT",
-  passingYards: "YDS",
-  yardsPerPassAttempt: "AVG",
-  passingTouchdowns: "TD",
-  interceptions: "INT",
-  sacks: "SCK",
-  "sacks-sackYardsLost": "SCK-YDS",
-  QBRating: "RTG",
-  adjQBR: "QBR",
-  // NFL Rushing
-  rushingAttempts: "CAR",
-  rushingYards: "YDS",
-  yardsPerRushAttempt: "AVG",
-  rushingTouchdowns: "TD",
-  longRushing: "LNG",
-  // NFL Receiving
-  receptions: "REC",
-  receivingYards: "YDS",
-  yardsPerReception: "AVG",
-  receivingTouchdowns: "TD",
-  longReception: "LNG",
-  targets: "TGTS",
-  receivingTargets: "TGTS",
-  // NFL Defense
-  totalTackles: "TOT",
-  soloTackles: "SOLO",
-  tacklesForLoss: "TFL",
-  passesDefended: "PD",
-  QBHits: "QBH",
-  defensiveTouchdowns: "TD",
-  // NFL Fumbles
-  fumbles: "FUM",
-  fumblesLost: "LST",
-  fumblesRecovered: "REC",
-  // NFL Kicking
-  "fieldGoalsMade/fieldGoalAttempts": "FG",
-  fieldGoalPct: "FG%",
-  longFieldGoalMade: "LNG",
-  "extraPointsMade/extraPointAttempts": "XP",
-  totalKickingPoints: "PTS",
-  // NFL Punting
-  punts: "PUNTS",
-  puntYards: "YDS",
-  grossAvgPuntYards: "AVG",
-  touchbacks: "TB",
-  puntsInside20: "IN20",
-  longPunt: "LNG",
-  // NFL Returns
-  kickReturns: "RET",
-  kickReturnYards: "YDS",
-  yardsPerKickReturn: "AVG",
-  longKickReturn: "LNG",
-  kickReturnTouchdowns: "TD",
-  puntReturns: "RET",
-  puntReturnYards: "YDS",
-  yardsPerPuntReturn: "AVG",
-  longPuntReturn: "LNG",
-  puntReturnTouchdowns: "TD",
-  // MLB Batting (ESPN uses uppercase keys for MLB)
-  atBats: "AB",
-  runs: "R",
-  doubles: "2B",
-  triples: "3B",
-  homeRuns: "HR",
-  RBIs: "RBI",
-  walks: "BB",
-  strikeouts: "SO",
-  stolenBases: "SB",
-  avg: "AVG",
-  OBP: "OBP",
-  SLG: "SLG",
-  OPS: "OPS",
-  // MLB Pitching
-  inningsPitched: "IP",
-  hitsAllowed: "H",
-  runsAllowed: "R",
-  earnedRuns: "ER",
-  walksAllowed: "BB",
-  pitcherStrikeouts: "SO",
-  homeRunsAllowed: "HR",
-  pitchesThrown: "PC",
-  strikes: "ST",
-  ERA: "ERA",
-  // Basketball
-  minutes: "MIN",
-  fieldGoalsMade: "FGM",
-  fieldGoalsAttempted: "FGA",
-  "fieldGoalsMade-fieldGoalsAttempted": "FG",
-  fieldGoalPct2: "FG%",
-  threePointFieldGoalsMade: "3PM",
-  threePointFieldGoalsAttempted: "3PA",
-  "threePointFieldGoalsMade-threePointFieldGoalsAttempted": "3PT",
-  threePointFieldGoalPct: "3P%",
-  freeThrowsMade: "FTM",
-  freeThrowsAttempted: "FTA",
-  "freeThrowsMade-freeThrowsAttempted": "FT",
-  freeThrowPct: "FT%",
-  rebounds: "REB",
-  offensiveRebounds: "OREB",
-  defensiveRebounds: "DREB",
-  steals: "STL",
-  blocks: "BLK",
-  turnovers: "TO",
-  fouls: "PF",
-  plusMinus: "+/-",
-  points: "PTS",
-  // Hockey (lowercase keys from ESPN)
-  goals: "G",
-  assists: "A",
-  hits: "HIT",
-  shots: "SOG",
-  blockedShots: "BLK",
-  timeOnIce: "TOI",
-  faceoffWins: "FOW",
-  faceoffLosses: "FOL",
-  penaltyMinutes: "PIM",
-  powerPlayGoals: "PPG",
-  powerPlayAssists: "PPA",
-  shortHandedGoals: "SHG",
-  shortHandedAssists: "SHA",
-  gameWinningGoals: "GWG",
-  overtimeGoals: "OTG",
-  shotPct: "S%",
-  faceoffPct: "FO%",
-  avgTimeOnIce: "ATOI",
-  // Soccer
-  shotsOnTarget: "SOT",
-  foulsCommitted: "FC",
-  foulsSuffered: "FS",
-  yellowCards: "YC",
-  redCards: "RC",
-  offsides: "OFF",
-  saves: "SV",
+// Sport-specific stat key to abbreviation mappings
+const STAT_ABBREVIATIONS: Record<string, Record<string, string>> = {
+  nhl: {
+    goals: "G",
+    assists: "A",
+    points: "P",
+    plusMinus: "+/-",
+    penaltyMinutes: "PIM",
+    shots: "SOG",
+    hits: "HIT",
+    blockedShots: "BLK",
+    faceoffWins: "FOW",
+    faceoffLosses: "FOL",
+    timeOnIce: "TOI",
+    powerPlayGoals: "PPG",
+    powerPlayAssists: "PPA",
+    shortHandedGoals: "SHG",
+    shortHandedAssists: "SHA",
+    gameWinningGoals: "GWG",
+    overtimeGoals: "OTG",
+    shotPct: "S%",
+    faceoffPct: "FO%",
+    avgTimeOnIce: "ATOI",
+    saves: "SV",
+    shotsAgainst: "SA",
+    savePercentage: "SV%",
+    goalsAgainst: "GA",
+  },
+  nba: {
+    minutes: "MIN",
+    points: "PTS",
+    rebounds: "REB",
+    offensiveRebounds: "OREB",
+    defensiveRebounds: "DREB",
+    assists: "AST",
+    steals: "STL",
+    blocks: "BLK",
+    turnovers: "TO",
+    fouls: "PF",
+    plusMinus: "+/-",
+    fieldGoalsMade: "FGM",
+    fieldGoalsAttempted: "FGA",
+    "fieldGoalsMade-fieldGoalsAttempted": "FG",
+    fieldGoalPct: "FG%",
+    threePointFieldGoalsMade: "3PM",
+    threePointFieldGoalsAttempted: "3PA",
+    "threePointFieldGoalsMade-threePointFieldGoalsAttempted": "3PT",
+    threePointFieldGoalPct: "3P%",
+    freeThrowsMade: "FTM",
+    freeThrowsAttempted: "FTA",
+    "freeThrowsMade-freeThrowsAttempted": "FT",
+    freeThrowPct: "FT%",
+  },
+  nfl: {
+    // Passing
+    "completions/passingAttempts": "C/ATT",
+    passingYards: "YDS",
+    yardsPerPassAttempt: "AVG",
+    passingTouchdowns: "TD",
+    interceptions: "INT",
+    sacks: "SCK",
+    "sacks-sackYardsLost": "SCK-YDS",
+    QBRating: "RTG",
+    adjQBR: "QBR",
+    // Rushing
+    rushingAttempts: "CAR",
+    rushingYards: "YDS",
+    yardsPerRushAttempt: "AVG",
+    rushingTouchdowns: "TD",
+    longRushing: "LNG",
+    // Receiving
+    receptions: "REC",
+    receivingYards: "YDS",
+    yardsPerReception: "AVG",
+    receivingTouchdowns: "TD",
+    longReception: "LNG",
+    targets: "TGTS",
+    receivingTargets: "TGTS",
+    // Defense
+    totalTackles: "TOT",
+    soloTackles: "SOLO",
+    tacklesForLoss: "TFL",
+    passesDefended: "PD",
+    QBHits: "QBH",
+    defensiveTouchdowns: "TD",
+    // Fumbles
+    fumbles: "FUM",
+    fumblesLost: "LST",
+    fumblesRecovered: "REC",
+    // Kicking
+    "fieldGoalsMade/fieldGoalAttempts": "FG",
+    fieldGoalPct: "FG%",
+    longFieldGoalMade: "LNG",
+    "extraPointsMade/extraPointAttempts": "XP",
+    totalKickingPoints: "PTS",
+    // Punting
+    punts: "PUNTS",
+    puntYards: "YDS",
+    grossAvgPuntYards: "AVG",
+    touchbacks: "TB",
+    puntsInside20: "IN20",
+    longPunt: "LNG",
+    // Returns
+    kickReturns: "RET",
+    kickReturnYards: "YDS",
+    yardsPerKickReturn: "AVG",
+    longKickReturn: "LNG",
+    kickReturnTouchdowns: "TD",
+    puntReturns: "RET",
+    puntReturnYards: "YDS",
+    yardsPerPuntReturn: "AVG",
+    longPuntReturn: "LNG",
+    puntReturnTouchdowns: "TD",
+  },
+  mlb: {
+    // Batting
+    atBats: "AB",
+    runs: "R",
+    hits: "H",
+    doubles: "2B",
+    triples: "3B",
+    homeRuns: "HR",
+    RBIs: "RBI",
+    walks: "BB",
+    strikeouts: "SO",
+    stolenBases: "SB",
+    avg: "AVG",
+    OBP: "OBP",
+    SLG: "SLG",
+    OPS: "OPS",
+    // Pitching
+    inningsPitched: "IP",
+    hitsAllowed: "H",
+    runsAllowed: "R",
+    earnedRuns: "ER",
+    walksAllowed: "BB",
+    pitcherStrikeouts: "SO",
+    homeRunsAllowed: "HR",
+    pitchesThrown: "PC",
+    strikes: "ST",
+    ERA: "ERA",
+  },
+  mls: {
+    goals: "G",
+    assists: "A",
+    shots: "SH",
+    shotsOnTarget: "SOT",
+    foulsCommitted: "FC",
+    foulsSuffered: "FS",
+    yellowCards: "YC",
+    redCards: "RC",
+    offsides: "OFF",
+    saves: "SV",
+    minutes: "MIN",
+  },
 };
 
-// Get abbreviation for a stat key
-function getStatAbbreviation(key: string): string {
-  return STAT_ABBREVIATIONS[key] || key;
+// Alias college basketball to NBA mappings
+STAT_ABBREVIATIONS.ncaam = STAT_ABBREVIATIONS.nba;
+STAT_ABBREVIATIONS.ncaaw = STAT_ABBREVIATIONS.nba;
+// Alias EPL to MLS mappings
+STAT_ABBREVIATIONS.epl = STAT_ABBREVIATIONS.mls;
+
+// Get abbreviation for a stat key based on league
+function getStatAbbreviation(key: string, league: string): string {
+  const leagueAbbreviations = STAT_ABBREVIATIONS[league];
+  if (leagueAbbreviations && leagueAbbreviations[key]) {
+    return leagueAbbreviations[key];
+  }
+  return key;
 }
 
 // Check if league uses category-based stats (different stats per position)
@@ -1074,9 +1103,9 @@ function PlayerStatsCategoryTable({
   league: string;
 }) {
   // Use dynamic statKeys from ESPN if available, otherwise fall back to hardcoded columns
-  // Apply abbreviation mapping to convert long ESPN keys to short labels
+  // Apply sport-specific abbreviation mapping to convert long ESPN keys to short labels
   const columns: StatColumn[] = statKeys
-    ? statKeys.map(key => ({ key, label: getStatAbbreviation(key), width: "w-12" }))
+    ? statKeys.map(key => ({ key, label: getStatAbbreviation(key, league), width: "w-12" }))
     : getPlayerColumnsForLeague(league);
 
   return (
