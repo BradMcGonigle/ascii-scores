@@ -849,6 +849,141 @@ const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
   pitching: "Pitching",
 };
 
+// ESPN stat key to abbreviation mapping
+const STAT_ABBREVIATIONS: Record<string, string> = {
+  // NFL Passing
+  "completions/passingAttempts": "C/ATT",
+  passingYards: "YDS",
+  yardsPerPassAttempt: "AVG",
+  passingTouchdowns: "TD",
+  interceptions: "INT",
+  sacks: "SCK",
+  "sacks-sackYardsLost": "SCK-YDS",
+  QBRating: "RTG",
+  adjQBR: "QBR",
+  // NFL Rushing
+  rushingAttempts: "CAR",
+  rushingYards: "YDS",
+  yardsPerRushAttempt: "AVG",
+  rushingTouchdowns: "TD",
+  longRushing: "LNG",
+  // NFL Receiving
+  receptions: "REC",
+  receivingYards: "YDS",
+  yardsPerReception: "AVG",
+  receivingTouchdowns: "TD",
+  longReception: "LNG",
+  targets: "TGTS",
+  // NFL Defense
+  totalTackles: "TOT",
+  soloTackles: "SOLO",
+  tacklesForLoss: "TFL",
+  passesDefended: "PD",
+  QBHits: "QBH",
+  defensiveTouchdowns: "TD",
+  // NFL Fumbles
+  fumbles: "FUM",
+  fumblesLost: "LST",
+  fumblesRecovered: "REC",
+  // NFL Kicking
+  "fieldGoalsMade/fieldGoalAttempts": "FG",
+  fieldGoalPct: "FG%",
+  longFieldGoalMade: "LNG",
+  "extraPointsMade/extraPointAttempts": "XP",
+  totalKickingPoints: "PTS",
+  // NFL Punting
+  punts: "PUNTS",
+  puntYards: "YDS",
+  grossAvgPuntYards: "AVG",
+  touchbacks: "TB",
+  puntsInside20: "IN20",
+  longPunt: "LNG",
+  // NFL Returns
+  kickReturns: "RET",
+  kickReturnYards: "YDS",
+  yardsPerKickReturn: "AVG",
+  longKickReturn: "LNG",
+  kickReturnTouchdowns: "TD",
+  puntReturns: "RET",
+  puntReturnYards: "YDS",
+  yardsPerPuntReturn: "AVG",
+  longPuntReturn: "LNG",
+  puntReturnTouchdowns: "TD",
+  // MLB Batting
+  atBats: "AB",
+  runs: "R",
+  hits: "H",
+  doubles: "2B",
+  triples: "3B",
+  homeRuns: "HR",
+  RBIs: "RBI",
+  walks: "BB",
+  strikeouts: "SO",
+  stolenBases: "SB",
+  avg: "AVG",
+  OBP: "OBP",
+  SLG: "SLG",
+  OPS: "OPS",
+  // MLB Pitching
+  inningsPitched: "IP",
+  hitsAllowed: "H",
+  runsAllowed: "R",
+  earnedRuns: "ER",
+  walksAllowed: "BB",
+  pitcherStrikeouts: "SO",
+  homeRunsAllowed: "HR",
+  pitchesThrown: "PC",
+  strikes: "ST",
+  ERA: "ERA",
+  // Basketball
+  minutes: "MIN",
+  fieldGoalsMade: "FGM",
+  fieldGoalsAttempted: "FGA",
+  "fieldGoalsMade-fieldGoalsAttempted": "FG",
+  fieldGoalPct2: "FG%",
+  threePointFieldGoalsMade: "3PM",
+  threePointFieldGoalsAttempted: "3PA",
+  "threePointFieldGoalsMade-threePointFieldGoalsAttempted": "3PT",
+  threePointFieldGoalPct: "3P%",
+  freeThrowsMade: "FTM",
+  freeThrowsAttempted: "FTA",
+  "freeThrowsMade-freeThrowsAttempted": "FT",
+  freeThrowPct: "FT%",
+  rebounds: "REB",
+  offensiveRebounds: "OREB",
+  defensiveRebounds: "DREB",
+  assists: "AST",
+  steals: "STL",
+  blocks: "BLK",
+  turnovers: "TO",
+  fouls: "PF",
+  plusMinus: "+/-",
+  points: "PTS",
+  // Hockey
+  goals: "G",
+  // assists already mapped
+  // points already mapped
+  shots: "SOG",
+  blockedShots: "BLK",
+  timeOnIce: "TOI",
+  faceoffWins: "FOW",
+  faceoffLosses: "FOL",
+  penaltyMinutes: "PIM",
+  // Soccer
+  shotsOnTarget: "SOT",
+  foulsCommitted: "FC",
+  foulsSuffered: "FS",
+  yellowCards: "YC",
+  redCards: "RC",
+  offsides: "OFF",
+  saves: "SV",
+};
+
+// Get abbreviation for a stat key
+function getStatAbbreviation(key: string): string {
+  return STAT_ABBREVIATIONS[key] || key;
+}
+
 // Check if league uses category-based stats (different stats per position)
 function leagueUsesCategoryStats(league: string): boolean {
   return league === "nfl" || league === "mlb";
@@ -920,8 +1055,9 @@ function PlayerStatsCategoryTable({
   league: string;
 }) {
   // Use dynamic statKeys from ESPN if available, otherwise fall back to hardcoded columns
+  // Apply abbreviation mapping to convert long ESPN keys to short labels
   const columns: StatColumn[] = statKeys
-    ? statKeys.map(key => ({ key, label: key, width: "w-12" }))
+    ? statKeys.map(key => ({ key, label: getStatAbbreviation(key), width: "w-12" }))
     : getPlayerColumnsForLeague(league);
 
   return (
@@ -938,23 +1074,27 @@ function PlayerStatsCategoryTable({
           </tr>
         </thead>
         <tbody>
-          {players.map((player) => (
-            <tr key={player.player.id} className="border-b border-terminal-border/30">
-              <td className="py-1 pr-1 sm:pr-2 whitespace-nowrap">
-                <span className="text-terminal-fg">{player.player.shortName}</span>
-                {player.player.position && (
-                  <span className="text-terminal-muted ml-1 text-xs">
-                    {player.player.position}
-                  </span>
-                )}
-              </td>
-              {columns.map((col) => (
-                <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
-                  {player.stats[col.key] ?? "-"}
+          {players.map((player) => {
+            // Use shortName if available, fall back to displayName or name
+            const playerName = player.player.shortName || player.player.displayName || player.player.name;
+            return (
+              <tr key={player.player.id} className="border-b border-terminal-border/30">
+                <td className="py-1 pr-1 sm:pr-2 whitespace-nowrap">
+                  <span className="text-terminal-fg">{playerName}</span>
+                  {player.player.position && (
+                    <span className="text-terminal-muted ml-1 text-xs">
+                      {player.player.position}
+                    </span>
+                  )}
                 </td>
-              ))}
-            </tr>
-          ))}
+                {columns.map((col) => (
+                  <td key={col.key} className="text-center py-1 px-1 text-terminal-fg whitespace-nowrap">
+                    {player.stats[col.key] ?? "-"}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
