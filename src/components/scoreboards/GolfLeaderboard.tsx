@@ -755,7 +755,7 @@ function GolfLeaderboardTable({
             {/* Player rows */}
             <tbody>
               {tournament.players.length > 0 ? (
-                tournament.players.slice(0, 40).map((player, index) => {
+                tournament.players.map((player, index) => {
                   const positionClass = getPositionClass(player.position);
                   const scoreClass = getScoreClass(player.scoreToParNum);
                   const statusIndicator = getPlayerStatusIndicator(player.status);
@@ -857,12 +857,6 @@ function GolfLeaderboardTable({
             </tbody>
           </table>
 
-          {/* Show count if truncated */}
-          {tournament.players.length > 40 && (
-            <div className="text-terminal-muted text-xs text-center pt-2">
-              Showing top 40 of {tournament.players.length} players
-            </div>
-          )}
         </div>
 
         {/* Tournament info section */}
