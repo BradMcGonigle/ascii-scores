@@ -1,5 +1,11 @@
 # ascii-scores
 
+## 0.28.1
+
+### Patch Changes
+
+- b1a18ca: feat: Show all players on PGA leaderboard instead of top 40
+
 ## 0.28.0
 
 ### Minor Changes
