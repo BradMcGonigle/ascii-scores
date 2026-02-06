@@ -66,9 +66,14 @@ export function GameCardNotificationButton({
       try {
         if (isSubscribed) {
           await unsubscribeFromGame(gameId);
+          alert("Unsubscribed from game notifications");
         } else {
           await subscribeToGame(gameId, league, homeTeam, awayTeam);
+          alert("Subscribed to game notifications!");
         }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        alert(`Notification error: ${message}`);
       } finally {
         setIsLoading(false);
       }
