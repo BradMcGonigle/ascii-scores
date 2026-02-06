@@ -14,34 +14,18 @@ export interface ChangelogEntry {
 
 const TYPE_PATTERN = /^(feat|fix|refactor|chore|docs|style|perf|revert):\s*/;
 
-// Pattern to match commit SHA at start of line like "f76ee3a: feat: description"
-const LEADING_SHA_PATTERN = /^[a-f0-9]{7,}: /i;
-
-// Pattern to match commit SHA references at end like [abc1234](https://github.com/.../commit/abc1234)
-const TRAILING_SHA_PATTERN = /\s*\[[a-f0-9]+\]\([^)]+\)\s*$/i;
-
-function stripCommitSha(line: string): string {
-  return line
-    .replace(LEADING_SHA_PATTERN, "")
-    .replace(TRAILING_SHA_PATTERN, "")
-    .trim();
-}
-
 function parseChangeType(line: string): ChangelogChange {
-  // Strip commit SHA references before parsing
-  const cleanLine = stripCommitSha(line);
-
-  const match = cleanLine.match(TYPE_PATTERN);
+  const match = line.match(TYPE_PATTERN);
   if (match) {
     return {
       type: match[1] as ChangelogChange["type"],
-      description: cleanLine.replace(TYPE_PATTERN, ""),
+      description: line.replace(TYPE_PATTERN, ""),
     };
   }
   // Default to "feat" for entries without a type prefix
   return {
     type: "feat",
-    description: cleanLine,
+    description: line,
   };
 }
 
