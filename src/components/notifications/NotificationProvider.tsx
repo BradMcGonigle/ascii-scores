@@ -93,16 +93,21 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       // Register service worker and get push subscription
       const initServiceWorker = async () => {
         try {
+          console.log("[Notifications] Attempting to register service worker...");
           const registration = await navigator.serviceWorker.register("/sw.js");
+          console.log("[Notifications] Service worker registered:", registration);
+          console.log("[Notifications] Waiting for service worker to be ready...");
           await navigator.serviceWorker.ready;
+          console.log("[Notifications] Service worker is ready");
 
           // Get existing push subscription
           const existingSubscription = await registration.pushManager.getSubscription();
           if (existingSubscription) {
+            console.log("[Notifications] Found existing push subscription");
             setPushSubscription(existingSubscription);
           }
         } catch (error) {
-          console.error("Failed to register service worker:", error);
+          console.error("[Notifications] Failed to register service worker:", error);
         }
       };
       initServiceWorker();

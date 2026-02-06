@@ -3,14 +3,12 @@
 // Service Worker for ASCII Scores push notifications and caching
 
 // Increment this version when deploying updates to bust the cache
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 const CACHE_NAME = `ascii-scores-v${CACHE_VERSION}`;
 
 // Assets to pre-cache (app shell)
-const PRECACHE_ASSETS = [
-  "/icon-192.png",
-  "/icon-512.png",
-];
+// Note: Add icon files when they exist
+const PRECACHE_ASSETS = [];
 
 // Handle push notifications
 self.addEventListener("push", (event) => {
@@ -84,10 +82,20 @@ self.addEventListener("notificationclick", (event) => {
 
 // Handle service worker installation
 self.addEventListener("install", (event) => {
-  console.log("Service Worker installing, version:", CACHE_VERSION);
+  console.log("[SW] Installing, version:", CACHE_VERSION);
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
+      if (PRECACHE_ASSETS.length > 0) {
+        console.log("[SW] Pre-caching assets:", PRECACHE_ASSETS);
+        return cache.addAll(PRECACHE_ASSETS);
+      }
+      console.log("[SW] No assets to pre-cache");
+      return Promise.resolve();
+    }).then(() => {
+      console.log("[SW] Installation complete");
+    }).catch((error) => {
+      console.error("[SW] Installation failed:", error);
+      throw error;
     })
   );
   // Activate immediately without waiting for old SW to finish
@@ -96,18 +104,23 @@ self.addEventListener("install", (event) => {
 
 // Handle service worker activation - clean up old caches
 self.addEventListener("activate", (event) => {
-  console.log("Service Worker activated, version:", CACHE_VERSION);
+  console.log("[SW] Activating, version:", CACHE_VERSION);
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name.startsWith("ascii-scores-") && name !== CACHE_NAME)
           .map((name) => {
-            console.log("Deleting old cache:", name);
+            console.log("[SW] Deleting old cache:", name);
             return caches.delete(name);
           })
       );
-    }).then(() => clients.claim())
+    }).then(() => {
+      console.log("[SW] Claiming clients");
+      return clients.claim();
+    }).then(() => {
+      console.log("[SW] Activation complete");
+    })
   );
 });
 
