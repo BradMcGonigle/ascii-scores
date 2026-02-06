@@ -10,6 +10,8 @@ import type {
 } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
 import { AsciiStatBar } from "@/components/ascii/AsciiDecorations";
+import { supportsNotifications } from "@/lib/notifications/types";
+import { GameDetailNotificationButton } from "./GameDetailNotificationButton";
 
 interface GameDetailDisplayProps {
   summary: GameSummary;
@@ -203,6 +205,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
 
   const border = getBorderStyle(game.status);
   const isCollege = isCollegeLeague(game.league);
+  const showNotifications = supportsNotifications(game.league);
 
   return (
     <div className="font-mono">
@@ -222,6 +225,19 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
           <div className="text-center py-1 text-xs text-terminal-muted">
             <span className="sr-only">Broadcast on </span>
             <span className="text-terminal-cyan">TV:</span> {game.broadcasts.slice(0, 4).join(", ")}
+          </div>
+        )}
+
+        {/* Notification subscription button */}
+        {showNotifications && (
+          <div className="text-center py-2">
+            <GameDetailNotificationButton
+              gameId={game.id}
+              league={game.league as "nhl" | "nfl"}
+              homeTeam={game.homeTeam.abbreviation}
+              awayTeam={game.awayTeam.abbreviation}
+              gameStatus={game.status}
+            />
           </div>
         )}
       </BorderedSection>
