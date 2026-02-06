@@ -1,8 +1,16 @@
 /// <reference lib="webworker" />
 
-// Service Worker for ASCII Scores push notifications
+// Service Worker for ASCII Scores push notifications and caching
 
-const CACHE_NAME = "ascii-scores-v1";
+// Increment this version when deploying updates to bust the cache
+const CACHE_VERSION = 2;
+const CACHE_NAME = `ascii-scores-v${CACHE_VERSION}`;
+
+// Assets to pre-cache (app shell)
+const PRECACHE_ASSETS = [
+  "/icon-192.png",
+  "/icon-512.png",
+];
 
 // Handle push notifications
 self.addEventListener("push", (event) => {
@@ -76,14 +84,93 @@ self.addEventListener("notificationclick", (event) => {
 
 // Handle service worker installation
 self.addEventListener("install", (event) => {
-  console.log("Service Worker installing");
+  console.log("Service Worker installing, version:", CACHE_VERSION);
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(PRECACHE_ASSETS);
+    })
+  );
+  // Activate immediately without waiting for old SW to finish
   self.skipWaiting();
 });
 
-// Handle service worker activation
+// Handle service worker activation - clean up old caches
 self.addEventListener("activate", (event) => {
-  console.log("Service Worker activated");
-  event.waitUntil(clients.claim());
+  console.log("Service Worker activated, version:", CACHE_VERSION);
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames
+          .filter((name) => name.startsWith("ascii-scores-") && name !== CACHE_NAME)
+          .map((name) => {
+            console.log("Deleting old cache:", name);
+            return caches.delete(name);
+          })
+      );
+    }).then(() => clients.claim())
+  );
+});
+
+// Handle fetch requests - network-first for pages, cache-first for static assets
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+
+  // Skip non-GET requests
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  // Skip API routes - always go to network
+  if (url.pathname.startsWith("/api/")) {
+    return;
+  }
+
+  // Skip cross-origin requests
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // For HTML pages (navigation requests): network-first with cache fallback
+  if (event.request.mode === "navigate" || event.request.headers.get("accept")?.includes("text/html")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Clone the response before caching (can only read once)
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Network failed, try cache
+          return caches.match(event.request).then((cached) => {
+            return cached || caches.match("/");
+          });
+        })
+    );
+    return;
+  }
+
+  // For static assets (JS, CSS, images): stale-while-revalidate
+  if (
+    url.pathname.startsWith("/_next/static/") ||
+    url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|woff|woff2)$/)
+  ) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then((cache) => {
+        return cache.match(event.request).then((cached) => {
+          const fetchPromise = fetch(event.request).then((response) => {
+            cache.put(event.request, response.clone());
+            return response;
+          });
+          // Return cached immediately, update in background
+          return cached || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
 });
 
 // Handle push subscription change (if user clears browser data)
