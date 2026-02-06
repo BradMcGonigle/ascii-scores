@@ -155,12 +155,12 @@ export function PGATournamentNav({ tournaments }: PGATournamentNavProps) {
   return (
     <div className="font-mono text-sm">
       {/* Tournament navigation controls */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-1 sm:gap-2">
         {/* Previous button */}
         <button
           onClick={handlePrevious}
           disabled={!prevTournament || isPending}
-          className={`px-3 py-1 border transition-colors ${
+          className={`px-2 sm:px-3 py-1 border transition-colors ${
             prevTournament && !isPending
               ? "border-terminal-border text-terminal-fg hover:border-terminal-cyan hover:text-terminal-cyan"
               : "border-terminal-muted text-terminal-muted cursor-not-allowed"
@@ -168,17 +168,17 @@ export function PGATournamentNav({ tournaments }: PGATournamentNavProps) {
           aria-label={prevTournament ? `Go to ${prevTournament.name}` : "No previous tournament"}
           title={prevTournament?.name ?? "No previous tournament"}
         >
-          <span aria-hidden="true">◄</span> PREV
+          <span aria-hidden="true">◄</span><span className="hidden sm:inline"> PREV</span>
         </button>
 
         {/* Current tournament display */}
-        <div className="px-4 py-1 min-w-[280px] text-center">
+        <div className="px-2 sm:px-4 py-1 min-w-0 sm:min-w-[280px] text-center flex-1 sm:flex-none">
           <span className="text-terminal-border">[</span>
           {isPending ? (
-            <span className="mx-2 text-terminal-muted">Loading...</span>
+            <span className="mx-1 sm:mx-2 text-terminal-muted">Loading...</span>
           ) : (
             <span
-              className={`mx-2 ${
+              className={`mx-1 sm:mx-2 ${
                 isCurrentLive
                   ? "text-terminal-green"
                   : isCurrentPast
@@ -196,7 +196,7 @@ export function PGATournamentNav({ tournaments }: PGATournamentNavProps) {
         <button
           onClick={handleNext}
           disabled={!nextTournament || isPending}
-          className={`px-3 py-1 border transition-colors ${
+          className={`px-2 sm:px-3 py-1 border transition-colors ${
             nextTournament && !isPending
               ? "border-terminal-border text-terminal-fg hover:border-terminal-cyan hover:text-terminal-cyan"
               : "border-terminal-muted text-terminal-muted cursor-not-allowed"
@@ -204,12 +204,12 @@ export function PGATournamentNav({ tournaments }: PGATournamentNavProps) {
           aria-label={nextTournament ? `Go to ${nextTournament.name}` : "No upcoming tournament"}
           title={nextTournament?.name ?? "No upcoming tournament"}
         >
-          NEXT <span aria-hidden="true">►</span>
+          <span className="hidden sm:inline">NEXT </span><span aria-hidden="true">►</span>
         </button>
       </div>
 
       {/* Date range and status */}
-      <div className="flex justify-center mt-2 gap-4 text-xs">
+      <div className="flex justify-center mt-2 gap-3 sm:gap-4 text-xs">
         <span className="text-terminal-muted">
           {formatDateRange(currentTournament.startDate, currentTournament.endDate)}
         </span>
@@ -251,8 +251,8 @@ export function PGATournamentNav({ tournaments }: PGATournamentNavProps) {
         </div>
       )}
 
-      {/* Prev/Next tournament hints */}
-      <div className="flex justify-center mt-2 gap-6 text-xs text-terminal-muted">
+      {/* Prev/Next tournament hints - hide on mobile */}
+      <div className="hidden sm:flex justify-center mt-2 gap-6 text-xs text-terminal-muted">
         {prevTournament && (
           <span>
             ◄ {prevTournament.name.length > 20 ? prevTournament.name.slice(0, 20) + "…" : prevTournament.name}

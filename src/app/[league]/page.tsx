@@ -401,9 +401,18 @@ async function F1Content({ weekendId }: { weekendId?: string }) {
  */
 async function PGAContent({ eventId }: { eventId?: string }) {
   try {
-    const leaderboard = await getPGALeaderboard(eventId);
+    // Fetch both leaderboard and calendar in parallel
+    const [leaderboard, calendar] = await Promise.all([
+      getPGALeaderboard(eventId),
+      getPGATournamentCalendar(),
+    ]);
 
-    return <GolfLeaderboardDisplay leaderboard={leaderboard} />;
+    // Find the selected tournament from calendar (for displaying info when leaderboard is empty)
+    const selectedTournament = eventId
+      ? calendar.tournaments.find((t) => t.id === eventId)
+      : undefined;
+
+    return <GolfLeaderboardDisplay leaderboard={leaderboard} selectedTournament={selectedTournament} />;
   } catch (error) {
     console.error("Failed to fetch PGA leaderboard:", error);
     return (
