@@ -18,7 +18,7 @@ interface NotificationContextValue {
   isSubscribedToGame: (gameId: string) => boolean;
   subscribeToGame: (
     gameId: string,
-    league: "nhl" | "nfl",
+    league: "nhl" | "nfl" | "ncaam",
     homeTeam: string,
     awayTeam: string,
     events?: Partial<EventPreferences>
@@ -168,7 +168,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const subscribeToGame = useCallback(
     async (
       gameId: string,
-      league: "nhl" | "nfl",
+      league: "nhl" | "nfl" | "ncaam",
       homeTeam: string,
       awayTeam: string,
       events?: Partial<EventPreferences>

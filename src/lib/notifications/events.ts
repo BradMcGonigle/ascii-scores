@@ -31,7 +31,7 @@ export function detectEvents(
   scoringPlays: ScoringPlay[] = []
 ): NotificationEvent[] {
   const events: NotificationEvent[] = [];
-  const league = curr.league as "nhl" | "nfl";
+  const league = curr.league as "nhl" | "nfl" | "ncaam";
   const currentPeriod = parseInt(curr.period || "0") || 0;
 
   // Game started
@@ -82,8 +82,10 @@ export function detectEvents(
     for (const play of newPlays) {
       if (league === "nhl") {
         events.push(createNHLGoalEvent(curr, play));
-      } else {
+      } else if (league === "nfl") {
         events.push(createNFLScoreEvent(curr, play));
+      } else if (league === "ncaam") {
+        events.push(createNCAAMScoreEvent(curr, play));
       }
     }
   } else if (
@@ -126,6 +128,23 @@ function createNHLGoalEvent(game: Game, play: ScoringPlay): NotificationEvent {
     scorer: play.scorer.name,
     strength: play.strength,
     description: formatNHLGoalDescription(play),
+  };
+}
+
+/**
+ * Create NCAAM score event from scoring play
+ */
+function createNCAAMScoreEvent(game: Game, play: ScoringPlay): NotificationEvent {
+  return {
+    type: "scoring",
+    gameId: game.id,
+    league: "ncaam",
+    homeTeam: game.homeTeam.abbreviation,
+    awayTeam: game.awayTeam.abbreviation,
+    homeScore: play.homeScore,
+    awayScore: play.awayScore,
+    period: play.period,
+    description: play.description,
   };
 }
 
@@ -238,7 +257,13 @@ export function formatNotificationPayload(event: NotificationEvent): PushNotific
 
   switch (type) {
     case "gameStart":
-      title = league === "nhl" ? "Puck Drop!" : "Kickoff!";
+      if (league === "nhl") {
+        title = "Puck Drop!";
+      } else if (league === "ncaam") {
+        title = "Tip-Off!";
+      } else {
+        title = "Kickoff!";
+      }
       body = `${matchup} has started`;
       break;
 
@@ -248,10 +273,14 @@ export function formatNotificationPayload(event: NotificationEvent): PushNotific
       break;
 
     case "periodEnd": {
-      const periodLabel =
-        league === "nhl"
-          ? getPeriodLabel(event.period || 0)
-          : `Q${event.period}`;
+      let periodLabel: string;
+      if (league === "nhl") {
+        periodLabel = getPeriodLabel(event.period || 0);
+      } else if (league === "ncaam") {
+        periodLabel = getHalfLabel(event.period || 0);
+      } else {
+        periodLabel = `Q${event.period}`;
+      }
       title = `End of ${periodLabel}`;
       body = `${matchup}: ${awayScore}-${homeScore}`;
       break;
@@ -260,6 +289,9 @@ export function formatNotificationPayload(event: NotificationEvent): PushNotific
     case "scoring":
       if (league === "nhl") {
         title = "GOAL!";
+        body = event.description || `${matchup}: ${awayScore}-${homeScore}`;
+      } else if (league === "ncaam") {
+        title = "SCORE!";
         body = event.description || `${matchup}: ${awayScore}-${homeScore}`;
       } else {
         title = event.scoreType || "SCORE";
@@ -299,5 +331,19 @@ function getPeriodLabel(period: number): string {
       return "2OT";
     default:
       return `${period}OT`;
+  }
+}
+
+/**
+ * Get half label for NCAAM
+ */
+function getHalfLabel(half: number): string {
+  switch (half) {
+    case 1:
+      return "1st Half";
+    case 2:
+      return "2nd Half";
+    default:
+      return `OT${half - 2 > 1 ? half - 2 : ""}`;
   }
 }

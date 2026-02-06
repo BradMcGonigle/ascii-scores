@@ -5,7 +5,7 @@ import { useNotifications } from "./NotificationProvider";
 
 interface NotificationButtonProps {
   gameId: string;
-  league: "nhl" | "nfl";
+  league: "nhl" | "nfl" | "ncaam";
   homeTeam: string;
   awayTeam: string;
   gameStatus: "scheduled" | "live" | "final" | "postponed" | "delayed";

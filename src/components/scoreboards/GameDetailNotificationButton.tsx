@@ -6,7 +6,7 @@ import type { GameStatus } from "@/lib/types";
 
 interface GameDetailNotificationButtonProps {
   gameId: string;
-  league: "nhl" | "nfl";
+  league: "nhl" | "nfl" | "ncaam";
   homeTeam: string;
   awayTeam: string;
   gameStatus: GameStatus;

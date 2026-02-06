@@ -47,14 +47,15 @@ async function processNotifications() {
   let totalEvents = 0;
   let totalNotifications = 0;
 
-  // Fetch current scoreboards for NHL and NFL
-  const [nhlScoreboard, nflScoreboard] = await Promise.all([
+  // Fetch current scoreboards for NHL, NFL, and NCAAM
+  const [nhlScoreboard, nflScoreboard, ncaamScoreboard] = await Promise.all([
     getESPNScoreboard("nhl").catch(() => null),
     getESPNScoreboard("nfl").catch(() => null),
+    getESPNScoreboard("ncaam").catch(() => null),
   ]);
 
   // Create a map of all current games
-  const currentGames = new Map<string, { game: Game; league: "nhl" | "nfl" }>();
+  const currentGames = new Map<string, { game: Game; league: "nhl" | "nfl" | "ncaam" }>();
 
   if (nhlScoreboard) {
     for (const game of nhlScoreboard.games) {
@@ -65,6 +66,12 @@ async function processNotifications() {
   if (nflScoreboard) {
     for (const game of nflScoreboard.games) {
       currentGames.set(game.id, { game, league: "nfl" });
+    }
+  }
+
+  if (ncaamScoreboard) {
+    for (const game of ncaamScoreboard.games) {
+      currentGames.set(game.id, { game, league: "ncaam" });
     }
   }
 

@@ -189,11 +189,11 @@ export function GameCard({ game }: GameCardProps) {
             {statusText}
           </div>
           <div className="flex items-center gap-2">
-            {/* Notification button for NHL and NFL */}
+            {/* Notification button for supported leagues */}
             {supportsNotifications(game.league) && (
               <GameCardNotificationButton
                 gameId={game.id}
-                league={game.league as "nhl" | "nfl"}
+                league={game.league as "nhl" | "nfl" | "ncaam"}
                 homeTeam={game.homeTeam.abbreviation}
                 awayTeam={game.awayTeam.abbreviation}
                 gameStatus={game.status}

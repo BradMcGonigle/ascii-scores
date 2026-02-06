@@ -233,7 +233,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
           <div className="text-center py-2">
             <GameDetailNotificationButton
               gameId={game.id}
-              league={game.league as "nhl" | "nfl"}
+              league={game.league as "nhl" | "nfl" | "ncaam"}
               homeTeam={game.homeTeam.abbreviation}
               awayTeam={game.awayTeam.abbreviation}
               gameStatus={game.status}

@@ -15,7 +15,7 @@ interface SubscribeRequestBody {
   subscriptionId?: string;
   pushSubscription: PushSubscriptionJSON;
   gameId: string;
-  league: "nhl" | "nfl";
+  league: "nhl" | "nfl" | "ncaam";
   homeTeam: string;
   awayTeam: string;
   events?: Partial<EventPreferences>;
@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing game information" }, { status: 400 });
     }
 
-    if (!["nhl", "nfl"].includes(body.league)) {
+    if (!["nhl", "nfl", "ncaam"].includes(body.league)) {
       return NextResponse.json(
-        { error: "Notifications only supported for NHL and NFL" },
+        { error: "Notifications only supported for NHL, NFL, and NCAAM" },
         { status: 400 }
       );
     }

@@ -20,7 +20,7 @@ export interface EventPreferences {
  */
 export interface GameSubscription {
   gameId: string;
-  league: "nhl" | "nfl";
+  league: "nhl" | "nfl" | "ncaam";
   homeTeam: string;
   awayTeam: string;
   events: EventPreferences;
@@ -60,7 +60,7 @@ export interface CachedGameState {
 export interface NotificationEvent {
   type: NotificationEventType;
   gameId: string;
-  league: "nhl" | "nfl";
+  league: "nhl" | "nfl" | "ncaam";
   homeTeam: string;
   awayTeam: string;
   homeScore: number;
@@ -103,12 +103,12 @@ export interface LocalNotificationState {
 /**
  * Leagues that support notifications
  */
-export const NOTIFICATION_SUPPORTED_LEAGUES: League[] = ["nhl", "nfl"];
+export const NOTIFICATION_SUPPORTED_LEAGUES: League[] = ["nhl", "nfl", "ncaam"];
 
 /**
  * Check if a league supports notifications
  */
-export function supportsNotifications(league: League): league is "nhl" | "nfl" {
+export function supportsNotifications(league: League): league is "nhl" | "nfl" | "ncaam" {
   return NOTIFICATION_SUPPORTED_LEAGUES.includes(league);
 }
 
@@ -125,7 +125,10 @@ export const DEFAULT_EVENT_PREFERENCES: EventPreferences = {
 /**
  * Get human-readable label for notification event type
  */
-export function getEventTypeLabel(type: NotificationEventType, league: "nhl" | "nfl"): string {
+export function getEventTypeLabel(
+  type: NotificationEventType,
+  league: "nhl" | "nfl" | "ncaam"
+): string {
   switch (type) {
     case "gameStart":
       return "Game Start";
@@ -134,6 +137,8 @@ export function getEventTypeLabel(type: NotificationEventType, league: "nhl" | "
     case "scoring":
       return league === "nhl" ? "Goals" : "Scores";
     case "periodEnd":
-      return league === "nhl" ? "End of Period" : "End of Quarter";
+      if (league === "nhl") return "End of Period";
+      if (league === "ncaam") return "End of Half";
+      return "End of Quarter";
   }
 }
