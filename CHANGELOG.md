@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- 43c93b7: feat: Redesign PGA leaderboard with ESPN-style layout and sticky columns
+- feat: Redesign PGA leaderboard with ESPN-style layout and sticky columns
 
   - Add tournament score header with top 3 leaders display
   - Implement horizontally scrollable table with sticky POS and PLAYER columns
@@ -17,7 +17,7 @@
 
 ### Minor Changes
 
-- dfd09ff: feat: Improve F1 leaderboard with tabbed sessions, lap data, and ESPN-style layout
+- feat: Improve F1 leaderboard with tabbed sessions, lap data, and ESPN-style layout
 
   - Add tabbed interface to switch between race weekend sessions (Race, Qualifying, Sprint, Practice)
   - Convert fixed-width ASCII tables to responsive HTML tables with full-width layout
@@ -32,13 +32,13 @@
 
 ### Patch Changes
 
-- 6f1902f: style: Add zebra striping to player stats tables on game detail pages
+- style: Add zebra striping to player stats tables on game detail pages
 
 ## 0.26.1
 
 ### Patch Changes
 
-- a2f8477: refactor: Use sport-specific stat abbreviation mappings
+- refactor: Use sport-specific stat abbreviation mappings
 
   Each sport now has its own mapping for stat keys to abbreviations, preventing conflicts when different sports use the same key with different conventions.
 
@@ -56,7 +56,7 @@
 
 ### Minor Changes
 
-- 45d5153: feat: Display sport-specific player stats with dynamic columns and category support
+- feat: Display sport-specific player stats with dynamic columns and category support
 
   Previously, all sports were showing NHL stats (Hits, SOG, etc.) on game detail pages. Now each sport displays appropriate statistics with proper formatting.
 
@@ -89,7 +89,7 @@
 
 ### Minor Changes
 
-- 07f430b: style: Add responsive ASCII line utilities and standardize double-line borders
+- style: Add responsive ASCII line utilities and standardize double-line borders
 
   ### Responsive ASCII Lines
 
@@ -121,7 +121,7 @@
 
 ### Minor Changes
 
-- 75f03d2: feat: Add ASCII stat comparison bars to game detail pages
+- feat: Add ASCII stat comparison bars to game detail pages
 
   Team statistics on game detail pages now display visual comparison bars below each stat, showing the proportional split between away and home teams. The leading team's bar is highlighted in a distinct color for quick visual comparison.
 
@@ -129,19 +129,19 @@
 
 ### Patch Changes
 
-- 41758a5: fix: Improve loading screen border alignment and preserve page layout during loading
+- fix: Improve loading screen border alignment and preserve page layout during loading
 
 ## 0.23.1
 
 ### Patch Changes
 
-- e8a5d28: style: Change league page grid from 4 to 3 columns on desktop
+- style: Change league page grid from 4 to 3 columns on desktop
 
 ## 0.23.0
 
 ### Minor Changes
 
-- ae6a127: feat: Add enhanced game details for scheduled games
+- feat: Add enhanced game details for scheduled games
 
   - Display team matchup section with full team names and records
   - Show team colors as accent borders for visual identification
@@ -156,12 +156,12 @@
 
 ### Minor Changes
 
-- f76ee3a: feat: Add tournament navigation and enhanced leaderboard for PGA
-- f76ee3a: feat: Add TV broadcast info to game cards and detail pages
+- feat: Add tournament navigation and enhanced leaderboard for PGA
+- feat: Add TV broadcast info to game cards and detail pages
 
 ### Patch Changes
 
-- 983c1d2: fix: Improve color contrast ratios to meet WCAG AA accessibility standards
+- fix: Improve color contrast ratios to meet WCAG AA accessibility standards
 
   - Dark theme: Updated muted text color from #5c6370 to #8b949e (5.5:1 contrast ratio)
   - Dark theme: Updated border color from #1a1f29 to #30363d (3:1 contrast ratio)
@@ -169,7 +169,7 @@
   - Light theme: Updated border color from #d1d5db to #9ca3af (3:1 contrast ratio)
   - Animation: Increased glow-pulse minimum opacity from 0.7 to 0.85 to maintain contrast
 
-- 9e0518d: fix: resolve score loading errors on past dates
+- fix: resolve score loading errors on past dates
 
   Fixed issues causing "Error loading scoreboard" on NHL, NBA, and other league pages when viewing yesterday's scores:
 
