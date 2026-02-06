@@ -4,6 +4,40 @@
 
 This plan outlines the architecture and implementation approach for adding user-subscribable event notifications for NHL and NFL games in ASCII Scores. Users will be able to subscribe to individual games and receive browser push notifications for specific events.
 
+---
+
+## Setup Checklist
+
+### Environment Variables
+
+- [ ] Generate VAPID keys: `npx web-push generate-vapid-keys`
+- [ ] Add `NEXT_PUBLIC_VAPID_PUBLIC_KEY` to Vercel environment variables
+- [ ] Add `VAPID_PRIVATE_KEY` to Vercel environment variables
+- [ ] Add `VAPID_SUBJECT` to Vercel (e.g., `mailto:your@email.com`)
+- [ ] Add `CRON_SECRET` to Vercel (any secure random string)
+- [ ] Verify Upstash Redis is connected (`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`)
+
+### Testing
+
+- [ ] Verify notification bell appears on NHL game cards (scheduled/live only)
+- [ ] Verify notification bell appears on NFL game cards (scheduled/live only)
+- [ ] Test subscribe flow on desktop browser (Chrome/Firefox/Edge)
+- [ ] Test subscribe flow on iOS PWA (must be installed to home screen)
+- [ ] Test subscribe flow on Android browser/PWA
+- [ ] Verify cron job runs every minute in Vercel dashboard
+- [ ] Test goal notification (NHL live game)
+- [ ] Test score notification (NFL live game)
+- [ ] Test period/quarter end notification
+- [ ] Test final score notification
+- [ ] Test unsubscribe flow
+
+### Documentation
+
+- [ ] Create ADR for notifications architecture decision
+- [ ] Add changeset for release notes
+
+---
+
 ## Notification Requirements
 
 ### NHL
