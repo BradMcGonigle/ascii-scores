@@ -21,7 +21,8 @@ interface NotificationContextValue {
     league: "nhl" | "nfl" | "ncaam",
     homeTeam: string,
     awayTeam: string,
-    events?: Partial<EventPreferences>
+    events?: Partial<EventPreferences>,
+    gameStartTime?: string
   ) => Promise<boolean>;
   unsubscribeFromGame: (gameId: string) => Promise<boolean>;
   requestPermission: () => Promise<boolean>;
@@ -176,7 +177,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       league: "nhl" | "nfl" | "ncaam",
       homeTeam: string,
       awayTeam: string,
-      events?: Partial<EventPreferences>
+      events?: Partial<EventPreferences>,
+      gameStartTime?: string
     ): Promise<boolean> => {
       // Ensure we have permission
       if (permission !== "granted") {
@@ -226,6 +228,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             homeTeam,
             awayTeam,
             events,
+            gameStartTime,
           }),
         });
 

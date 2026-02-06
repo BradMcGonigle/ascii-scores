@@ -14,6 +14,8 @@ const KEYS = {
   gameState: (gameId: string) => `game:${gameId}`,
   gameSubscribers: (gameId: string) => `game:${gameId}:subs`,
   activeGames: "active_games",
+  activeGamesByLeague: (league: string) => `active_games:${league}`,
+  gameMetadata: (gameId: string) => `game:${gameId}:meta`,
 } as const;
 
 // TTL values (in seconds)
@@ -50,6 +52,15 @@ export async function deleteSubscription(id: string): Promise<void> {
 }
 
 /**
+ * Game metadata stored for smart scheduling
+ */
+interface GameMetadata {
+  gameId: string;
+  league: "nhl" | "nfl" | "ncaam";
+  gameStartTime?: string;
+}
+
+/**
  * Add a game subscription to a user's subscription
  */
 export async function addGameSubscription(
@@ -80,8 +91,19 @@ export async function addGameSubscription(
   // Add subscription ID to the game's subscriber set
   await redis.sadd(KEYS.gameSubscribers(gameSubscription.gameId), subscriptionId);
 
-  // Add game to active games set
+  // Add game to active games set (global and per-league)
   await redis.sadd(KEYS.activeGames, gameSubscription.gameId);
+  await redis.sadd(KEYS.activeGamesByLeague(gameSubscription.league), gameSubscription.gameId);
+
+  // Store game metadata for smart scheduling
+  const metadata: GameMetadata = {
+    gameId: gameSubscription.gameId,
+    league: gameSubscription.league,
+    gameStartTime: gameSubscription.gameStartTime,
+  };
+  await redis.set(KEYS.gameMetadata(gameSubscription.gameId), JSON.stringify(metadata), {
+    ex: TTL.gameState,
+  });
 }
 
 /**
@@ -152,6 +174,14 @@ export async function getGameState(gameId: string): Promise<CachedGameState | nu
  * Should be called periodically to remove games that have ended
  */
 export async function cleanupFinishedGame(gameId: string): Promise<void> {
+  // Get game metadata to know which league set to clean up
+  const metadataRaw = await redis.get<string>(KEYS.gameMetadata(gameId));
+  const metadata = metadataRaw
+    ? typeof metadataRaw === "string"
+      ? JSON.parse(metadataRaw)
+      : metadataRaw
+    : null;
+
   // Remove all subscribers from this game
   const subscribers = await getGameSubscribers(gameId);
   for (const subId of subscribers) {
@@ -161,7 +191,13 @@ export async function cleanupFinishedGame(gameId: string): Promise<void> {
   // Clean up game-specific keys
   await redis.del(KEYS.gameSubscribers(gameId));
   await redis.del(KEYS.gameState(gameId));
+  await redis.del(KEYS.gameMetadata(gameId));
   await redis.srem(KEYS.activeGames, gameId);
+
+  // Remove from league-specific set if we know the league
+  if (metadata?.league) {
+    await redis.srem(KEYS.activeGamesByLeague(metadata.league), gameId);
+  }
 }
 
 /**
@@ -174,6 +210,80 @@ export async function updateSubscriptionEndpoint(
   // This would require searching by endpoint, which is expensive
   // For now, we'll handle this by having the client re-subscribe
   console.log("Subscription endpoint changed, client should re-subscribe");
+}
+
+/**
+ * Get active games for a specific league
+ */
+export async function getActiveGamesByLeague(
+  league: "nhl" | "nfl" | "ncaam"
+): Promise<string[]> {
+  const games = await redis.smembers(KEYS.activeGamesByLeague(league));
+  return games as string[];
+}
+
+/**
+ * Get game metadata
+ */
+export async function getGameMetadata(gameId: string): Promise<GameMetadata | null> {
+  const data = await redis.get<string>(KEYS.gameMetadata(gameId));
+  if (!data) return null;
+  return typeof data === "string" ? JSON.parse(data) : data;
+}
+
+// Buffer time before game start to begin polling (30 minutes)
+const PRE_GAME_BUFFER_MS = 30 * 60 * 1000;
+// Buffer time after expected game end to continue polling (4 hours for long games/OT)
+const POST_GAME_BUFFER_MS = 4 * 60 * 60 * 1000;
+
+/**
+ * Get leagues that have games needing to be polled
+ * Returns only leagues with games that are:
+ * - Currently in progress (no start time, assume active)
+ * - Starting within the pre-game buffer
+ * - Potentially still in progress (within post-game buffer)
+ */
+export async function getLeaguesNeedingPolling(): Promise<("nhl" | "nfl" | "ncaam")[]> {
+  const leagues: ("nhl" | "nfl" | "ncaam")[] = ["nhl", "nfl", "ncaam"];
+  const leaguesNeedingPolling: ("nhl" | "nfl" | "ncaam")[] = [];
+  const now = Date.now();
+
+  for (const league of leagues) {
+    const gameIds = await getActiveGamesByLeague(league);
+
+    if (gameIds.length === 0) {
+      continue;
+    }
+
+    // Check if any game in this league needs polling
+    let needsPolling = false;
+
+    for (const gameId of gameIds) {
+      const metadata = await getGameMetadata(gameId);
+
+      // If no metadata or no start time, assume we need to poll (legacy subscriptions)
+      if (!metadata?.gameStartTime) {
+        needsPolling = true;
+        break;
+      }
+
+      const startTime = new Date(metadata.gameStartTime).getTime();
+      const pollingWindowStart = startTime - PRE_GAME_BUFFER_MS;
+      const pollingWindowEnd = startTime + POST_GAME_BUFFER_MS;
+
+      // Check if current time is within the polling window
+      if (now >= pollingWindowStart && now <= pollingWindowEnd) {
+        needsPolling = true;
+        break;
+      }
+    }
+
+    if (needsPolling) {
+      leaguesNeedingPolling.push(league);
+    }
+  }
+
+  return leaguesNeedingPolling;
 }
 
 export { redis };

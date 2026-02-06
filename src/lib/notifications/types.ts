@@ -25,6 +25,7 @@ export interface GameSubscription {
   awayTeam: string;
   events: EventPreferences;
   subscribedAt: string; // ISO date string
+  gameStartTime?: string; // ISO date string - when the game is scheduled to start
 }
 
 /**

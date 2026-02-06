@@ -10,6 +10,7 @@ interface GameDetailNotificationButtonProps {
   homeTeam: string;
   awayTeam: string;
   gameStatus: GameStatus;
+  gameStartTime?: string; // ISO date string
 }
 
 /**
@@ -22,6 +23,7 @@ export function GameDetailNotificationButton({
   homeTeam,
   awayTeam,
   gameStatus,
+  gameStartTime,
 }: GameDetailNotificationButtonProps) {
   const {
     isSupported,
@@ -63,7 +65,7 @@ export function GameDetailNotificationButton({
         await unsubscribeFromGame(gameId);
         alert("Unsubscribed from game notifications");
       } else {
-        await subscribeToGame(gameId, league, homeTeam, awayTeam);
+        await subscribeToGame(gameId, league, homeTeam, awayTeam, undefined, gameStartTime);
         alert("Subscribed to game notifications!");
       }
     } catch (error) {
@@ -80,6 +82,7 @@ export function GameDetailNotificationButton({
     league,
     homeTeam,
     awayTeam,
+    gameStartTime,
     subscribeToGame,
     unsubscribeFromGame,
   ]);

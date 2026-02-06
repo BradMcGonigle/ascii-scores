@@ -19,6 +19,7 @@ interface SubscribeRequestBody {
   homeTeam: string;
   awayTeam: string;
   events?: Partial<EventPreferences>;
+  gameStartTime?: string; // ISO date string - when the game is scheduled to start
 }
 
 export async function POST(request: NextRequest) {
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
         ...body.events,
       },
       subscribedAt: new Date().toISOString(),
+      gameStartTime: body.gameStartTime,
     };
 
     // Add game subscription

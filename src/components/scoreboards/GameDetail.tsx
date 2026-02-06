@@ -237,6 +237,7 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
               homeTeam={game.homeTeam.abbreviation}
               awayTeam={game.awayTeam.abbreviation}
               gameStatus={game.status}
+              gameStartTime={game.startTime.toISOString()}
             />
           </div>
         )}

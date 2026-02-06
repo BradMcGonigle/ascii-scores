@@ -10,6 +10,7 @@ interface GameCardNotificationButtonProps {
   homeTeam: string;
   awayTeam: string;
   gameStatus: GameStatus;
+  gameStartTime?: string; // ISO date string
 }
 
 /**
@@ -22,6 +23,7 @@ export function GameCardNotificationButton({
   homeTeam,
   awayTeam,
   gameStatus,
+  gameStartTime,
 }: GameCardNotificationButtonProps) {
   const {
     isSupported,
@@ -68,7 +70,7 @@ export function GameCardNotificationButton({
           await unsubscribeFromGame(gameId);
           alert("Unsubscribed from game notifications");
         } else {
-          await subscribeToGame(gameId, league, homeTeam, awayTeam);
+          await subscribeToGame(gameId, league, homeTeam, awayTeam, undefined, gameStartTime);
           alert("Subscribed to game notifications!");
         }
       } catch (error) {
@@ -86,6 +88,7 @@ export function GameCardNotificationButton({
       league,
       homeTeam,
       awayTeam,
+      gameStartTime,
       subscribeToGame,
       unsubscribeFromGame,
     ]

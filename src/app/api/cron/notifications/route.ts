@@ -5,6 +5,7 @@ import { getESPNScoreboard } from "@/lib/api/espn";
 import { getGameSummary } from "@/lib/api/espn-summary";
 import {
   getActiveGames,
+  getLeaguesNeedingPolling,
   getGameState,
   saveGameState,
   getGameSubscribers,
@@ -41,37 +42,47 @@ async function processNotifications() {
   const activeGameIds = await getActiveGames();
 
   if (activeGameIds.length === 0) {
-    return { processed: 0, events: 0, notifications: 0 };
+    return { processed: 0, events: 0, notifications: 0, leaguesPolled: [] };
+  }
+
+  // Determine which leagues need polling based on game schedules
+  const leaguesToPoll = await getLeaguesNeedingPolling();
+
+  if (leaguesToPoll.length === 0) {
+    // No leagues have games in their polling window
+    return {
+      processed: 0,
+      events: 0,
+      notifications: 0,
+      leaguesPolled: [],
+      skippedReason: "No games in polling window",
+    };
   }
 
   let totalEvents = 0;
   let totalNotifications = 0;
 
-  // Fetch current scoreboards for NHL, NFL, and NCAAM
-  const [nhlScoreboard, nflScoreboard, ncaamScoreboard] = await Promise.all([
-    getESPNScoreboard("nhl").catch(() => null),
-    getESPNScoreboard("nfl").catch(() => null),
-    getESPNScoreboard("ncaam").catch(() => null),
-  ]);
+  // Only fetch scoreboards for leagues that need polling
+  const scoreboardPromises: Promise<{ league: "nhl" | "nfl" | "ncaam"; scoreboard: Awaited<ReturnType<typeof getESPNScoreboard>> | null }>[] = [];
 
-  // Create a map of all current games
+  for (const league of leaguesToPoll) {
+    scoreboardPromises.push(
+      getESPNScoreboard(league)
+        .then((scoreboard) => ({ league, scoreboard }))
+        .catch(() => ({ league, scoreboard: null }))
+    );
+  }
+
+  const scoreboardResults = await Promise.all(scoreboardPromises);
+
+  // Create a map of all current games from the fetched scoreboards
   const currentGames = new Map<string, { game: Game; league: "nhl" | "nfl" | "ncaam" }>();
 
-  if (nhlScoreboard) {
-    for (const game of nhlScoreboard.games) {
-      currentGames.set(game.id, { game, league: "nhl" });
-    }
-  }
-
-  if (nflScoreboard) {
-    for (const game of nflScoreboard.games) {
-      currentGames.set(game.id, { game, league: "nfl" });
-    }
-  }
-
-  if (ncaamScoreboard) {
-    for (const game of ncaamScoreboard.games) {
-      currentGames.set(game.id, { game, league: "ncaam" });
+  for (const { league, scoreboard } of scoreboardResults) {
+    if (scoreboard) {
+      for (const game of scoreboard.games) {
+        currentGames.set(game.id, { game, league });
+      }
     }
   }
 
@@ -148,6 +159,7 @@ async function processNotifications() {
     processed: activeGameIds.length,
     events: totalEvents,
     notifications: totalNotifications,
+    leaguesPolled: leaguesToPoll,
   };
 }
 

@@ -197,6 +197,7 @@ export function GameCard({ game }: GameCardProps) {
                 homeTeam={game.homeTeam.abbreviation}
                 awayTeam={game.awayTeam.abbreviation}
                 gameStatus={game.status}
+                gameStartTime={game.startTime.toISOString()}
               />
             )}
             {/* TV broadcast for live and scheduled games */}
