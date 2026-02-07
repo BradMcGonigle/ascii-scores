@@ -26,6 +26,7 @@ interface NotificationContextValue {
   ) => Promise<boolean>;
   unsubscribeFromGame: (gameId: string) => Promise<boolean>;
   requestPermission: () => Promise<boolean>;
+  sendTestNotification: () => Promise<{ success: boolean; error?: string }>;
 }
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
@@ -295,6 +296,32 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     [state.subscriptionId]
   );
 
+  const sendTestNotification = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+    if (!state.subscriptionId) {
+      return { success: false, error: "No subscription ID - subscribe to a game first" };
+    }
+
+    try {
+      const response = await fetch("/api/notifications/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subscriptionId: state.subscriptionId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.error || "Failed to send test notification" };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  }, [state.subscriptionId]);
+
   const value: NotificationContextValue = {
     isSupported,
     permission,
@@ -304,6 +331,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     subscribeToGame,
     unsubscribeFromGame,
     requestPermission,
+    sendTestNotification,
   };
 
   return (
