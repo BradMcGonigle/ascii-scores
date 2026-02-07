@@ -4,6 +4,8 @@ import { useCallback, useState, useEffect } from "react";
 import { useNotifications } from "@/components/notifications";
 import type { GameStatus } from "@/lib/types";
 
+const isDev = process.env.NODE_ENV === "development";
+
 interface GameDetailNotificationButtonProps {
   gameId: string;
   league: "nhl" | "nfl" | "ncaam";
@@ -36,6 +38,7 @@ export function GameDetailNotificationButton({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isTestLoading, setIsTestLoading] = useState(false);
+  const [isCronLoading, setIsCronLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const isSubscribed = isSubscribedToGame(gameId);
 
@@ -108,6 +111,22 @@ export function GameDetailNotificationButton({
     }
   }, [isTestLoading, sendTestNotification]);
 
+  const handleCronClick = useCallback(async () => {
+    if (isCronLoading) return;
+
+    setIsCronLoading(true);
+    try {
+      const response = await fetch("/api/cron/notifications");
+      const data = await response.json();
+      alert(`Cron result:\n${JSON.stringify(data, null, 2)}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      alert(`Cron error: ${message}`);
+    } finally {
+      setIsCronLoading(false);
+    }
+  }, [isCronLoading]);
+
   // Don't render until mounted (prevents hydration mismatch)
   if (!mounted) {
     return null;
@@ -131,7 +150,7 @@ export function GameDetailNotificationButton({
   const label = isSubscribed ? "Notifications On" : "Get Notified";
 
   return (
-    <div className="flex items-center gap-2 justify-center">
+    <div className="flex items-center gap-2 justify-center flex-wrap">
       <button
         onClick={handleClick}
         disabled={isLoading}
@@ -146,15 +165,25 @@ export function GameDetailNotificationButton({
       >
         {isLoading ? "..." : `${icon} ${label}`}
       </button>
-      {isSubscribed && (
-        <button
-          onClick={handleTestClick}
-          disabled={isTestLoading}
-          title="Send a test notification"
-          className="font-mono text-xs px-2 py-1 border border-terminal-yellow text-terminal-yellow rounded transition-colors hover:bg-terminal-yellow/10 disabled:opacity-50"
-        >
-          {isTestLoading ? "..." : "Test"}
-        </button>
+      {isDev && isSubscribed && (
+        <>
+          <button
+            onClick={handleTestClick}
+            disabled={isTestLoading}
+            title="Send a test notification (dev only)"
+            className="font-mono text-xs px-2 py-1 border border-terminal-yellow text-terminal-yellow rounded transition-colors hover:bg-terminal-yellow/10 disabled:opacity-50"
+          >
+            {isTestLoading ? "..." : "Test"}
+          </button>
+          <button
+            onClick={handleCronClick}
+            disabled={isCronLoading}
+            title="Trigger cron job to check for events (dev only)"
+            className="font-mono text-xs px-2 py-1 border border-terminal-cyan text-terminal-cyan rounded transition-colors hover:bg-terminal-cyan/10 disabled:opacity-50"
+          >
+            {isCronLoading ? "..." : "Cron"}
+          </button>
+        </>
       )}
     </div>
   );
