@@ -4,8 +4,6 @@ import { useCallback, useState, useEffect } from "react";
 import { useNotifications } from "@/components/notifications";
 import type { GameStatus } from "@/lib/types";
 
-const isDev = process.env.NODE_ENV === "development";
-
 interface GameDetailNotificationButtonProps {
   gameId: string;
   league: "nhl" | "nfl" | "ncaam";
@@ -165,12 +163,12 @@ export function GameDetailNotificationButton({
       >
         {isLoading ? "..." : `${icon} ${label}`}
       </button>
-      {isDev && isSubscribed && (
+      {isSubscribed && (
         <>
           <button
             onClick={handleTestClick}
             disabled={isTestLoading}
-            title="Send a test notification (dev only)"
+            title="Send a test notification"
             className="font-mono text-xs px-2 py-1 border border-terminal-yellow text-terminal-yellow rounded transition-colors hover:bg-terminal-yellow/10 disabled:opacity-50"
           >
             {isTestLoading ? "..." : "Test"}
@@ -178,7 +176,7 @@ export function GameDetailNotificationButton({
           <button
             onClick={handleCronClick}
             disabled={isCronLoading}
-            title="Trigger cron job to check for events (dev only)"
+            title="Trigger cron job to check for events"
             className="font-mono text-xs px-2 py-1 border border-terminal-cyan text-terminal-cyan rounded transition-colors hover:bg-terminal-cyan/10 disabled:opacity-50"
           >
             {isCronLoading ? "..." : "Cron"}
