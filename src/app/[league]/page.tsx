@@ -19,6 +19,9 @@ import { addDays, formatDateForAPI, getRelativeDateLabel, parseDateFromAPI } fro
 // Leagues that have standings pages
 const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
+// Leagues that have playoff bracket pages
+const PLAYOFF_LEAGUES = ["nfl"];
+
 // How far users can navigate via URL (validates date param)
 const MAX_DAYS = 365;
 
@@ -168,6 +171,14 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                     className="font-mono text-xs text-terminal-cyan hover:text-terminal-green transition-colors"
                   >
                     [Standings]
+                  </Link>
+                )}
+                {PLAYOFF_LEAGUES.includes(leagueId) && (
+                  <Link
+                    href={`/${leagueId}/playoffs`}
+                    className="font-mono text-xs text-terminal-cyan hover:text-terminal-green transition-colors"
+                  >
+                    [Playoffs]
                   </Link>
                 )}
               </div>

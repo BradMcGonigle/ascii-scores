@@ -58,6 +58,7 @@ All significant architectural and technical decisions are documented in `docs/de
 | [007 - Server Component Patterns](docs/decisions/007-server-component-patterns.md) | Accepted | Minimize client JS with server-first component design |
 | [008 - WCAG Accessibility](docs/decisions/008-wcag-accessibility.md) | Accepted | WCAG 2.1 AA compliance with reduced motion support |
 | [009 - Hybrid Caching Strategy](docs/decisions/009-hybrid-caching-strategy.md) | Accepted | Cache historical data indefinitely, live data at 30s |
+| [010 - Playoff Bracket Architecture](docs/decisions/010-playoff-bracket-architecture.md) | Accepted | Build playoff brackets from ESPN scoreboard data using date-based discovery |
 
 ## Development Context
 
@@ -125,6 +126,7 @@ This section captures important context that doesn't fit in formal ADRs - discus
 
 ### 2026-02
 
+- **Added NFL playoff brackets** - built playoff bracket display from ESPN scoreboard data using date-based discovery approach; ESPN's `year` param does not work for historical postseason data so we discover round date ranges from `leagues[0].calendar` and fetch games per-round in parallel; seeds inferred from home/away positioning (higher seed hosts in NFL); responsive Unicode box-drawing borders use CSS flex-based overflow pattern (flex-1 + overflow-hidden + repeated chars) instead of character counting, which breaks due to inconsistent Unicode character widths across browsers; 7-column CSS grid on desktop, stacked rounds on mobile; supports 2020+ seasons (ADR-010)
 - **Added game detail pages** (PR #38) - click-through from scoreboard to full boxscore with play-by-play, team stats, and player stats; uses ESPN Summary API with ISR caching (ADR-006)
 - **Added league standings pages** (PR #36) - comprehensive standings for all ESPN sports with division/conference groupings; reuses existing API patterns
 - **Added division/conference toggle** (PR #37) - standings can be viewed by division, conference, or full league; user preference persisted

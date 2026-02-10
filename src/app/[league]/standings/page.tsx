@@ -13,6 +13,9 @@ interface StandingsPageProps {
 // Leagues that support standings (ESPN leagues only, no F1 or PGA)
 const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
+// Leagues that have playoff bracket pages
+const PLAYOFF_LEAGUES = ["nfl"];
+
 // Generate static params for leagues with standings
 export function generateStaticParams() {
   return STANDINGS_LEAGUES.map((league) => ({ league }));
@@ -97,6 +100,14 @@ export default async function StandingsPage({ params }: StandingsPageProps) {
             <span className="text-terminal-green">{"<"}</span>
             {" "}Back to Scores
           </Link>
+          {PLAYOFF_LEAGUES.includes(leagueId) && (
+            <Link
+              href={`/${leagueId}/playoffs`}
+              className="font-mono text-sm text-terminal-cyan hover:text-terminal-green transition-colors"
+            >
+              [Playoffs]
+            </Link>
+          )}
           <RefreshButton />
         </div>
       </div>
