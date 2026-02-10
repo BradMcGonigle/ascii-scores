@@ -161,7 +161,7 @@ export function GameDetailNotificationButton({
       >
         {isLoading ? "..." : <span className="inline-flex items-center gap-1.5"><span className={`inline-block size-2 rounded-full ${isSubscribed ? "bg-terminal-green" : "border border-current"}`} />{label}</span>}
       </button>
-      {isSubscribed && (
+      {isSubscribed && process.env.NODE_ENV === "development" && (
         <>
           <button
             onClick={handleTestClick}
