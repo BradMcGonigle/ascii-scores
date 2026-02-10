@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { Game, GameStatus, GameType } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
+import { supportsNotifications } from "@/lib/notifications/types";
 import { GameStats } from "./GameStats";
 import { PeriodScores } from "./PeriodScores";
+import { GameCardNotificationButton } from "./GameCardNotificationButton";
 
 /**
  * Get badge display for game type (preseason, playoff, etc.)
@@ -187,6 +189,17 @@ export function GameCard({ game }: GameCardProps) {
             {statusText}
           </div>
           <div className="flex items-center gap-2">
+            {/* Notification button for supported leagues */}
+            {supportsNotifications(game.league) && (
+              <GameCardNotificationButton
+                gameId={game.id}
+                league={game.league}
+                homeTeam={game.homeTeam.abbreviation}
+                awayTeam={game.awayTeam.abbreviation}
+                gameStatus={game.status}
+                gameStartTime={game.startTime.toISOString()}
+              />
+            )}
             {/* TV broadcast for live and scheduled games */}
             {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
               <span className="text-xs text-terminal-muted">
