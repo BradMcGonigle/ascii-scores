@@ -3,7 +3,7 @@ import type { GameStatus, League } from "@/lib/types";
 /**
  * Leagues that support game notifications (excludes F1/PGA which don't have head-to-head games)
  */
-export type NotificationLeague = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "epl" | "ncaam" | "ncaaw";
+export type NotificationLeague = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "epl" | "fa-cup" | "ncaam" | "ncaaw";
 
 /**
  * Event types that users can subscribe to
@@ -110,7 +110,7 @@ export interface LocalNotificationState {
  * Leagues that support notifications
  */
 export const NOTIFICATION_SUPPORTED_LEAGUES: NotificationLeague[] = [
-  "nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw",
+  "nhl", "nfl", "nba", "mlb", "mls", "epl", "fa-cup", "ncaam", "ncaaw",
 ];
 
 /**
@@ -144,13 +144,13 @@ export function getEventTypeLabel(
       return "Final Score";
     case "scoring":
       if (league === "nhl") return "Goals";
-      if (league === "mls" || league === "epl") return "Goals";
+      if (league === "mls" || league === "epl" || league === "fa-cup") return "Goals";
       if (league === "mlb") return "Runs";
       return "Scores";
     case "periodEnd":
       if (league === "nhl") return "End of Period";
       if (league === "ncaam" || league === "ncaaw") return "End of Half";
-      if (league === "mls" || league === "epl") return "End of Half";
+      if (league === "mls" || league === "epl" || league === "fa-cup") return "End of Half";
       if (league === "mlb") return "End of Inning";
       return "End of Quarter";
   }

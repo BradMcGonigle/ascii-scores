@@ -88,6 +88,7 @@ export const PERIOD_DEFINITIONS: Record<League, Record<number, string>> = {
   },
   mls: {},
   epl: {},
+  "fa-cup": {},
   ncaam: {
     1: "1st Half",
     2: "2nd Half",

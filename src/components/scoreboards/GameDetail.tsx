@@ -388,7 +388,7 @@ function getPeriodLabel(period: number, league: string): string {
   if (league === "mlb") {
     return String(period);
   }
-  if (league === "mls" || league === "epl") {
+  if (league === "mls" || league === "epl" || league === "fa-cup") {
     if (period === 1) return "1H";
     if (period === 2) return "2H";
     return "ET";
@@ -853,6 +853,7 @@ function getPlayerColumnsForLeague(league: string): StatColumn[] {
       return MLB_PLAYER_COLUMNS;
     case "mls":
     case "epl":
+    case "fa-cup":
       return MLS_PLAYER_COLUMNS;
     default:
       return NHL_PLAYER_COLUMNS;
@@ -1035,8 +1036,9 @@ const STAT_ABBREVIATIONS: Record<string, Record<string, string>> = {
 // Alias college basketball to NBA mappings
 STAT_ABBREVIATIONS.ncaam = STAT_ABBREVIATIONS.nba;
 STAT_ABBREVIATIONS.ncaaw = STAT_ABBREVIATIONS.nba;
-// Alias EPL to MLS mappings
+// Alias EPL and FA Cup to MLS mappings
 STAT_ABBREVIATIONS.epl = STAT_ABBREVIATIONS.mls;
+STAT_ABBREVIATIONS["fa-cup"] = STAT_ABBREVIATIONS.mls;
 
 // Get abbreviation for a stat key based on league
 function getStatAbbreviation(key: string, league: string): string {

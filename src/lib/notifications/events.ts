@@ -232,6 +232,7 @@ function getGameStartTitle(league: NotificationLeague): string {
       return "Play Ball!";
     case "mls":
     case "epl":
+    case "fa-cup":
     case "nfl":
       return "Kickoff!";
   }
@@ -245,6 +246,7 @@ function getScoringTitle(league: NotificationLeague, event: NotificationEvent): 
     case "nhl":
     case "mls":
     case "epl":
+    case "fa-cup":
       return "GOAL!";
     case "mlb":
       return "RUN!";
@@ -266,6 +268,7 @@ function getPeriodEndLabel(league: NotificationLeague, period: number): string {
     case "ncaaw":
     case "mls":
     case "epl":
+    case "fa-cup":
       return getHalfLabel(period);
     case "mlb":
       return getInningLabel(period);

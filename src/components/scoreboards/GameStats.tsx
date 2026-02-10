@@ -188,6 +188,7 @@ function getStatsData(
     case "mlb":
       return getMLBStats(stats);
     case "mls":
+    case "fa-cup":
       return getMLSStats(stats);
     default:
       return [];

@@ -28,6 +28,7 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
   mlb: "baseball/mlb",
   mls: "soccer/usa.1",
   epl: "soccer/eng.1",
+  "fa-cup": "soccer/eng.fa",
   ncaam: "basketball/mens-college-basketball",
   ncaaw: "basketball/womens-college-basketball",
 };
@@ -71,7 +72,7 @@ interface ESPNBoxscoreTeam {
   statistics: Array<{
     name: string;
     displayValue: string;
-  }>;
+  }> | null;
 }
 
 interface ESPNBoxscore {
@@ -567,7 +568,7 @@ function mapTeamBoxscore(
 
   if (boxscore) {
     const teamStats = boxscore.teams.find((t) => t.team.id === teamId);
-    if (teamStats) {
+    if (teamStats?.statistics) {
       for (const stat of teamStats.statistics) {
         stats[stat.name] = stat.displayValue;
       }
