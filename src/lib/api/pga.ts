@@ -212,9 +212,6 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
     (s) => s.name === "scoreToPar" || s.name === "score"
   );
   const todayStat = competitor.statistics?.find((s) => s.name === "today");
-  const prizeMoneystat = competitor.statistics?.find(
-    (s) => s.name === "winnings" || s.name === "prizeMoney" || s.name === "earnings"
-  );
 
   const { display: scoreToPar, num: scoreToParNum } = parseScoreToPar(
     scoreToParStat?.displayValue || competitor.score?.displayValue
@@ -238,6 +235,15 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
   // Get earnings (directly from competitor or from statistics)
   const earnings = competitor.earnings;
 
+  // Format prize money from earnings (ESPN provides numeric value)
+  const prizeMoney = earnings && earnings > 0
+    ? new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+      }).format(earnings)
+    : undefined;
+
   // Get FedEx Cup points from statistics
   const fedexPointsStat = competitor.statistics?.find((s) => s.name === "cupPoints");
   const fedexPoints = fedexPointsStat
@@ -256,7 +262,7 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
     rounds,
     totalStrokes,
     status: getPlayerStatus(competitor),
-    prizeMoney: prizeMoneystat?.displayValue,
+    prizeMoney,
     earnings,
     fedexPoints,
   };
