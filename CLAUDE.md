@@ -420,6 +420,28 @@ items.forEach(item => {
 - Test API response parsing
 - Test ASCII rendering at various widths
 
+## Accessibility Requirements (MANDATORY)
+
+All interactive elements must be accessible. ESLint's jsx-a11y plugin catches semantic issues, but visual and behavioral accessibility requires manual attention.
+
+### Interactive Element Checklist
+
+When creating or modifying any interactive element (`<button>`, `<a>`, `<summary>`, `onClick` handlers, ARIA roles like `role="button"`), verify:
+
+| Requirement | How to satisfy |
+| --------------- | ---------------- |
+| **Pointer cursor** | Handled globally via `globals.css` `@layer components` rule. Do NOT add `cursor-pointer` to individual elements — it's automatic. Only add `cursor-wait` or `cursor-not-allowed` for loading/disabled states. |
+| **Focus indicator** | Handled globally via `:focus-visible` rule. Verify custom components don't suppress it. |
+| **Keyboard accessible** | Buttons and links work by default. For `onClick` on non-interactive elements, add `onKeyDown` (Enter/Space) and `tabIndex={0}`, or use a `<button>` instead. |
+| **Aria label** | Required when the visible text doesn't describe the action (e.g., icon-only buttons). |
+| **Disabled state** | Use `disabled` attribute on buttons (not `aria-disabled`) — the global CSS excludes `:disabled` from pointer cursor automatically. |
+
+### Common Pitfalls to Avoid
+
+- **Don't use `<div onClick>`** — use `<button>` instead. If you must use a non-interactive element, add `role="button"`, `tabIndex={0}`, and keyboard event handling.
+- **Don't override cursor globally** — the `@layer components` rule in `globals.css` handles all interactive elements. Only override with utility classes for specific states (`cursor-wait`, `cursor-not-allowed`).
+- **Don't forget hover/focus states** — every interactive element should have a visible state change on hover and focus.
+
 ## Important Notes
 
 - This project uses unofficial ESPN APIs - do not abuse rate limits
