@@ -14,6 +14,7 @@ const LEAGUE_COLORS: Record<League, string> = {
   mlb: "group-hover:text-terminal-blue group-hover:border-terminal-blue",
   mls: "group-hover:text-terminal-green group-hover:border-terminal-green",
   epl: "group-hover:text-terminal-cyan group-hover:border-terminal-cyan",
+  "fa-cup": "group-hover:text-terminal-magenta group-hover:border-terminal-magenta",
   ncaam: "group-hover:text-terminal-yellow group-hover:border-terminal-yellow",
   ncaaw: "group-hover:text-terminal-cyan group-hover:border-terminal-cyan",
   f1: "group-hover:text-terminal-red group-hover:border-terminal-red",

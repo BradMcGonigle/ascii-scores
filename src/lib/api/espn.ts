@@ -14,6 +14,7 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
   mlb: "baseball/mlb",
   mls: "soccer/usa.1",
   epl: "soccer/eng.1",
+  "fa-cup": "soccer/eng.fa",
   ncaam: "basketball/mens-college-basketball",
   ncaaw: "basketball/womens-college-basketball",
 };
@@ -23,7 +24,7 @@ const LEAGUE_SPORT_MAP: Record<Exclude<League, "f1" | "pga">, string> = {
  * US sports use Eastern time, EPL uses UK time.
  */
 export function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): string {
-  if (league === "epl") {
+  if (league === "epl" || league === "fa-cup") {
     return "Europe/London";
   }
   // US sports (NHL, NFL, NBA, MLB, MLS, NCAAM, NCAAW) use Eastern time
@@ -37,7 +38,7 @@ export function getTimezoneForLeague(league: Exclude<League, "f1" | "pga">): str
  * (game times are always shown in the user's local timezone).
  */
 export function getTodayForLeague(league: Exclude<League, "f1" | "pga">): Date {
-  if (league === "epl") {
+  if (league === "epl" || league === "fa-cup") {
     return getTodayInUK();
   }
   // US sports (NHL, NFL, NBA, MLB, MLS, NCAAM, NCAAW) use Eastern time
@@ -266,6 +267,7 @@ const LEAGUE_KEY_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
   mlb: ["hits", "strikeouts", "homeRuns"],
   mls: ["possessionPct", "shotsOnTarget", "saves"],
   epl: ["possessionPct", "shotsOnTarget", "saves"],
+  "fa-cup": ["possessionPct", "shotsOnTarget", "saves"],
   ncaam: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
   ncaaw: ["rebounds", "assists", "fieldGoalPct", "freeThrowPct", "threePointFieldGoalPct", "turnovers", "fouls"],
 };
@@ -582,6 +584,10 @@ const STANDINGS_STATS: Record<Exclude<League, "f1" | "pga">, string[]> = {
     "points", "gamesPlayed", "wins", "losses", "ties",
     "goalsFor", "goalsAgainst", "goalDifferential",
   ],
+  "fa-cup": [
+    "points", "gamesPlayed", "wins", "losses", "ties",
+    "goalsFor", "goalsAgainst", "goalDifferential",
+  ],
   ncaam: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses", "streak"],
   ncaaw: ["wins", "losses", "winPercent", "conferenceWins", "conferenceLosses", "streak"],
 };
@@ -607,6 +613,7 @@ const PRIMARY_SORT_STAT: Record<Exclude<League, "f1" | "pga">, string> = {
   mlb: "wins",
   mls: "points",
   epl: "points",
+  "fa-cup": "points",
   ncaam: "wins",
   ncaaw: "wins",
 };

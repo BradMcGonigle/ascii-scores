@@ -1,7 +1,7 @@
 /**
  * Supported leagues
  */
-export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "epl" | "ncaam" | "ncaaw" | "f1" | "pga";
+export type League = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "epl" | "fa-cup" | "ncaam" | "ncaaw" | "f1" | "pga";
 
 /**
  * Game status types
@@ -577,7 +577,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     color: "mls",
     sport: "soccer",
     season: { seasonStart: 2, seasonStartDay: 21, seasonEnd: 11, seasonEndDay: 30 }, // Feb 21 - Nov 30
-    popularity: 8,
+    popularity: 9,
   },
   epl: {
     id: "epl",
@@ -587,6 +587,15 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     sport: "soccer",
     season: { seasonStart: 8, seasonStartDay: 15, seasonEnd: 5, seasonEndDay: 24 }, // Aug 15 - May 24 (2025-26)
     popularity: 7,
+  },
+  "fa-cup": {
+    id: "fa-cup",
+    name: "FA Cup",
+    fullName: "English FA Cup",
+    color: "fa-cup",
+    sport: "soccer",
+    season: { seasonStart: 8, seasonStartDay: 15, seasonEnd: 5, seasonEndDay: 17 }, // Aug 15 - May 17 (early rounds through final)
+    popularity: 8,
   },
   ncaam: {
     id: "ncaam",
@@ -613,7 +622,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     color: "f1",
     sport: "racing",
     season: { seasonStart: 3, seasonStartDay: 6, seasonEnd: 12, seasonEndDay: 6 }, // Mar 6 - Dec 6 (2026)
-    popularity: 9,
+    popularity: 10,
   },
   pga: {
     id: "pga",
@@ -622,7 +631,7 @@ export const LEAGUES: Record<League, LeagueConfig> = {
     color: "pga",
     sport: "golf",
     season: { seasonStart: 1, seasonStartDay: 1, seasonEnd: 8, seasonEndDay: 31 }, // Jan 1 - Aug 31 (FedExCup season)
-    popularity: 10,
+    popularity: 11,
   },
 };
 

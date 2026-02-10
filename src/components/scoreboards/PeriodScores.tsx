@@ -31,7 +31,8 @@ function getPeriodLabels(league: League, periodCount: number): string[] {
       // MLB: 1-9+
       return Array.from({ length: periodCount }, (_, i) => String(i + 1));
     case "mls":
-      // MLS: 1H, 2H, ET1, ET2, PK
+    case "fa-cup":
+      // Soccer: 1H, 2H, ET1, ET2, PK
       return Array.from({ length: periodCount }, (_, i) => {
         if (i === 0) return "1H";
         if (i === 1) return "2H";
@@ -89,7 +90,7 @@ function CompactPeriodScores({
   const labels = getPeriodLabels(league, maxPeriods);
   const colWidth = getColumnWidth(league);
   const isMLB = league === "mlb";
-  const isMLS = league === "mls";
+  const isMLS = league === "mls" || league === "fa-cup";
   // Only show T (total) column for MLB (shows R/H/E) and MLS
   const showTotalColumn = isMLB || isMLS;
 

@@ -12,7 +12,7 @@ interface GamePageProps {
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ascii-scores.vercel.app";
 
 // Only ESPN-based leagues support game details
-const SUPPORTED_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
+const SUPPORTED_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "fa-cup", "ncaam", "ncaaw"];
 
 // Dynamic revalidation: 30s for live games, effectively infinite for final games
 // This will be used by Next.js for ISR caching

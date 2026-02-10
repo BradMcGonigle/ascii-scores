@@ -28,7 +28,7 @@ interface GameCardProps {
 }
 
 // Leagues that support game detail pages
-const DETAIL_SUPPORTED_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
+const DETAIL_SUPPORTED_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "fa-cup", "ncaam", "ncaaw"];
 
 /**
  * Get the appropriate border style based on game status

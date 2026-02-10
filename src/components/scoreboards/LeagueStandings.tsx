@@ -87,6 +87,17 @@ const STANDINGS_COLUMNS: Record<Exclude<League, "f1" | "pga">, StandingsColumn[]
     { key: "goalsFor", header: "GF" },
     { key: "goalsAgainst", header: "GA" },
   ],
+  "fa-cup": [
+    { key: "team", header: "TEAM" },
+    { key: "gamesPlayed", header: "GP" },
+    { key: "wins", header: "W" },
+    { key: "losses", header: "L" },
+    { key: "ties", header: "D" },
+    { key: "points", header: "PTS" },
+    { key: "goalDifferential", header: "GD" },
+    { key: "goalsFor", header: "GF" },
+    { key: "goalsAgainst", header: "GA" },
+  ],
   ncaam: [
     { key: "team", header: "TEAM" },
     { key: "wins", header: "W" },
