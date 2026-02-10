@@ -1,31 +1,34 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { LeagueScoreboard } from "@/components/scoreboards/LeagueScoreboard";
 import { F1StandingsDisplay } from "@/components/scoreboards/F1Standings";
 import { F1SessionsList } from "@/components/scoreboards/F1SessionsList";
-import { GolfLeaderboardClient } from "@/components/scoreboards/GolfLeaderboardClient";
+import { GolfLeaderboardDisplay } from "@/components/scoreboards/GolfLeaderboard";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
 import { DateNavigation } from "@/components/scoreboards/DateNavigation";
 import { F1RaceWeekendNav } from "@/components/scoreboards/F1RaceWeekendNav";
 import { LeagueJsonLd } from "@/components/seo";
-import { getESPNScoreboard, getDatesWithGames } from "@/lib/api/espn";
+import { getESPNScoreboard, getDatesWithGames, getTodayForLeague } from "@/lib/api/espn";
 import { getF1Standings, getF1RaceWeekends, getF1RaceWeekendSessions } from "@/lib/api/openf1";
-import { getPGALeaderboard } from "@/lib/api/pga";
-import { LEAGUES, type League } from "@/lib/types";
-import { addDays, parseDateFromAPI } from "@/lib/utils/format";
+import { getPGALeaderboard, getPGATournamentCalendar } from "@/lib/api/pga";
+import { PGATournamentNav } from "@/components/scoreboards/PGATournamentNav";
+import { LEAGUES, isLeagueInSeason, getSeasonStartDate, type League } from "@/lib/types";
+import { addDays, formatDateForAPI, getRelativeDateLabel, parseDateFromAPI } from "@/lib/utils/format";
 
 // Leagues that have standings pages
 const STANDINGS_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
 
-const MAX_DAYS_PAST = 5;
-const MAX_DAYS_FUTURE = 5;
+// How far users can navigate via URL (validates date param)
+const MAX_DAYS = 365;
+
+// How many dates to check for navigation hints (PREV/NEXT buttons)
+// Kept smaller to limit API calls - users navigate in "hops"
+const NAV_WINDOW = 30;
 
 interface LeaguePageProps {
   params: Promise<{ league: string }>;
-  searchParams: Promise<{ date?: string; weekend?: string }>;
+  searchParams: Promise<{ date?: string; weekend?: string; event?: string }>;
 }
 
 // Generate static params for all leagues
@@ -81,11 +84,13 @@ export async function generateMetadata({ params }: LeaguePageProps) {
 /**
  * Validate and parse the date parameter
  * Returns the validated date or null if invalid/out of range
+ * Uses league-appropriate timezone to ensure consistent date handling
  */
 function validateDate(
   dateStr: string | undefined,
-  daysBack: number = MAX_DAYS_PAST,
-  daysForward: number = MAX_DAYS_FUTURE
+  league: Exclude<League, "f1" | "pga">,
+  daysBack: number = MAX_DAYS,
+  daysForward: number = MAX_DAYS
 ): Date | null {
   if (!dateStr) return null;
 
@@ -93,7 +98,8 @@ function validateDate(
   if (!parsed) return null;
 
   // Check if date is within allowed range
-  const today = new Date();
+  // Use league-appropriate timezone for "today" to match client expectations
+  const today = getTodayForLeague(league);
   const minDate = addDays(today, -daysBack);
   const maxDate = addDays(today, daysForward);
 
@@ -111,7 +117,7 @@ function validateDate(
 
 export default async function LeaguePage({ params, searchParams }: LeaguePageProps) {
   const { league: leagueId } = await params;
-  const { date: dateParam, weekend: weekendParam } = await searchParams;
+  const { date: dateParam, weekend: weekendParam, event: eventParam } = await searchParams;
 
   // Validate league
   if (!Object.keys(LEAGUES).includes(leagueId)) {
@@ -119,14 +125,19 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
   }
 
   const league = LEAGUES[leagueId as League];
+  const isOffSeason = !isLeagueInSeason(league);
 
   // Parse and validate date parameter (for ESPN leagues only)
   const isF1 = leagueId === "f1";
-  const selectedDate = !isF1 ? validateDate(dateParam) : null;
+  const isPGA = leagueId === "pga";
+  const isESPNLeague = !isF1 && !isPGA;
+  const selectedDate = isESPNLeague
+    ? validateDate(dateParam, leagueId as Exclude<League, "f1" | "pga">)
+    : null;
 
   // Determine if we should show navigation
-  // PGA doesn't use navigation
-  const showNavigation = leagueId !== "pga";
+  // All leagues have navigation, but PGA uses tournament nav instead of date nav
+  const showNavigation = true;
 
   return (
     <>
@@ -134,9 +145,7 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
         leagueName={`${league.name} Scores`}
         leagueUrl={`${SITE_URL}/${leagueId}`}
       />
-      <Header activeLeague={leagueId} />
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8">
           {/* Page header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
@@ -145,7 +154,9 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                 {league.name}
                 <span className="text-terminal-border">]</span>
                 {" "}
-                <span className="text-terminal-muted">Scores</span>
+                <span className="text-terminal-muted">
+                  {leagueId === "pga" ? "Leaderboard" : "Scores"}
+                </span>
               </h1>
               <div className="flex items-center gap-4 mt-1">
                 <p className="text-terminal-muted font-mono text-sm">
@@ -160,6 +171,13 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
                   </Link>
                 )}
               </div>
+              {isOffSeason && (
+                <p className="font-mono text-xs text-terminal-yellow mt-2">
+                  <span className="text-terminal-border">[</span>
+                  <span className="mx-1">⏱ Season starts {getSeasonStartDate(league)}</span>
+                  <span className="text-terminal-border">]</span>
+                </p>
+              )}
             </div>
             <RefreshButton />
           </div>
@@ -170,8 +188,13 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
               <Suspense fallback={<DateNavigationSkeleton />}>
                 {isF1 ? (
                   <F1RaceWeekendNavWrapper />
+                ) : leagueId === "pga" ? (
+                  <PGATournamentNavWrapper />
                 ) : (
-                  <DateNavigationWrapper league={leagueId as Exclude<League, "f1" | "pga">} />
+                  <DateNavigationWrapper
+                    league={leagueId as Exclude<League, "f1" | "pga">}
+                    currentDate={selectedDate ?? undefined}
+                  />
                 )}
               </Suspense>
             </div>
@@ -181,29 +204,37 @@ export default async function LeaguePage({ params, searchParams }: LeaguePagePro
           {leagueId === "f1" ? (
             <F1Content weekendId={weekendParam} />
           ) : leagueId === "pga" ? (
-            <PGAContent />
+            <PGAContent eventId={eventParam} />
           ) : (
             <ESPNContent
               league={leagueId as Exclude<League, "f1" | "pga">}
               date={selectedDate ?? undefined}
             />
           )}
-        </div>
-      </main>
-      <Footer />
+      </div>
     </>
   );
 }
 
 /**
  * Server component wrapper that fetches dates with games (ESPN leagues)
+ * Fetches NAV_WINDOW days in each direction from the current view.
+ * Users navigate in "hops" - each page load checks ±30 days, allowing
+ * them to eventually reach any date within MAX_DAYS (365).
  */
 async function DateNavigationWrapper({
   league,
+  currentDate,
 }: {
   league: Exclude<League, "f1" | "pga">;
+  currentDate?: Date;
 }) {
-  const datesWithGames = await getDatesWithGames(league, MAX_DAYS_PAST, MAX_DAYS_FUTURE);
+  const datesWithGames = await getDatesWithGames(
+    league,
+    NAV_WINDOW,
+    NAV_WINDOW,
+    currentDate
+  );
   return <DateNavigation league={league} datesWithGames={datesWithGames} />;
 }
 
@@ -213,6 +244,14 @@ async function DateNavigationWrapper({
 async function F1RaceWeekendNavWrapper() {
   const weekends = await getF1RaceWeekends();
   return <F1RaceWeekendNav weekends={weekends} />;
+}
+
+/**
+ * Server component wrapper that fetches PGA tournament calendar
+ */
+async function PGATournamentNavWrapper() {
+  const calendar = await getPGATournamentCalendar();
+  return <PGATournamentNav tournaments={calendar.tournaments} />;
 }
 
 /**
@@ -249,8 +288,22 @@ async function ESPNContent({
   date?: Date;
 }) {
   try {
-    const scoreboard = await getESPNScoreboard(league, date);
-    return <LeagueScoreboard scoreboard={scoreboard} />;
+    // Fetch scoreboard and dates with games in parallel
+    const [scoreboard, datesWithGames] = await Promise.all([
+      getESPNScoreboard(league, date),
+      getDatesWithGames(league, 0, NAV_WINDOW), // Only need future dates for "next game" hint
+    ]);
+
+    // Find next date with games (after today)
+    // Use league-appropriate timezone to ensure consistency with getDatesWithGames
+    const todayStr = formatDateForAPI(getTodayForLeague(league));
+    const sortedDates = [...datesWithGames].sort((a, b) => a.localeCompare(b));
+    const nextDateStr = sortedDates.find((d) => d > todayStr);
+    const nextGameDateLabel = nextDateStr
+      ? getRelativeDateLabel(parseDateFromAPI(nextDateStr)!)
+      : undefined;
+
+    return <LeagueScoreboard scoreboard={scoreboard} nextGameDateLabel={nextGameDateLabel} />;
   } catch (error) {
     console.error(`Failed to fetch ${league} scoreboard:`, error);
     return (
@@ -346,11 +399,20 @@ async function F1Content({ weekendId }: { weekendId?: string }) {
 /**
  * PGA Tour leaderboard content
  */
-async function PGAContent() {
+async function PGAContent({ eventId }: { eventId?: string }) {
   try {
-    const leaderboard = await getPGALeaderboard();
+    // Fetch both leaderboard and calendar in parallel
+    const [leaderboard, calendar] = await Promise.all([
+      getPGALeaderboard(eventId),
+      getPGATournamentCalendar(),
+    ]);
 
-    return <GolfLeaderboardClient leaderboard={leaderboard} />;
+    // Find the selected tournament from calendar (for displaying info when leaderboard is empty)
+    const selectedTournament = eventId
+      ? calendar.tournaments.find((t) => t.id === eventId)
+      : undefined;
+
+    return <GolfLeaderboardDisplay leaderboard={leaderboard} selectedTournament={selectedTournament} />;
   } catch (error) {
     console.error("Failed to fetch PGA leaderboard:", error);
     return (

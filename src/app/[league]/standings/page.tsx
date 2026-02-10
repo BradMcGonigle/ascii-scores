@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { RefreshButton } from "@/components/scoreboards/RefreshButton";
-import { LeagueStandingsDisplay } from "@/components/scoreboards/LeagueStandings";
+import { StandingsViewToggle } from "@/components/scoreboards/StandingsViewToggle";
 import { Top25Rankings } from "@/components/scoreboards/Top25Rankings";
 import { getESPNStandings, getNCAAPolls } from "@/lib/api/espn";
 import { LEAGUES, type League } from "@/lib/types";
@@ -76,42 +74,36 @@ export default async function StandingsPage({ params }: StandingsPageProps) {
   const league = LEAGUES[leagueId as League];
 
   return (
-    <>
-      <Header activeLeague={leagueId} />
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          {/* Page header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-              <h1 className="font-mono text-2xl text-terminal-fg">
-                <span className="text-terminal-border">[</span>
-                {league.name}
-                <span className="text-terminal-border">]</span>
-                {" "}
-                <span className="text-terminal-muted">Standings</span>
-              </h1>
-              <p className="text-terminal-muted font-mono text-sm mt-1">
-                {league.fullName}
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href={`/${leagueId}`}
-                className="font-mono text-sm text-terminal-muted hover:text-terminal-green transition-colors"
-              >
-                <span className="text-terminal-green">{"<"}</span>
-                {" "}Back to Scores
-              </Link>
-              <RefreshButton />
-            </div>
-          </div>
-
-          {/* Standings content */}
-          <StandingsContent league={leagueId as Exclude<League, "f1" | "pga">} />
+    <div className="mx-auto max-w-7xl px-4 py-8">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="font-mono text-2xl text-terminal-fg">
+            <span className="text-terminal-border">[</span>
+            {league.name}
+            <span className="text-terminal-border">]</span>
+            {" "}
+            <span className="text-terminal-muted">Standings</span>
+          </h1>
+          <p className="text-terminal-muted font-mono text-sm mt-1">
+            {league.fullName}
+          </p>
         </div>
-      </main>
-      <Footer />
-    </>
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/${leagueId}`}
+            className="font-mono text-sm text-terminal-muted hover:text-terminal-green transition-colors"
+          >
+            <span className="text-terminal-green">{"<"}</span>
+            {" "}Back to Scores
+          </Link>
+          <RefreshButton />
+        </div>
+      </div>
+
+      {/* Standings content */}
+      <StandingsContent league={leagueId as Exclude<League, "f1" | "pga">} />
+    </div>
   );
 }
 
@@ -135,7 +127,7 @@ async function StandingsContent({
     return (
       <>
         {polls && <Top25Rankings polls={polls} />}
-        <LeagueStandingsDisplay standings={standings} />
+        <StandingsViewToggle standings={standings} />
       </>
     );
   } catch (error) {

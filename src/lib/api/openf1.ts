@@ -36,6 +36,60 @@ interface OpenF1Driver {
   team_name: string;
 }
 
+interface OpenF1Interval {
+  driver_number: number;
+  gap_to_leader: number | null;
+  interval: number | null;
+  date: string;
+}
+
+interface OpenF1Lap {
+  driver_number: number;
+  lap_number: number;
+  lap_duration: number | null;
+  is_pit_out_lap: boolean;
+  date_start: string;
+}
+
+interface OpenF1Stint {
+  driver_number: number;
+  stint_number: number;
+  lap_start: number;
+  lap_end: number | null;
+  compound: string;
+  tyre_age_at_start: number;
+}
+
+/**
+ * Format lap time for display (seconds to M:SS.sss)
+ */
+function formatLapTime(seconds: number | null): string | undefined {
+  if (seconds === null || seconds <= 0) return undefined;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toFixed(3).padStart(6, "0")}`;
+}
+
+/**
+ * Format gap time for display
+ */
+function formatGap(gap: number | null, position: number): string | undefined {
+  if (position === 1) return "LEADER";
+  if (gap === null) return undefined;
+  // Gap is in seconds - format as +X.XXX
+  return `+${gap.toFixed(3)}`;
+}
+
+/**
+ * Determine driver status based on session status
+ * For final sessions, all drivers are "finished"
+ * For live sessions, drivers are "running" (could be enhanced with race_control data)
+ */
+function getDriverStatus(sessionStatus: GameStatus): "running" | "pit" | "out" | "finished" {
+  if (sessionStatus === "final") return "finished";
+  return "running";
+}
+
 /**
  * Map OpenF1 session type to our type
  */
@@ -62,6 +116,157 @@ function getSessionStatus(session: OpenF1Session): GameStatus {
   if (now < start) return "scheduled";
   if (now > end) return "final";
   return "live";
+}
+
+/**
+ * Build enriched driver data from all API responses
+ */
+function buildDriverData(
+  positions: OpenF1Position[],
+  driversData: OpenF1Driver[],
+  intervals: OpenF1Interval[],
+  laps: OpenF1Lap[],
+  stints: OpenF1Stint[],
+  sessionStatus: GameStatus
+): F1Driver[] {
+  // Build driver info map
+  const driverMap = new Map<number, OpenF1Driver>();
+  for (const driver of driversData) {
+    driverMap.set(driver.driver_number, driver);
+  }
+
+  // Get latest position for each driver
+  const latestPositions = new Map<number, number>();
+  for (const pos of positions) {
+    latestPositions.set(pos.driver_number, pos.position);
+  }
+
+  // Get latest gap for each driver
+  const latestGaps = new Map<number, number | null>();
+  for (const interval of intervals) {
+    latestGaps.set(interval.driver_number, interval.gap_to_leader);
+  }
+
+  // Process laps data - get last lap time, fastest lap, and laps completed
+  const driverLapData = new Map<number, { lastLap: number | null; fastestLap: number | null; lapsCompleted: number }>();
+  for (const lap of laps) {
+    const existing = driverLapData.get(lap.driver_number);
+    const lapTime = lap.lap_duration;
+
+    if (!existing) {
+      driverLapData.set(lap.driver_number, {
+        lastLap: lapTime,
+        fastestLap: lapTime && lapTime > 0 ? lapTime : null,
+        lapsCompleted: lap.lap_number,
+      });
+    } else {
+      // Update last lap (most recent by lap number)
+      if (lap.lap_number > existing.lapsCompleted) {
+        existing.lastLap = lapTime;
+        existing.lapsCompleted = lap.lap_number;
+      }
+      // Update fastest lap
+      if (lapTime && lapTime > 0 && (!existing.fastestLap || lapTime < existing.fastestLap)) {
+        existing.fastestLap = lapTime;
+      }
+    }
+  }
+
+  // Process stints data - count pit stops and get current tyre
+  const driverStintData = new Map<number, { pitStops: number; currentTyre: string | null }>();
+  for (const stint of stints) {
+    const existing = driverStintData.get(stint.driver_number);
+    if (!existing) {
+      driverStintData.set(stint.driver_number, {
+        pitStops: stint.stint_number > 1 ? stint.stint_number - 1 : 0,
+        currentTyre: stint.compound,
+      });
+    } else {
+      // Update with latest stint info
+      if (stint.stint_number > existing.pitStops + 1) {
+        existing.pitStops = stint.stint_number - 1;
+      }
+      existing.currentTyre = stint.compound;
+    }
+  }
+
+  // Build driver standings
+  const drivers: F1Driver[] = [];
+  for (const [driverNumber, position] of latestPositions) {
+    const driverInfo = driverMap.get(driverNumber);
+    if (driverInfo) {
+      const gap = latestGaps.get(driverNumber);
+      const lapData = driverLapData.get(driverNumber);
+      const stintData = driverStintData.get(driverNumber);
+
+      drivers.push({
+        position,
+        driverNumber,
+        driverCode: driverInfo.name_acronym,
+        driverName: driverInfo.broadcast_name,
+        teamName: driverInfo.team_name,
+        gap: formatGap(gap ?? null, position),
+        lastLapTime: formatLapTime(lapData?.lastLap ?? null),
+        fastestLap: formatLapTime(lapData?.fastestLap ?? null),
+        lapsCompleted: lapData?.lapsCompleted,
+        pitStops: stintData?.pitStops ?? 0,
+        currentTyre: stintData?.currentTyre ?? undefined,
+        status: getDriverStatus(sessionStatus),
+      });
+    }
+  }
+
+  // Sort by position
+  drivers.sort((a, b) => a.position - b.position);
+  return drivers;
+}
+
+/**
+ * Fetch all driver-related data for a session
+ */
+async function fetchSessionDriverData(
+  sessionKey: number | string,
+  isPastDate: boolean
+): Promise<{
+  positions: OpenF1Position[];
+  driversData: OpenF1Driver[];
+  intervals: OpenF1Interval[];
+  laps: OpenF1Lap[];
+  stints: OpenF1Stint[];
+}> {
+  const revalidate = isPastDate ? false : 10;
+
+  const [positionsResponse, driversResponse, intervalsResponse, lapsResponse, stintsResponse] =
+    await Promise.all([
+      fetch(`${OPENF1_BASE_URL}/position?session_key=${sessionKey}`, {
+        headers: { Accept: "application/json" },
+        next: { revalidate },
+      }),
+      fetch(`${OPENF1_BASE_URL}/drivers?session_key=${sessionKey}`, {
+        headers: { Accept: "application/json" },
+        next: { revalidate },
+      }),
+      fetch(`${OPENF1_BASE_URL}/intervals?session_key=${sessionKey}`, {
+        headers: { Accept: "application/json" },
+        next: { revalidate },
+      }),
+      fetch(`${OPENF1_BASE_URL}/laps?session_key=${sessionKey}`, {
+        headers: { Accept: "application/json" },
+        next: { revalidate },
+      }),
+      fetch(`${OPENF1_BASE_URL}/stints?session_key=${sessionKey}`, {
+        headers: { Accept: "application/json" },
+        next: { revalidate },
+      }),
+    ]);
+
+  return {
+    positions: positionsResponse.ok ? await positionsResponse.json() : [],
+    driversData: driversResponse.ok ? await driversResponse.json() : [],
+    intervals: intervalsResponse.ok ? await intervalsResponse.json() : [],
+    laps: lapsResponse.ok ? await lapsResponse.json() : [],
+    stints: stintsResponse.ok ? await stintsResponse.json() : [],
+  };
 }
 
 /**
@@ -125,62 +330,22 @@ export async function getF1SessionByDate(date?: Date): Promise<F1Session | null>
     // Get the most recent session for the date (or latest overall)
     const latestSession = sessions[sessions.length - 1];
     const sessionKey = latestSession.session_key;
+    const sessionStatus = getSessionStatus(latestSession);
 
-    // Fetch positions and driver info in parallel
-    // Apply same caching strategy to these fetches
-    const [positionsResponse, driversResponse] = await Promise.all([
-      fetch(`${OPENF1_BASE_URL}/position?session_key=${sessionKey}`, {
-        headers: { Accept: "application/json" },
-        next: { revalidate: isPastDate ? false : 10 },
-      }),
-      fetch(`${OPENF1_BASE_URL}/drivers?session_key=${sessionKey}`, {
-        headers: { Accept: "application/json" },
-        next: { revalidate: isPastDate ? false : 10 },
-      }),
-    ]);
+    // Fetch all driver-related data
+    const { positions, driversData, intervals, laps, stints } = await fetchSessionDriverData(
+      sessionKey,
+      isPastDate ?? false
+    );
 
-    const positions: OpenF1Position[] = positionsResponse.ok
-      ? await positionsResponse.json()
-      : [];
-    const driversData: OpenF1Driver[] = driversResponse.ok
-      ? await driversResponse.json()
-      : [];
-
-    // Build driver map
-    const driverMap = new Map<number, OpenF1Driver>();
-    for (const driver of driversData) {
-      driverMap.set(driver.driver_number, driver);
-    }
-
-    // Get latest position for each driver
-    const latestPositions = new Map<number, number>();
-    for (const pos of positions) {
-      latestPositions.set(pos.driver_number, pos.position);
-    }
-
-    // Build driver standings
-    const drivers: F1Driver[] = [];
-    for (const [driverNumber, position] of latestPositions) {
-      const driverInfo = driverMap.get(driverNumber);
-      if (driverInfo) {
-        drivers.push({
-          position,
-          driverNumber,
-          driverCode: driverInfo.name_acronym,
-          teamName: driverInfo.team_name,
-          status: "running",
-        });
-      }
-    }
-
-    // Sort by position
-    drivers.sort((a, b) => a.position - b.position);
+    // Build enriched driver data
+    const drivers = buildDriverData(positions, driversData, intervals, laps, stints, sessionStatus);
 
     return {
       id: sessionKey.toString(),
       name: latestSession.session_name,
       type: mapSessionType(latestSession.session_type),
-      status: getSessionStatus(latestSession),
+      status: sessionStatus,
       startTime: new Date(latestSession.date_start),
       circuitName: latestSession.circuit_short_name,
       country: latestSession.country_name,
@@ -278,7 +443,7 @@ export async function getDatesWithF1Sessions(
  * @param daysForward - Number of days in the future to check
  */
 export async function getF1RaceWeekends(
-  daysBack: number = 90,
+  daysBack: number = 365,
   daysForward: number = 30
 ): Promise<F1RaceWeekend[]> {
   try {
@@ -406,59 +571,22 @@ export async function getF1RaceWeekendSessions(weekendId: string): Promise<F1Ses
   if (!weekend) return [];
 
   // Fetch full session data for each session in the weekend
-  const sessionPromises = weekend.sessions.map(async (session) => {
-    const isPastDate = isDateInPast(session.startTime);
-    const sessionKey = session.id;
+  const sessionPromises = weekend.sessions.map(async (sessionInfo) => {
+    const isPastDate = isDateInPast(sessionInfo.startTime);
+    const sessionKey = sessionInfo.id;
+    const sessionStatus = sessionInfo.status;
 
-    const [positionsResponse, driversResponse] = await Promise.all([
-      fetch(`${OPENF1_BASE_URL}/position?session_key=${sessionKey}`, {
-        headers: { Accept: "application/json" },
-        next: { revalidate: isPastDate ? false : 10 },
-      }),
-      fetch(`${OPENF1_BASE_URL}/drivers?session_key=${sessionKey}`, {
-        headers: { Accept: "application/json" },
-        next: { revalidate: isPastDate ? false : 10 },
-      }),
-    ]);
+    // Fetch all driver-related data
+    const { positions, driversData, intervals, laps, stints } = await fetchSessionDriverData(
+      sessionKey,
+      isPastDate
+    );
 
-    const positions: OpenF1Position[] = positionsResponse.ok
-      ? await positionsResponse.json()
-      : [];
-    const driversData: OpenF1Driver[] = driversResponse.ok
-      ? await driversResponse.json()
-      : [];
-
-    // Build driver map
-    const driverMap = new Map<number, OpenF1Driver>();
-    for (const driver of driversData) {
-      driverMap.set(driver.driver_number, driver);
-    }
-
-    // Get latest position for each driver
-    const latestPositions = new Map<number, number>();
-    for (const pos of positions) {
-      latestPositions.set(pos.driver_number, pos.position);
-    }
-
-    // Build driver standings
-    const drivers: F1Driver[] = [];
-    for (const [driverNumber, position] of latestPositions) {
-      const driverInfo = driverMap.get(driverNumber);
-      if (driverInfo) {
-        drivers.push({
-          position,
-          driverNumber,
-          driverCode: driverInfo.name_acronym,
-          teamName: driverInfo.team_name,
-          status: "running",
-        });
-      }
-    }
-
-    drivers.sort((a, b) => a.position - b.position);
+    // Build enriched driver data
+    const drivers = buildDriverData(positions, driversData, intervals, laps, stints, sessionStatus);
 
     return {
-      ...session,
+      ...sessionInfo,
       drivers,
     };
   });
@@ -497,60 +625,22 @@ export async function getF1SessionsForDate(date: Date): Promise<F1Session[]> {
     // Fetch all sessions in parallel for better performance
     const sessionPromises = sessions.map(async (session) => {
       const sessionKey = session.session_key;
+      const sessionStatus = getSessionStatus(session);
 
-      const [positionsResponse, driversResponse] = await Promise.all([
-        fetch(`${OPENF1_BASE_URL}/position?session_key=${sessionKey}`, {
-          headers: { Accept: "application/json" },
-          next: { revalidate: isPastDate ? false : 10 },
-        }),
-        fetch(`${OPENF1_BASE_URL}/drivers?session_key=${sessionKey}`, {
-          headers: { Accept: "application/json" },
-          next: { revalidate: isPastDate ? false : 10 },
-        }),
-      ]);
+      // Fetch all driver-related data
+      const { positions, driversData, intervals, laps, stints } = await fetchSessionDriverData(
+        sessionKey,
+        isPastDate
+      );
 
-      const positions: OpenF1Position[] = positionsResponse.ok
-        ? await positionsResponse.json()
-        : [];
-      const driversData: OpenF1Driver[] = driversResponse.ok
-        ? await driversResponse.json()
-        : [];
-
-      // Build driver map
-      const driverMap = new Map<number, OpenF1Driver>();
-      for (const driver of driversData) {
-        driverMap.set(driver.driver_number, driver);
-      }
-
-      // Get latest position for each driver
-      const latestPositions = new Map<number, number>();
-      for (const pos of positions) {
-        latestPositions.set(pos.driver_number, pos.position);
-      }
-
-      // Build driver standings
-      const drivers: F1Driver[] = [];
-      for (const [driverNumber, position] of latestPositions) {
-        const driverInfo = driverMap.get(driverNumber);
-        if (driverInfo) {
-          drivers.push({
-            position,
-            driverNumber,
-            driverCode: driverInfo.name_acronym,
-            teamName: driverInfo.team_name,
-            status: "running",
-          });
-        }
-      }
-
-      // Sort by position
-      drivers.sort((a, b) => a.position - b.position);
+      // Build enriched driver data
+      const drivers = buildDriverData(positions, driversData, intervals, laps, stints, sessionStatus);
 
       return {
         id: sessionKey.toString(),
         name: session.session_name,
         type: mapSessionType(session.session_type),
-        status: getSessionStatus(session),
+        status: sessionStatus,
         startTime: new Date(session.date_start),
         circuitName: session.circuit_short_name,
         country: session.country_name,

@@ -4,6 +4,7 @@
 
 interface AsciiDividerProps {
   variant?: "simple" | "double" | "fancy" | "circuit" | "wave" | "dots" | "arrows" | "stars";
+  /** Fixed width in characters. If not provided, divider will be responsive and fill available width. */
   width?: number;
   className?: string;
 }
@@ -20,23 +21,39 @@ const DIVIDER_PATTERNS = {
 };
 
 /**
- * Renders a decorative ASCII divider line
+ * Renders a decorative ASCII divider line.
+ * By default, uses responsive CSS-based width that fills available space.
+ * Pass a width prop for fixed character width (legacy behavior).
  */
 export function AsciiDivider({
   variant = "simple",
-  width = 60,
+  width,
   className = "",
 }: AsciiDividerProps) {
   const pattern = DIVIDER_PATTERNS[variant];
-  const repeatCount = Math.ceil(width / pattern.length);
-  const line = pattern.repeat(repeatCount).slice(0, width);
 
+  // Fixed width mode (legacy behavior)
+  if (width !== undefined) {
+    const repeatCount = Math.ceil(width / pattern.length);
+    const line = pattern.repeat(repeatCount).slice(0, width);
+
+    return (
+      <div
+        className={`font-mono text-terminal-border ${className}`}
+        aria-hidden="true"
+      >
+        {line}
+      </div>
+    );
+  }
+
+  // Responsive mode - fills available width using CSS
   return (
     <div
-      className={`font-mono text-terminal-border ${className}`}
+      className={`ascii-line font-mono text-terminal-border ${className}`}
       aria-hidden="true"
     >
-      {line}
+      <span className="ascii-fill">{pattern.repeat(200)}</span>
     </div>
   );
 }
@@ -264,6 +281,49 @@ export function AsciiProgressBar({
       <span className="text-terminal-muted">{empty.repeat(emptyWidth)}</span>
       <span className="text-terminal-border">]</span>
       <span className="text-terminal-muted ml-2">{clampedProgress}%</span>
+    </div>
+  );
+}
+
+/**
+ * ASCII stat comparison bar for comparing two team values
+ * Shows proportional bars for each team, with the away team bar on the left
+ * and the home team bar on the right. Uses CSS-based widths to fill container.
+ */
+export function AsciiStatBar({
+  awayValue,
+  homeValue,
+  className = "",
+}: {
+  awayValue: number;
+  homeValue: number;
+  className?: string;
+}) {
+  const total = awayValue + homeValue;
+
+  // Handle edge cases - show equal split when both are zero
+  const awayPercent = total === 0 ? 50 : (awayValue / total) * 100;
+  const homePercent = 100 - awayPercent;
+
+  // Determine which team has the lead for coloring
+  const awayColor = awayValue >= homeValue ? "bg-terminal-green" : "bg-terminal-muted";
+  const homeColor = homeValue >= awayValue ? "bg-terminal-cyan" : "bg-terminal-muted";
+
+  return (
+    <div
+      className={`flex h-3 w-full ${className}`}
+      aria-label={`Away: ${awayValue}, Home: ${homeValue}`}
+    >
+      {/* Away team bar (left side) */}
+      <div
+        className={`${awayColor} h-full`}
+        style={{ width: `${awayPercent}%` }}
+      />
+      {/* Home team bar (right side) */}
+      <div
+        className={`${homeColor} h-full`}
+        style={{ width: `${homePercent}%` }}
+      />
     </div>
   );
 }

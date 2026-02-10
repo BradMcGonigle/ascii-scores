@@ -1,39 +1,61 @@
-import type { Game, GameStatus } from "@/lib/types";
+import Link from "next/link";
+import type { Game, GameStatus, GameType } from "@/lib/types";
 import { getStatusClass, getStatusText } from "@/lib/utils/format";
 import { GameStats } from "./GameStats";
 import { PeriodScores } from "./PeriodScores";
+
+/**
+ * Get badge display for game type (preseason, playoff, etc.)
+ */
+function getGameTypeBadge(gameType?: GameType): { label: string; className: string } | null {
+  switch (gameType) {
+    case "preseason":
+      return { label: "PRE", className: "text-terminal-cyan" };
+    case "postseason":
+      return { label: "PLAYOFF", className: "text-terminal-yellow text-glow" };
+    case "allstar":
+      return { label: "ALL-STAR", className: "text-terminal-magenta" };
+    case "regular":
+    default:
+      return null; // No badge for regular season
+  }
+}
 
 interface GameCardProps {
   game: Game;
 }
 
+// Leagues that support game detail pages
+const DETAIL_SUPPORTED_LEAGUES = ["nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw"];
+
 /**
  * Get the appropriate border style based on game status
+ * All statuses use double-line borders with color differentiation
  */
 function getBorderStyle(status: Game["status"]) {
+  const doubleBorder = {
+    corners: { tl: "╔", tr: "╗", bl: "╚", br: "╝", ml: "╠", mr: "╣" },
+    horizontal: "═",
+    side: "║",
+  };
+
   switch (status) {
     case "live":
       return {
-        corners: { tl: "╔", tr: "╗", bl: "╚", br: "╝", ml: "╠", mr: "╣" },
-        horizontal: "═",
-        side: "║",
+        ...doubleBorder,
         borderClass: "border-terminal-green/70",
         textClass: "text-terminal-green",
       };
     case "final":
       return {
-        corners: { tl: "┌", tr: "┐", bl: "└", br: "┘", ml: "├", mr: "┤" },
-        horizontal: "─",
-        side: "│",
+        ...doubleBorder,
         borderClass: "border-terminal-border",
         textClass: "text-terminal-border",
       };
     case "scheduled":
     default:
       return {
-        corners: { tl: "┏", tr: "┓", bl: "┗", br: "┛", ml: "┣", mr: "┫" },
-        horizontal: "━",
-        side: "┃",
+        ...doubleBorder,
         borderClass: "border-terminal-yellow/50",
         textClass: "text-terminal-yellow",
       };
@@ -135,12 +157,14 @@ export function GameCard({ game }: GameCardProps) {
   const isLive = game.status === "live";
   const cardClass = isLive ? "retro-card border-terminal-green/70" : "retro-card";
 
-  return (
-    <div
-      className={`font-mono text-sm ${cardClass} p-1 transition-all hover:border-terminal-fg/50`}
-      role="article"
-      aria-label={`${game.awayTeam.displayName} vs ${game.homeTeam.displayName}`}
-    >
+  // Check if this league supports game detail pages
+  const supportsDetail = DETAIL_SUPPORTED_LEAGUES.includes(game.league);
+  const gameUrl = supportsDetail ? `/${game.league}/game/${game.id}` : undefined;
+
+  const wrapperClassName = `font-mono text-sm ${cardClass} p-1 transition-all hover:border-terminal-fg/50 ${supportsDetail ? "cursor-pointer" : ""} block`;
+
+  const cardContent = (
+    <>
       {/* Top border */}
       <BorderLine
         left={border.corners.tl}
@@ -152,14 +176,37 @@ export function GameCard({ game }: GameCardProps) {
       {/* Status line */}
       <div className="flex items-center">
         <span className={border.textClass} aria-hidden="true">{border.side}</span>
-        <div className={`flex-1 px-2 py-0.5 ${statusClass}`}>
-          {isLive && (
-            <>
-              <span className="inline-block mr-1 text-terminal-green" aria-hidden="true">●</span>
-              <span className="sr-only">Live game: </span>
-            </>
-          )}
-          {statusText}
+        <div className={`flex-1 px-2 py-0.5 ${statusClass} flex items-center justify-between`}>
+          <div>
+            {isLive && (
+              <>
+                <span className="inline-block mr-1 text-terminal-green" aria-hidden="true">●</span>
+                <span className="sr-only">Live game: </span>
+              </>
+            )}
+            {statusText}
+          </div>
+          <div className="flex items-center gap-2">
+            {/* TV broadcast for live and scheduled games */}
+            {(isLive || game.status === "scheduled") && game.broadcasts && game.broadcasts.length > 0 && (
+              <span className="text-xs text-terminal-muted">
+                <span className="sr-only">Broadcast on {game.broadcasts.join(", ")}</span>
+                <span aria-hidden="true">
+                  <span className="text-terminal-cyan">TV:</span> {game.broadcasts[0]}
+                  {game.broadcasts.length > 1 && (
+                    <span className="ml-1">[+{game.broadcasts.length - 1}]</span>
+                  )}
+                </span>
+              </span>
+            )}
+            {/* Game type badge (preseason, playoff, etc.) */}
+            {game.gameType && getGameTypeBadge(game.gameType) && (
+              <span className={`text-xs ${getGameTypeBadge(game.gameType)!.className}`}>
+                <span className="sr-only">{game.gameType} game</span>
+                <span aria-hidden="true">[{getGameTypeBadge(game.gameType)!.label}]</span>
+              </span>
+            )}
+          </div>
         </div>
         <span className={border.textClass} aria-hidden="true">{border.side}</span>
       </div>
@@ -230,7 +277,7 @@ export function GameCard({ game }: GameCardProps) {
         </>
       )}
 
-      {/* Venue line for scheduled games */}
+      {/* Venue info for scheduled games */}
       {game.status === "scheduled" && game.venue && (
         <>
           <BorderLine
@@ -241,7 +288,7 @@ export function GameCard({ game }: GameCardProps) {
           />
           <div className="flex items-center">
             <span className={border.textClass} aria-hidden="true">{border.side}</span>
-            <div className="flex-1 px-2 py-0.5 text-terminal-muted flex justify-between text-xs">
+            <div className="flex-1 px-2 py-0.5 text-terminal-muted text-xs flex justify-between">
               <span className="truncate">
                 <span className="sr-only">Venue: </span>
                 {game.venue}
@@ -265,6 +312,30 @@ export function GameCard({ game }: GameCardProps) {
         fill={border.horizontal}
         className={border.textClass}
       />
+    </>
+  );
+
+  // Wrap in Link if game details are supported
+  if (gameUrl) {
+    return (
+      <Link
+        href={gameUrl}
+        className={wrapperClassName}
+        role="article"
+        aria-label={`${game.awayTeam.displayName} vs ${game.homeTeam.displayName} - Click for details`}
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div
+      className={wrapperClassName}
+      role="article"
+      aria-label={`${game.awayTeam.displayName} vs ${game.homeTeam.displayName}`}
+    >
+      {cardContent}
     </div>
   );
 }

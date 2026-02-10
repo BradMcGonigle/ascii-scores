@@ -1,4 +1,5 @@
 import type {
+  GolfCourse,
   GolfLeaderboard,
   GolfPlayer,
   GolfTournament,
@@ -45,6 +46,14 @@ interface ESPNGolfCompetitor {
   linescores?: ESPNGolfLinescoreValue[];
   statistics?: ESPNGolfStatistic[];
   sortOrder?: number;
+  /** Player earnings for this tournament */
+  earnings?: number;
+}
+
+interface ESPNGolfBroadcast {
+  media: {
+    shortName: string;
+  };
 }
 
 interface ESPNGolfCompetition {
@@ -57,6 +66,29 @@ interface ESPNGolfCompetition {
       completed: boolean;
     };
     period?: number;
+  };
+  /** Broadcast networks */
+  broadcasts?: ESPNGolfBroadcast[];
+}
+
+interface ESPNGolfCourse {
+  id: string;
+  name: string;
+  totalYards?: number;
+  /** Par for the course (called shotsToPar in ESPN) */
+  shotsToPar?: number;
+  /** Whether this is the host/main course */
+  host?: boolean;
+  address?: {
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+}
+
+interface ESPNGolfDefTitle {
+  athlete?: {
+    displayName: string;
   };
 }
 
@@ -83,10 +115,42 @@ interface ESPNGolfEvent {
       country?: string;
     };
   };
+  /** Course information (available in leaderboard endpoint) */
+  courses?: ESPNGolfCourse[];
+  /** Prize purse in dollars */
+  purse?: number;
+  /** Defending champion */
+  defTitle?: ESPNGolfDefTitle;
 }
 
 interface ESPNGolfScoreboardResponse {
   events: ESPNGolfEvent[];
+  leagues?: Array<{
+    calendar?: Array<{
+      id: string;
+      label: string;
+      startDate: string;
+      endDate: string;
+    }>;
+  }>;
+}
+
+/**
+ * Tournament info for navigation (lightweight, no player data)
+ */
+export interface PGATournamentInfo {
+  id: string;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  status: "scheduled" | "in_progress" | "completed" | "canceled";
+}
+
+/**
+ * Tournament calendar response
+ */
+export interface PGATournamentCalendar {
+  tournaments: PGATournamentInfo[];
 }
 
 /**
@@ -157,7 +221,10 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
   );
 
   // Get individual round scores from linescores
-  const rounds = competitor.linescores?.map((ls) => ls.value) ?? [];
+  // Filter out undefined/null values to avoid NaN in calculations
+  const rounds = competitor.linescores
+    ?.map((ls) => ls.value)
+    .filter((v): v is number => v !== undefined && v !== null && !isNaN(v)) ?? [];
 
   // Get thru value
   let thru: string | undefined;
@@ -165,8 +232,17 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
     thru = competitor.status.thru === 18 ? "F" : competitor.status.thru.toString();
   }
 
-  // Calculate total strokes from rounds
+  // Calculate total strokes from completed rounds only
   const totalStrokes = rounds.length > 0 ? rounds.reduce((sum, r) => sum + r, 0) : undefined;
+
+  // Get earnings (directly from competitor or from statistics)
+  const earnings = competitor.earnings;
+
+  // Get FedEx Cup points from statistics
+  const fedexPointsStat = competitor.statistics?.find((s) => s.name === "cupPoints");
+  const fedexPoints = fedexPointsStat
+    ? parseFloat(fedexPointsStat.displayValue)
+    : undefined;
 
   return {
     id: competitor.id,
@@ -181,6 +257,8 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
     totalStrokes,
     status: getPlayerStatus(competitor),
     prizeMoney: prizeMoneystat?.displayValue,
+    earnings,
+    fedexPoints,
   };
 }
 
@@ -205,12 +283,41 @@ function mapTournament(event: ESPNGolfEvent): GolfTournament {
   // Determine current round from status
   const currentRound = competition.status.period;
 
-  // Build location string
+  // Build location string (fallback if no courses)
   let location: string | undefined;
   if (event.venue?.address) {
     const { city, state, country } = event.venue.address;
     location = [city, state || country].filter(Boolean).join(", ");
   }
+
+  // Map courses (available in leaderboard endpoint)
+  const courses: GolfCourse[] | undefined = event.courses?.map((course) => ({
+    name: course.name,
+    totalYards: course.totalYards,
+    par: course.shotsToPar ?? 72,
+    isHost: course.host ?? false,
+    location: course.address
+      ? {
+          city: course.address.city,
+          state: course.address.state,
+          country: course.address.country,
+        }
+      : undefined,
+  }));
+
+  // Use course location if available and no venue location
+  if (!location && courses?.[0]?.location) {
+    const { city, state, country } = courses[0].location;
+    location = [city, state || country].filter(Boolean).join(", ");
+  }
+
+  // Extract broadcasts
+  const broadcasts = competition.broadcasts
+    ?.map((b) => b.media?.shortName)
+    .filter((name): name is string => !!name);
+
+  // Extract defending champion
+  const defendingChampion = event.defTitle?.athlete?.displayName;
 
   return {
     id: event.id,
@@ -218,24 +325,85 @@ function mapTournament(event: ESPNGolfEvent): GolfTournament {
     status: mapTournamentStatus(event),
     startDate: new Date(event.date),
     endDate: event.endDate ? new Date(event.endDate) : undefined,
-    venue: event.venue?.fullName ?? "TBD",
+    venue: event.venue?.fullName ?? courses?.[0]?.name ?? "TBD",
     location,
     currentRound,
     totalRounds: 4, // Standard PGA Tour events are 4 rounds
+    purseAmount: event.purse,
+    courses,
+    defendingChampion,
+    broadcasts,
     players,
   };
 }
 
 /**
- * Fetch current PGA Tour leaderboard from ESPN
- * Tries the leaderboard endpoint first, then falls back to scoreboard
+ * Determine tournament status from dates
  */
-export async function getPGALeaderboard(): Promise<GolfLeaderboard> {
-  // Try leaderboard endpoint first (more specific for golf)
+function getTournamentStatusFromDates(
+  startDate: Date,
+  endDate: Date
+): PGATournamentInfo["status"] {
+  const now = new Date();
+  if (now < startDate) return "scheduled";
+  if (now > endDate) return "completed";
+  return "in_progress";
+}
+
+/**
+ * Fetch PGA Tour tournament calendar
+ * Returns list of all tournaments in the current season for navigation
+ */
+export async function getPGATournamentCalendar(): Promise<PGATournamentCalendar> {
+  try {
+    const response = await fetch(`${ESPN_BASE_URL}/golf/pga/scoreboard`, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; AsciiScores/1.0)",
+      },
+      next: {
+        revalidate: 3600, // Cache for 1 hour (calendar doesn't change often)
+      },
+    });
+
+    if (!response.ok) {
+      console.warn(`ESPN Golf API returned ${response.status} for calendar`);
+      return { tournaments: [] };
+    }
+
+    const data: ESPNGolfScoreboardResponse = await response.json();
+    const calendar = data.leagues?.[0]?.calendar ?? [];
+
+    const tournaments: PGATournamentInfo[] = calendar.map((event) => {
+      const startDate = new Date(event.startDate);
+      const endDate = new Date(event.endDate);
+      return {
+        id: event.id,
+        name: event.label,
+        startDate,
+        endDate,
+        status: getTournamentStatusFromDates(startDate, endDate),
+      };
+    });
+
+    return { tournaments };
+  } catch (error) {
+    console.error("Failed to fetch PGA tournament calendar:", error);
+    return { tournaments: [] };
+  }
+}
+
+/**
+ * Fetch PGA Tour leaderboard from ESPN
+ * @param eventId - Optional event ID to fetch a specific tournament
+ */
+export async function getPGALeaderboard(eventId?: string): Promise<GolfLeaderboard> {
+  // Build endpoints - if eventId provided, use query param
+  const eventParam = eventId ? `?event=${eventId}` : "";
   const endpoints = [
-    `${ESPN_BASE_URL}/golf/pga/leaderboard`,
-    `${ESPN_BASE_URL}/golf/leaderboard`,
-    `${ESPN_BASE_URL}/golf/pga/scoreboard`,
+    `${ESPN_BASE_URL}/golf/leaderboard${eventParam}`,
+    `${ESPN_BASE_URL}/golf/pga/leaderboard${eventParam}`,
+    `${ESPN_BASE_URL}/golf/pga/scoreboard${eventParam}`,
   ];
 
   for (const url of endpoints) {

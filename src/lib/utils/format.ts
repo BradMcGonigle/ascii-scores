@@ -142,15 +142,53 @@ export function isToday(date: Date): boolean {
 }
 
 /**
- * Check if a date is in the past (before today)
+ * Check if a date is in the past (before today) in a specific timezone
  * Used to determine caching strategy - past dates can be cached indefinitely
+ * @param date - The date to check
+ * @param timezone - Optional IANA timezone (defaults to "America/New_York" for US sports)
  */
-export function isDateInPast(date: Date): boolean {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+export function isDateInPast(date: Date, timezone: string = "America/New_York"): boolean {
+  // Get today's date in the specified timezone
+  const today = getTodayInTimezone(timezone);
+  // Compare date portions only (ignore time)
   const compareDate = new Date(date);
   compareDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
   return compareDate < today;
+}
+
+/**
+ * Get "today" in a specific timezone
+ * This ensures consistency regardless of server timezone (e.g., UTC on Vercel).
+ * @param timezone - IANA timezone identifier (e.g., "America/New_York", "Europe/London")
+ */
+export function getTodayInTimezone(timezone: string): Date {
+  const dateStr = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+
+  // Parse "MM/DD/YYYY" format
+  const [month, day, year] = dateStr.split("/").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/**
+ * Get "today" in US Eastern timezone
+ * ESPN uses Eastern time for US sports schedules.
+ */
+export function getTodayInEastern(): Date {
+  return getTodayInTimezone("America/New_York");
+}
+
+/**
+ * Get "today" in UK timezone
+ * Used for EPL schedules which follow UK time.
+ */
+export function getTodayInUK(): Date {
+  return getTodayInTimezone("Europe/London");
 }
 
 /**
@@ -166,4 +204,33 @@ export function getRelativeDateLabel(date: Date): string {
   if (isSameDay(date, tomorrow)) return "Tomorrow";
 
   return formatDate(date);
+}
+
+/**
+ * Format currency with optional abbreviation for large amounts
+ * @param amount - The amount to format
+ * @param abbreviated - Whether to abbreviate (e.g., $1.7M vs $1,728,000)
+ */
+export function formatCurrency(amount: number, abbreviated: boolean = false): string {
+  if (abbreviated) {
+    if (amount >= 1_000_000) {
+      return `$${(amount / 1_000_000).toFixed(1)}M`;
+    }
+    if (amount >= 1_000) {
+      return `$${(amount / 1_000).toFixed(0)}K`;
+    }
+  }
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+/**
+ * Format a number with commas
+ */
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat("en-US").format(num);
 }
