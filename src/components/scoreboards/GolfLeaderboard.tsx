@@ -728,6 +728,11 @@ function GolfLeaderboardTable({
                 <th className="px-3 text-center py-1 whitespace-nowrap">
                   SCORE
                 </th>
+                {tournament.status === "completed" && tournament.players.some(p => p.prizeMoney) && (
+                  <th className="px-3 text-right py-1 whitespace-nowrap">
+                    PRIZE
+                  </th>
+                )}
                 <th className="px-3 text-center py-1 whitespace-nowrap">
                   TODAY
                 </th>
@@ -809,6 +814,13 @@ function GolfLeaderboardTable({
                         </span>
                         <span aria-hidden="true">{player.scoreToPar}</span>
                       </td>
+
+                      {/* Prize money (only for completed tournaments) */}
+                      {tournament.status === "completed" && tournament.players.some(p => p.prizeMoney) && (
+                        <td className={`px-3 text-right py-1 whitespace-nowrap ${cellBgClass} text-terminal-green`}>
+                          {player.prizeMoney || "--"}
+                        </td>
+                      )}
 
                       {/* Today's score */}
                       <td className={`px-3 text-center py-1 whitespace-nowrap ${cellBgClass}`}>
