@@ -356,6 +356,20 @@
   }
 }
 
+/* Interactive element cursor styles for accessibility
+   Uses @layer components so it overrides browser defaults (which set cursor: default
+   on buttons) while still being overridable by utility classes like cursor-wait */
+@layer components {
+  button:not(:disabled),
+  a,
+  [role="button"]:not(:disabled),
+  [role="link"],
+  [role="option"],
+  summary {
+    cursor: pointer;
+  }
+}
+
 /* Focus visible styles for keyboard navigation */
 @layer base {
   /* Enhanced focus indicators for all interactive elements */
