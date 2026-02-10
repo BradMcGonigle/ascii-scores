@@ -58,6 +58,7 @@ All significant architectural and technical decisions are documented in `docs/de
 | [007 - Server Component Patterns](docs/decisions/007-server-component-patterns.md) | Accepted | Minimize client JS with server-first component design |
 | [008 - WCAG Accessibility](docs/decisions/008-wcag-accessibility.md) | Accepted | WCAG 2.1 AA compliance with reduced motion support |
 | [009 - Hybrid Caching Strategy](docs/decisions/009-hybrid-caching-strategy.md) | Accepted | Cache historical data indefinitely, live data at 30s |
+| [010 - Native Apple Companion App](docs/decisions/010-native-apple-companion-app.md) | Proposed | SwiftUI app in monorepo for widgets, Live Activities, and native Apple platform features |
 
 ## Development Context
 
