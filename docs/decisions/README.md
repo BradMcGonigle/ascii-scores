@@ -80,6 +80,7 @@ When superseding an ADR:
 | [007](007-server-component-patterns.md) | Server Component Patterns | Accepted | 2026-01 |
 | [008](008-wcag-accessibility.md) | WCAG 2.1 AA Accessibility | Accepted | 2026-01 |
 | [009](009-hybrid-caching-strategy.md) | Hybrid Caching Strategy | Accepted | 2026-01 |
+| [010](010-playoff-bracket-architecture.md) | Playoff Bracket Architecture | Accepted | 2026-02 |
 
 ## Contributing
 

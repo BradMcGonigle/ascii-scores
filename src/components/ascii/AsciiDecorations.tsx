@@ -76,18 +76,24 @@ export function AsciiSectionHeader({
 
   switch (variant) {
     case "boxed": {
-      const boxWidth = upperTitle.length + 6;
-      const horizontalLine = "═".repeat(boxWidth);
-      const padding = " ".repeat(2);
+      const fill = (
+        <span className="flex-1 overflow-hidden whitespace-nowrap tracking-[0]">
+          {"═".repeat(50)}
+        </span>
+      );
       return (
         <div className={`font-mono ${className}`} aria-label={title}>
-          <div className="text-terminal-border">╔{horizontalLine}╗</div>
-          <div>
+          <div className="flex text-terminal-border" aria-hidden="true">
+            <span>╔</span>{fill}<span>╗</span>
+          </div>
+          <div className="flex">
             <span className="text-terminal-border">║</span>
-            <span className="text-terminal-cyan">{padding}{upperTitle}{padding}</span>
+            <span className="text-terminal-cyan px-2 flex-1">{upperTitle}</span>
             <span className="text-terminal-border">║</span>
           </div>
-          <div className="text-terminal-border">╚{horizontalLine}╝</div>
+          <div className="flex text-terminal-border" aria-hidden="true">
+            <span>╚</span>{fill}<span>╝</span>
+          </div>
         </div>
       );
     }

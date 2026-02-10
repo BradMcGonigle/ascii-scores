@@ -110,7 +110,7 @@ interface ESPNVenue {
   };
 }
 
-interface ESPNSeason {
+export interface ESPNSeason {
   type: number; // 1=preseason, 2=regular, 3=postseason, 4=off-season
   year: number;
 }
@@ -120,7 +120,7 @@ interface ESPNCompetitionType {
   abbreviation?: string; // "REG", "EXH" (exhibition/spring training), "POST", etc.
 }
 
-interface ESPNEvent {
+export interface ESPNEvent {
   id: string;
   date: string;
   name: string;
@@ -333,7 +333,7 @@ function formatVenueLocation(venue?: ESPNVenue): string | undefined {
 /**
  * Map ESPN event to our Game type
  */
-function mapEvent(event: ESPNEvent, league: League): Game {
+export function mapEvent(event: ESPNEvent, league: League): Game {
   const competition = event.competitions[0];
   const homeCompetitor = competition.competitors.find(
     (c) => c.homeAway === "home"
