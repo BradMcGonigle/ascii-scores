@@ -73,7 +73,6 @@ export function NotificationButton({
     : "Subscribe to notifications";
 
   const label = isSubscribed ? "[ALERTS ON]" : "[ALERTS]";
-  const icon = isSubscribed ? "🔔" : "🔕";
 
   if (compact) {
     return (
@@ -89,7 +88,7 @@ export function NotificationButton({
         aria-label={title}
         aria-pressed={isSubscribed}
       >
-        {isLoading ? "[...]" : icon}
+        {isLoading ? "[...]" : <span className={`inline-block size-2 rounded-full ${isSubscribed ? "bg-live" : "border border-current"}`} />}
       </button>
     );
   }

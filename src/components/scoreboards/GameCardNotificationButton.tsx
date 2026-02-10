@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useEffect, type MouseEvent } from "react";
 import { useNotifications } from "@/components/notifications";
+import { useToast } from "@/components/ui/Toast";
 import type { GameStatus } from "@/lib/types";
 
 interface GameCardNotificationButtonProps {
@@ -32,6 +33,7 @@ export function GameCardNotificationButton({
     subscribeToGame,
     unsubscribeFromGame,
   } = useNotifications();
+  const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -55,12 +57,7 @@ export function GameCardNotificationButton({
 
       // Check if notifications are supported
       if (!isSupported) {
-        // Show a helpful message for unsupported browsers
-        alert(
-          "Push notifications require this site to be installed as an app. " +
-            "On iOS: tap Share → Add to Home Screen. " +
-            "On Android: tap the menu → Install app."
-        );
+        toast("Install as an app to enable push notifications", "info");
         return;
       }
 
@@ -68,14 +65,14 @@ export function GameCardNotificationButton({
       try {
         if (isSubscribed) {
           await unsubscribeFromGame(gameId);
-          alert("Unsubscribed from game notifications");
+          toast("Unsubscribed from game notifications", "info");
         } else {
           await subscribeToGame(gameId, league, homeTeam, awayTeam, undefined, gameStartTime);
-          alert("Subscribed to game notifications!");
+          toast("Subscribed to game notifications", "success");
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        alert(`Notification error: ${message}`);
+        toast(message, "error");
       } finally {
         setIsLoading(false);
       }
@@ -91,6 +88,7 @@ export function GameCardNotificationButton({
       gameStartTime,
       subscribeToGame,
       unsubscribeFromGame,
+      toast,
     ]
   );
 
@@ -113,8 +111,6 @@ export function GameCardNotificationButton({
     ? "Unsubscribe from game notifications"
     : "Subscribe to game notifications";
 
-  const icon = isSubscribed ? "🔔" : "🔕";
-
   return (
     <button
       onClick={handleClick}
@@ -128,7 +124,7 @@ export function GameCardNotificationButton({
       aria-label={title}
       aria-pressed={isSubscribed}
     >
-      {isLoading ? "..." : icon}
+      {isLoading ? "..." : <span className={`inline-block size-2 rounded-full ${isSubscribed ? "bg-terminal-green" : "border border-current"}`} />}
     </button>
   );
 }

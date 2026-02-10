@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useEffect } from "react";
 import { useNotifications } from "@/components/notifications";
+import { useToast } from "@/components/ui/Toast";
 import type { GameStatus } from "@/lib/types";
 
 interface GameDetailNotificationButtonProps {
@@ -33,6 +34,7 @@ export function GameDetailNotificationButton({
     unsubscribeFromGame,
     sendTestNotification,
   } = useNotifications();
+  const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isTestLoading, setIsTestLoading] = useState(false);
@@ -53,12 +55,7 @@ export function GameDetailNotificationButton({
 
     // Check if notifications are supported
     if (!isSupported) {
-      // Show a helpful message for unsupported browsers
-      alert(
-        "Push notifications require this site to be installed as an app. " +
-          "On iOS: tap Share → Add to Home Screen. " +
-          "On Android: tap the menu → Install app."
-      );
+      toast("Install as an app to enable push notifications", "info");
       return;
     }
 
@@ -66,14 +63,14 @@ export function GameDetailNotificationButton({
     try {
       if (isSubscribed) {
         await unsubscribeFromGame(gameId);
-        alert("Unsubscribed from game notifications");
+        toast("Unsubscribed from game notifications", "info");
       } else {
         await subscribeToGame(gameId, league, homeTeam, awayTeam, undefined, gameStartTime);
-        alert("Subscribed to game notifications!");
+        toast("Subscribed to game notifications", "success");
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      alert(`Notification error: ${message}`);
+      toast(message, "error");
     } finally {
       setIsLoading(false);
     }
@@ -88,6 +85,7 @@ export function GameDetailNotificationButton({
     gameStartTime,
     subscribeToGame,
     unsubscribeFromGame,
+    toast,
   ]);
 
   const handleTestClick = useCallback(async () => {
@@ -97,29 +95,29 @@ export function GameDetailNotificationButton({
     try {
       const result = await sendTestNotification();
       if (result.success) {
-        alert("Test notification sent! Check your notifications.");
+        toast("Test notification sent", "success");
       } else {
-        alert(`Test failed: ${result.error}`);
+        toast(`Test failed: ${result.error}`, "error");
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      alert(`Test error: ${message}`);
+      toast(message, "error");
     } finally {
       setIsTestLoading(false);
     }
-  }, [isTestLoading, sendTestNotification]);
+  }, [isTestLoading, sendTestNotification, toast]);
 
   const handleCronClick = useCallback(async () => {
     if (isCronLoading) return;
 
     setIsCronLoading(true);
     try {
-      const response = await fetch("/api/cron/notifications");
+      const response = await fetch("/api/cron/notifications?debug=true");
       const data = await response.json();
-      alert(`Cron result:\n${JSON.stringify(data, null, 2)}`);
+      toast(`Cron: ${data.processed ?? 0} processed, ${data.events ?? 0} events`, "info");
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      alert(`Cron error: ${message}`);
+      toast(message, "error");
     } finally {
       setIsCronLoading(false);
     }
@@ -144,7 +142,6 @@ export function GameDetailNotificationButton({
     ? "Unsubscribe from game notifications"
     : "Subscribe to game notifications";
 
-  const icon = isSubscribed ? "🔔" : "🔕";
   const label = isSubscribed ? "Notifications On" : "Get Notified";
 
   return (
@@ -161,7 +158,7 @@ export function GameDetailNotificationButton({
         aria-label={title}
         aria-pressed={isSubscribed}
       >
-        {isLoading ? "..." : `${icon} ${label}`}
+        {isLoading ? "..." : <span className="inline-flex items-center gap-1.5"><span className={`inline-block size-2 rounded-full ${isSubscribed ? "bg-terminal-green" : "border border-current"}`} />{label}</span>}
       </button>
       {isSubscribed && (
         <>

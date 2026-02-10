@@ -23,10 +23,16 @@ import {
 const CRON_SECRET = process.env.CRON_SECRET;
 
 export async function GET(request: NextRequest) {
-  // Verify the request is from Vercel Cron
-  const authHeader = request.headers.get("authorization");
-  if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Allow unauthenticated debug access in development
+  const isDebug = request.nextUrl.searchParams.get("debug") === "true";
+  const isDev = process.env.NODE_ENV === "development";
+
+  // Verify the request is from Vercel Cron (skip in dev debug mode)
+  if (!(isDev && isDebug)) {
+    const authHeader = request.headers.get("authorization");
+    if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
   }
 
   try {

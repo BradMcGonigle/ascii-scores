@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/layout";
 import { NotificationProvider } from "@/components/notifications";
+import { ToastProvider } from "@/components/ui/Toast";
 import { RootJsonLd } from "@/components/seo";
 import "./globals.css";
 
@@ -95,6 +96,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-terminal-bg text-terminal-fg antialiased">
         <ThemeProvider>
+          <ToastProvider>
           <NotificationProvider>
             <a href="#main-content" className="skip-to-content font-mono">
               [SKIP TO CONTENT]
@@ -103,6 +105,7 @@ export default function RootLayout({
               {children}
             </div>
           </NotificationProvider>
+          </ToastProvider>
         </ThemeProvider>
         <Analytics />
       </body>
