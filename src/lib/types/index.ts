@@ -259,6 +259,8 @@ export interface GolfPlayer {
   totalStrokes?: number;
   /** Player status (active, cut, withdrawn, disqualified) */
   status: "active" | "cut" | "wd" | "dq";
+  /** Prize money winnings (formatted, e.g., "$1,500,000") */
+  prizeMoney?: string;
 }
 
 /**

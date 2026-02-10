@@ -148,6 +148,9 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
     (s) => s.name === "scoreToPar" || s.name === "score"
   );
   const todayStat = competitor.statistics?.find((s) => s.name === "today");
+  const prizeMoneystat = competitor.statistics?.find(
+    (s) => s.name === "winnings" || s.name === "prizeMoney" || s.name === "earnings"
+  );
 
   const { display: scoreToPar, num: scoreToParNum } = parseScoreToPar(
     scoreToParStat?.displayValue || competitor.score?.displayValue
@@ -177,6 +180,7 @@ function mapCompetitor(competitor: ESPNGolfCompetitor): GolfPlayer {
     rounds,
     totalStrokes,
     status: getPlayerStatus(competitor),
+    prizeMoney: prizeMoneystat?.displayValue,
   };
 }
 

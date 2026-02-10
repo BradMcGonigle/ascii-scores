@@ -166,6 +166,11 @@ export function GolfLeaderboardTable({
             <span className="w-16 text-center border-r border-terminal-border" role="columnheader">
               TOTAL
             </span>
+            {tournament.status === "completed" && tournament.players.some(p => p.prizeMoney) ? (
+              <span className="w-24 text-right pr-2 border-r border-terminal-border" role="columnheader">
+                PRIZE
+              </span>
+            ) : null}
             {isLiveView ? (
               <>
                 <span className="w-14 text-center border-r border-terminal-border" role="columnheader">
@@ -250,6 +255,13 @@ export function GolfLeaderboardTable({
                     </span>
                     <span aria-hidden="true">{player.scoreToPar}</span>
                   </span>
+
+                  {/* Prize money (only for completed tournaments) */}
+                  {tournament.status === "completed" && tournament.players.some(p => p.prizeMoney) ? (
+                    <span role="cell" className="w-24 text-right pr-2 text-terminal-green">
+                      {player.prizeMoney || "-"}
+                    </span>
+                  ) : null}
 
                   {isLiveView ? (
                     <>
