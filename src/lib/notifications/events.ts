@@ -1,5 +1,5 @@
 import type { Game, ScoringPlay } from "@/lib/types";
-import type { CachedGameState, NotificationEvent, PushNotificationPayload } from "./types";
+import type { CachedGameState, NotificationEvent, NotificationLeague, PushNotificationPayload } from "./types";
 
 /**
  * Create initial cached state from a game
@@ -31,7 +31,7 @@ export function detectEvents(
   scoringPlays: ScoringPlay[] = []
 ): NotificationEvent[] {
   const events: NotificationEvent[] = [];
-  const league = curr.league as "nhl" | "nfl" | "ncaam";
+  const league = curr.league as NotificationLeague;
   const currentPeriod = parseInt(curr.period || "0") || 0;
 
   // Game started
@@ -60,7 +60,7 @@ export function detectEvents(
     });
   }
 
-  // Period/Quarter ended
+  // Period/Quarter/Half/Inning ended
   if (currentPeriod > prev.period && curr.status === "live") {
     events.push({
       type: "periodEnd",
@@ -76,24 +76,16 @@ export function detectEvents(
 
   // Scoring events
   if (scoringPlays.length > prev.scoringPlaysCount) {
-    // Get new scoring plays
     const newPlays = scoringPlays.slice(prev.scoringPlaysCount);
 
     for (const play of newPlays) {
-      if (league === "nhl") {
-        events.push(createNHLGoalEvent(curr, play));
-      } else if (league === "nfl") {
-        events.push(createNFLScoreEvent(curr, play));
-      } else if (league === "ncaam") {
-        events.push(createNCAAMScoreEvent(curr, play));
-      }
+      events.push(createScoringEvent(league, curr, play));
     }
   } else if (
     curr.homeScore + curr.awayScore >
     prev.homeScore + prev.awayScore
   ) {
     // Fallback: score changed but no scoring plays data
-    // Create a generic scoring event
     const homeScored = curr.homeScore > prev.homeScore;
     events.push({
       type: "scoring",
@@ -113,32 +105,13 @@ export function detectEvents(
 }
 
 /**
- * Create NHL goal event from scoring play
+ * Create a scoring event with league-specific details
  */
-function createNHLGoalEvent(game: Game, play: ScoringPlay): NotificationEvent {
-  return {
+function createScoringEvent(league: NotificationLeague, game: Game, play: ScoringPlay): NotificationEvent {
+  const base: NotificationEvent = {
     type: "scoring",
     gameId: game.id,
-    league: "nhl",
-    homeTeam: game.homeTeam.abbreviation,
-    awayTeam: game.awayTeam.abbreviation,
-    homeScore: play.homeScore,
-    awayScore: play.awayScore,
-    period: play.period,
-    scorer: play.scorer.name,
-    strength: play.strength,
-    description: formatNHLGoalDescription(play),
-  };
-}
-
-/**
- * Create NCAAM score event from scoring play
- */
-function createNCAAMScoreEvent(game: Game, play: ScoringPlay): NotificationEvent {
-  return {
-    type: "scoring",
-    gameId: game.id,
-    league: "ncaam",
+    league,
     homeTeam: game.homeTeam.abbreviation,
     awayTeam: game.awayTeam.abbreviation,
     homeScore: play.homeScore,
@@ -146,29 +119,30 @@ function createNCAAMScoreEvent(game: Game, play: ScoringPlay): NotificationEvent
     period: play.period,
     description: play.description,
   };
-}
 
-/**
- * Create NFL score event from scoring play
- */
-function createNFLScoreEvent(game: Game, play: ScoringPlay): NotificationEvent {
-  const pointsScored = Math.abs(
-    play.homeScore + play.awayScore - game.homeScore - game.awayScore
-  );
-  const scoreType = getNFLScoreType(pointsScored, play.description);
+  switch (league) {
+    case "nhl":
+      return {
+        ...base,
+        scorer: play.scorer.name,
+        strength: play.strength,
+        description: formatNHLGoalDescription(play),
+      };
 
-  return {
-    type: "scoring",
-    gameId: game.id,
-    league: "nfl",
-    homeTeam: game.homeTeam.abbreviation,
-    awayTeam: game.awayTeam.abbreviation,
-    homeScore: play.homeScore,
-    awayScore: play.awayScore,
-    period: play.period,
-    scoreType,
-    description: play.description,
-  };
+    case "nfl": {
+      const pointsScored = Math.abs(
+        play.homeScore + play.awayScore - game.homeScore - game.awayScore
+      );
+      return {
+        ...base,
+        scoreType: getNFLScoreType(pointsScored, play.description),
+      };
+    }
+
+    default:
+      // NBA, MLB, MLS, EPL, NCAAM, NCAAW all use the base format
+      return base;
+  }
 }
 
 /**
@@ -216,7 +190,6 @@ function getStrengthLabel(strength: string): string | null {
  * Determine NFL score type based on points
  */
 function getNFLScoreType(points: number, description?: string): string {
-  // Try to determine from description first
   if (description) {
     const desc = description.toLowerCase();
     if (desc.includes("touchdown")) return "TOUCHDOWN";
@@ -226,7 +199,6 @@ function getNFLScoreType(points: number, description?: string): string {
     if (desc.includes("extra point") || desc.includes("pat")) return "EXTRA POINT";
   }
 
-  // Fallback to points-based detection
   switch (points) {
     case 6:
       return "TOUCHDOWN";
@@ -246,6 +218,64 @@ function getNFLScoreType(points: number, description?: string): string {
 }
 
 /**
+ * Get the game start title for a league
+ */
+function getGameStartTitle(league: NotificationLeague): string {
+  switch (league) {
+    case "nhl":
+      return "Puck Drop!";
+    case "nba":
+    case "ncaam":
+    case "ncaaw":
+      return "Tip-Off!";
+    case "mlb":
+      return "Play Ball!";
+    case "mls":
+    case "epl":
+    case "nfl":
+      return "Kickoff!";
+  }
+}
+
+/**
+ * Get the scoring title for a league
+ */
+function getScoringTitle(league: NotificationLeague, event: NotificationEvent): string {
+  switch (league) {
+    case "nhl":
+    case "mls":
+    case "epl":
+      return "GOAL!";
+    case "mlb":
+      return "RUN!";
+    case "nfl":
+      return event.scoreType || "SCORE";
+    default:
+      return "SCORE!";
+  }
+}
+
+/**
+ * Get the period label for the period-end notification
+ */
+function getPeriodEndLabel(league: NotificationLeague, period: number): string {
+  switch (league) {
+    case "nhl":
+      return getNHLPeriodLabel(period);
+    case "ncaam":
+    case "ncaaw":
+    case "mls":
+    case "epl":
+      return getHalfLabel(period);
+    case "mlb":
+      return getInningLabel(period);
+    case "nba":
+    case "nfl":
+      return `Q${period}`;
+  }
+}
+
+/**
  * Format notification payload from event
  */
 export function formatNotificationPayload(event: NotificationEvent): PushNotificationPayload {
@@ -257,13 +287,7 @@ export function formatNotificationPayload(event: NotificationEvent): PushNotific
 
   switch (type) {
     case "gameStart":
-      if (league === "nhl") {
-        title = "Puck Drop!";
-      } else if (league === "ncaam") {
-        title = "Tip-Off!";
-      } else {
-        title = "Kickoff!";
-      }
+      title = getGameStartTitle(league);
       body = `${matchup} has started`;
       break;
 
@@ -272,31 +296,14 @@ export function formatNotificationPayload(event: NotificationEvent): PushNotific
       body = `${matchup}: ${awayScore}-${homeScore}`;
       break;
 
-    case "periodEnd": {
-      let periodLabel: string;
-      if (league === "nhl") {
-        periodLabel = getPeriodLabel(event.period || 0);
-      } else if (league === "ncaam") {
-        periodLabel = getHalfLabel(event.period || 0);
-      } else {
-        periodLabel = `Q${event.period}`;
-      }
-      title = `End of ${periodLabel}`;
+    case "periodEnd":
+      title = `End of ${getPeriodEndLabel(league, event.period || 0)}`;
       body = `${matchup}: ${awayScore}-${homeScore}`;
       break;
-    }
 
     case "scoring":
-      if (league === "nhl") {
-        title = "GOAL!";
-        body = event.description || `${matchup}: ${awayScore}-${homeScore}`;
-      } else if (league === "ncaam") {
-        title = "SCORE!";
-        body = event.description || `${matchup}: ${awayScore}-${homeScore}`;
-      } else {
-        title = event.scoreType || "SCORE";
-        body = `${matchup}: ${awayScore}-${homeScore}`;
-      }
+      title = getScoringTitle(league, event);
+      body = event.description || `${matchup}: ${awayScore}-${homeScore}`;
       break;
 
     default:
@@ -317,7 +324,7 @@ export function formatNotificationPayload(event: NotificationEvent): PushNotific
 /**
  * Get period label for NHL
  */
-function getPeriodLabel(period: number): string {
+function getNHLPeriodLabel(period: number): string {
   switch (period) {
     case 1:
       return "1st Period";
@@ -335,7 +342,7 @@ function getPeriodLabel(period: number): string {
 }
 
 /**
- * Get half label for NCAAM
+ * Get half label for basketball/soccer
  */
 function getHalfLabel(half: number): string {
   switch (half) {
@@ -346,4 +353,16 @@ function getHalfLabel(half: number): string {
     default:
       return `OT${half - 2 > 1 ? half - 2 : ""}`;
   }
+}
+
+/**
+ * Get inning label for MLB
+ */
+function getInningLabel(inning: number): string {
+  if (inning <= 0) return "Top 1st";
+  const suffixes = ["th", "st", "nd", "rd"];
+  const suffix = inning % 100 >= 11 && inning % 100 <= 13
+    ? "th"
+    : suffixes[inning % 10] || "th";
+  return `${inning}${suffix} Inning`;
 }

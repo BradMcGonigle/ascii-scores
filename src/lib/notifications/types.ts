@@ -1,6 +1,11 @@
 import type { GameStatus, League } from "@/lib/types";
 
 /**
+ * Leagues that support game notifications (excludes F1/PGA which don't have head-to-head games)
+ */
+export type NotificationLeague = "nhl" | "nfl" | "nba" | "mlb" | "mls" | "epl" | "ncaam" | "ncaaw";
+
+/**
  * Event types that users can subscribe to
  */
 export type NotificationEventType = "gameStart" | "gameEnd" | "scoring" | "periodEnd";
@@ -11,8 +16,8 @@ export type NotificationEventType = "gameStart" | "gameEnd" | "scoring" | "perio
 export interface EventPreferences {
   gameStart: boolean;
   gameEnd: boolean;
-  scoring: boolean; // Goals (NHL) or any score (NFL)
-  periodEnd: boolean; // Periods (NHL) or quarters (NFL)
+  scoring: boolean;
+  periodEnd: boolean;
 }
 
 /**
@@ -20,7 +25,7 @@ export interface EventPreferences {
  */
 export interface GameSubscription {
   gameId: string;
-  league: "nhl" | "nfl" | "ncaam";
+  league: NotificationLeague;
   homeTeam: string;
   awayTeam: string;
   events: EventPreferences;
@@ -61,14 +66,14 @@ export interface CachedGameState {
 export interface NotificationEvent {
   type: NotificationEventType;
   gameId: string;
-  league: "nhl" | "nfl" | "ncaam";
+  league: NotificationLeague;
   homeTeam: string;
   awayTeam: string;
   homeScore: number;
   awayScore: number;
   period?: number;
   scorer?: string;
-  scoreType?: string; // For NFL: "TOUCHDOWN", "FIELD GOAL", etc.
+  scoreType?: string;
   strength?: string; // For NHL: "ppg", "shg", "en", etc.
   description?: string;
 }
@@ -104,13 +109,15 @@ export interface LocalNotificationState {
 /**
  * Leagues that support notifications
  */
-export const NOTIFICATION_SUPPORTED_LEAGUES: League[] = ["nhl", "nfl", "ncaam"];
+export const NOTIFICATION_SUPPORTED_LEAGUES: NotificationLeague[] = [
+  "nhl", "nfl", "nba", "mlb", "mls", "epl", "ncaam", "ncaaw",
+];
 
 /**
  * Check if a league supports notifications
  */
-export function supportsNotifications(league: League): league is "nhl" | "nfl" | "ncaam" {
-  return NOTIFICATION_SUPPORTED_LEAGUES.includes(league);
+export function supportsNotifications(league: League): league is NotificationLeague {
+  return (NOTIFICATION_SUPPORTED_LEAGUES as string[]).includes(league);
 }
 
 /**
@@ -128,7 +135,7 @@ export const DEFAULT_EVENT_PREFERENCES: EventPreferences = {
  */
 export function getEventTypeLabel(
   type: NotificationEventType,
-  league: "nhl" | "nfl" | "ncaam"
+  league: NotificationLeague
 ): string {
   switch (type) {
     case "gameStart":
@@ -136,10 +143,15 @@ export function getEventTypeLabel(
     case "gameEnd":
       return "Final Score";
     case "scoring":
-      return league === "nhl" ? "Goals" : "Scores";
+      if (league === "nhl") return "Goals";
+      if (league === "mls" || league === "epl") return "Goals";
+      if (league === "mlb") return "Runs";
+      return "Scores";
     case "periodEnd":
       if (league === "nhl") return "End of Period";
-      if (league === "ncaam") return "End of Half";
+      if (league === "ncaam" || league === "ncaaw") return "End of Half";
+      if (league === "mls" || league === "epl") return "End of Half";
+      if (league === "mlb") return "End of Inning";
       return "End of Quarter";
   }
 }

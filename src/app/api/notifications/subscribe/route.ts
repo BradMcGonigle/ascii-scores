@@ -5,17 +5,20 @@ import {
   saveSubscription,
   getSubscription,
   addGameSubscription,
+  supportsNotifications,
   type NotificationSubscription,
+  type NotificationLeague,
   type GameSubscription,
   type EventPreferences,
   DEFAULT_EVENT_PREFERENCES,
 } from "@/lib/notifications";
+import type { League } from "@/lib/types";
 
 interface SubscribeRequestBody {
   subscriptionId?: string;
   pushSubscription: PushSubscriptionJSON;
   gameId: string;
-  league: "nhl" | "nfl" | "ncaam";
+  league: NotificationLeague;
   homeTeam: string;
   awayTeam: string;
   events?: Partial<EventPreferences>;
@@ -35,9 +38,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing game information" }, { status: 400 });
     }
 
-    if (!["nhl", "nfl", "ncaam"].includes(body.league)) {
+    if (!supportsNotifications(body.league as League)) {
       return NextResponse.json(
-        { error: "Notifications only supported for NHL, NFL, and NCAAM" },
+        { error: "Notifications not supported for this league" },
         { status: 400 }
       );
     }

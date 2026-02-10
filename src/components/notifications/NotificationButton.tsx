@@ -2,10 +2,11 @@
 
 import { useCallback, useState } from "react";
 import { useNotifications } from "./NotificationProvider";
+import type { NotificationLeague } from "@/lib/notifications/types";
 
 interface NotificationButtonProps {
   gameId: string;
-  league: "nhl" | "nfl" | "ncaam";
+  league: NotificationLeague;
   homeTeam: string;
   awayTeam: string;
   gameStatus: "scheduled" | "live" | "final" | "postponed" | "delayed";

@@ -4,10 +4,11 @@ import { useCallback, useState, useEffect } from "react";
 import { useNotifications } from "@/components/notifications";
 import { useToast } from "@/components/ui/Toast";
 import type { GameStatus } from "@/lib/types";
+import type { NotificationLeague } from "@/lib/notifications/types";
 
 interface GameDetailNotificationButtonProps {
   gameId: string;
-  league: "nhl" | "nfl" | "ncaam";
+  league: NotificationLeague;
   homeTeam: string;
   awayTeam: string;
   gameStatus: GameStatus;
@@ -121,7 +122,7 @@ export function GameDetailNotificationButton({
     } finally {
       setIsCronLoading(false);
     }
-  }, [isCronLoading]);
+  }, [isCronLoading, toast]);
 
   // Don't render until mounted (prevents hydration mismatch)
   if (!mounted) {

@@ -193,7 +193,7 @@ export function GameCard({ game }: GameCardProps) {
             {supportsNotifications(game.league) && (
               <GameCardNotificationButton
                 gameId={game.id}
-                league={game.league as "nhl" | "nfl" | "ncaam"}
+                league={game.league}
                 homeTeam={game.homeTeam.abbreviation}
                 awayTeam={game.awayTeam.abbreviation}
                 gameStatus={game.status}

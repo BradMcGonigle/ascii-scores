@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
-import type { CachedGameState, GameSubscription, NotificationSubscription } from "./types";
+import type { CachedGameState, GameSubscription, NotificationLeague, NotificationSubscription } from "./types";
+import { NOTIFICATION_SUPPORTED_LEAGUES } from "./types";
 
 // Initialize Redis client
 // Environment variables are auto-populated by Vercel when using the Upstash integration
@@ -56,7 +57,7 @@ export async function deleteSubscription(id: string): Promise<void> {
  */
 interface GameMetadata {
   gameId: string;
-  league: "nhl" | "nfl" | "ncaam";
+  league: NotificationLeague;
   gameStartTime?: string;
 }
 
@@ -216,7 +217,7 @@ export async function updateSubscriptionEndpoint(
  * Get active games for a specific league
  */
 export async function getActiveGamesByLeague(
-  league: "nhl" | "nfl" | "ncaam"
+  league: NotificationLeague
 ): Promise<string[]> {
   const games = await redis.smembers(KEYS.activeGamesByLeague(league));
   return games as string[];
@@ -243,9 +244,9 @@ const POST_GAME_BUFFER_MS = 4 * 60 * 60 * 1000;
  * - Starting within the pre-game buffer
  * - Potentially still in progress (within post-game buffer)
  */
-export async function getLeaguesNeedingPolling(): Promise<("nhl" | "nfl" | "ncaam")[]> {
-  const leagues: ("nhl" | "nfl" | "ncaam")[] = ["nhl", "nfl", "ncaam"];
-  const leaguesNeedingPolling: ("nhl" | "nfl" | "ncaam")[] = [];
+export async function getLeaguesNeedingPolling(): Promise<NotificationLeague[]> {
+  const leagues = NOTIFICATION_SUPPORTED_LEAGUES;
+  const leaguesNeedingPolling: NotificationLeague[] = [];
   const now = Date.now();
 
   for (const league of leagues) {

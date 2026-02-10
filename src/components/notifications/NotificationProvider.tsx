@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { EventPreferences, LocalNotificationState } from "@/lib/notifications/types";
+import type { EventPreferences, LocalNotificationState, NotificationLeague } from "@/lib/notifications/types";
 
 interface NotificationContextValue {
   isSupported: boolean;
@@ -18,7 +18,7 @@ interface NotificationContextValue {
   isSubscribedToGame: (gameId: string) => boolean;
   subscribeToGame: (
     gameId: string,
-    league: "nhl" | "nfl" | "ncaam",
+    league: NotificationLeague,
     homeTeam: string,
     awayTeam: string,
     events?: Partial<EventPreferences>,
@@ -175,7 +175,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const subscribeToGame = useCallback(
     async (
       gameId: string,
-      league: "nhl" | "nfl" | "ncaam",
+      league: NotificationLeague,
       homeTeam: string,
       awayTeam: string,
       events?: Partial<EventPreferences>,

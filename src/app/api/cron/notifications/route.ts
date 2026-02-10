@@ -15,6 +15,7 @@ import {
   createInitialGameState,
   formatNotificationPayload,
   sendPushNotification,
+  type NotificationLeague,
   type NotificationEvent,
   type EventPreferences,
 } from "@/lib/notifications";
@@ -69,7 +70,7 @@ async function processNotifications() {
   let totalNotifications = 0;
 
   // Only fetch scoreboards for leagues that need polling
-  const scoreboardPromises: Promise<{ league: "nhl" | "nfl" | "ncaam"; scoreboard: Awaited<ReturnType<typeof getESPNScoreboard>> | null }>[] = [];
+  const scoreboardPromises: Promise<{ league: NotificationLeague; scoreboard: Awaited<ReturnType<typeof getESPNScoreboard>> | null }>[] = [];
 
   for (const league of leaguesToPoll) {
     scoreboardPromises.push(
@@ -82,7 +83,7 @@ async function processNotifications() {
   const scoreboardResults = await Promise.all(scoreboardPromises);
 
   // Create a map of all current games from the fetched scoreboards
-  const currentGames = new Map<string, { game: Game; league: "nhl" | "nfl" | "ncaam" }>();
+  const currentGames = new Map<string, { game: Game; league: NotificationLeague }>();
 
   for (const { league, scoreboard } of scoreboardResults) {
     if (scoreboard) {

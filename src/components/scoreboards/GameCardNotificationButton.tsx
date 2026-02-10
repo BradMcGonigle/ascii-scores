@@ -3,11 +3,13 @@
 import { useCallback, useState, useEffect, type MouseEvent } from "react";
 import { useNotifications } from "@/components/notifications";
 import { useToast } from "@/components/ui/Toast";
+import { Tooltip } from "@/components/ui/Tooltip";
 import type { GameStatus } from "@/lib/types";
+import type { NotificationLeague } from "@/lib/notifications/types";
 
 interface GameCardNotificationButtonProps {
   gameId: string;
-  league: "nhl" | "nfl" | "ncaam";
+  league: NotificationLeague;
   homeTeam: string;
   awayTeam: string;
   gameStatus: GameStatus;
@@ -112,19 +114,20 @@ export function GameCardNotificationButton({
     : "Subscribe to game notifications";
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={isLoading}
-      title={title}
-      className={`font-mono text-xs transition-colors ${
-        isSubscribed
-          ? "text-terminal-green hover:text-terminal-green/80"
-          : "text-terminal-muted hover:text-terminal-fg"
-      } ${isLoading ? "opacity-50 cursor-wait" : ""}`}
-      aria-label={title}
-      aria-pressed={isSubscribed}
-    >
-      {isLoading ? "..." : <span className={`inline-block size-2 rounded-full ${isSubscribed ? "bg-terminal-green" : "border border-current"}`} />}
-    </button>
+    <Tooltip content={isSubscribed ? "Notifications on" : "Get notified"}>
+      <button
+        onClick={handleClick}
+        disabled={isLoading}
+        className={`font-mono text-xs transition-colors ${
+          isSubscribed
+            ? "text-terminal-green hover:text-terminal-green/80"
+            : "text-terminal-muted hover:text-terminal-fg"
+        } ${isLoading ? "opacity-50 cursor-wait" : ""}`}
+        aria-label={title}
+        aria-pressed={isSubscribed}
+      >
+        {isLoading ? "..." : <span className={`inline-block size-2 rounded-full ${isSubscribed ? "bg-terminal-green glow-pulse" : "border border-current"}`} />}
+      </button>
+    </Tooltip>
   );
 }

@@ -205,8 +205,6 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
 
   const border = getBorderStyle(game.status);
   const isCollege = isCollegeLeague(game.league);
-  const showNotifications = supportsNotifications(game.league);
-
   return (
     <div className="font-mono">
       {/* Top border */}
@@ -229,11 +227,11 @@ function GameScoreHeader({ summary }: { summary: GameSummary }) {
         )}
 
         {/* Notification subscription button */}
-        {showNotifications && (
+        {supportsNotifications(game.league) && (
           <div className="text-center py-2">
             <GameDetailNotificationButton
               gameId={game.id}
-              league={game.league as "nhl" | "nfl" | "ncaam"}
+              league={game.league}
               homeTeam={game.homeTeam.abbreviation}
               awayTeam={game.awayTeam.abbreviation}
               gameStatus={game.status}
