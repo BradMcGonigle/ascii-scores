@@ -1,5 +1,17 @@
 # ascii-scores
 
+## 0.29.0
+
+### Minor Changes
+
+- 5a1fd43: feat: Add English FA Cup league with scoreboard, game detail, and notification support
+- 322044c: feat: Add NFL playoff bracket page with historical season support
+
+### Patch Changes
+
+- a1f0abb: fix: Resolve PWA push notifications not working on iPhone/iOS
+- b1a18ca: feat: Show all players on PGA leaderboard instead of top 40
+
 ## 0.28.0
 
 ### Minor Changes
