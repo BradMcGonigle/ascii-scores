@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "ASCII Scores - Live Sports Scoreboards",
     short_name: "ASCII Scores",
     description:
