@@ -3,7 +3,7 @@
 // Service Worker for ASCII Scores push notifications and caching
 
 // Increment this version when deploying updates to bust the cache
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 4;
 const CACHE_NAME = `ascii-scores-v${CACHE_VERSION}`;
 
 // Assets to pre-cache (app shell)
@@ -25,24 +25,12 @@ self.addEventListener("push", (event) => {
       icon: "/icon-192.png",
       badge: "/icon-badge.png",
       tag: data.gameId, // Prevents duplicate notifications for same game
-      renotify: true, // Vibrate even if replacing existing notification
-      requireInteraction: data.type === "gameEnd", // Keep final score on screen
       data: {
         url: data.url || `/${data.league}`,
         gameId: data.gameId,
         league: data.league,
         type: data.type,
       },
-      actions: [
-        {
-          action: "view",
-          title: "View Game",
-        },
-        {
-          action: "dismiss",
-          title: "Dismiss",
-        },
-      ],
     };
 
     event.waitUntil(self.registration.showNotification(data.title, options));
@@ -60,16 +48,30 @@ self.addEventListener("notificationclick", (event) => {
   }
 
   // Default action or "view" action - open the game page
-  const urlToOpen = event.notification.data?.url || "/";
+  const urlToOpen = new URL(
+    event.notification.data?.url || "/",
+    self.location.origin
+  ).href;
 
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+    clients.matchAll({ type: "window" }).then((clientList) => {
       // Check if there's already a window open with the app
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && "focus" in client) {
-          client.focus();
-          client.navigate(urlToOpen);
-          return;
+          return client.focus().then((focusedClient) => {
+            // Use navigate if available (not supported on all iOS versions)
+            if (focusedClient && "navigate" in focusedClient) {
+              return focusedClient.navigate(urlToOpen);
+            }
+            // Fallback: post a message to the client to handle navigation
+            if (focusedClient) {
+              focusedClient.postMessage({
+                type: "NOTIFICATION_CLICK",
+                url: event.notification.data?.url || "/",
+              });
+            }
+            return focusedClient;
+          });
         }
       }
       // If no window is open, open a new one
@@ -188,23 +190,29 @@ self.addEventListener("fetch", (event) => {
 
 // Handle push subscription change (if user clears browser data)
 self.addEventListener("pushsubscriptionchange", (event) => {
-  console.log("Push subscription changed, resubscribing...");
+  console.log("[SW] Push subscription changed, resubscribing...");
+  // Re-subscribe using the existing subscription options if available
+  const oldSubscription = event.oldSubscription;
+  const resubscribeOptions = oldSubscription
+    ? { userVisibleOnly: true, applicationServerKey: oldSubscription.options?.applicationServerKey }
+    : { userVisibleOnly: true };
+
   event.waitUntil(
     self.registration.pushManager
-      .subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: self.VAPID_PUBLIC_KEY,
-      })
+      .subscribe(resubscribeOptions)
       .then((subscription) => {
         // Notify the server about the new subscription
         return fetch("/api/notifications/resubscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            oldEndpoint: event.oldSubscription?.endpoint,
+            oldEndpoint: oldSubscription?.endpoint,
             newSubscription: subscription.toJSON(),
           }),
         });
+      })
+      .catch((error) => {
+        console.error("[SW] Failed to resubscribe:", error);
       })
   );
 });

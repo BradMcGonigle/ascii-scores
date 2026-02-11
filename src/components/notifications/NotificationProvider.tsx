@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 import type { EventPreferences, LocalNotificationState, NotificationLeague } from "@/lib/notifications/types";
 
 interface NotificationContextValue {
@@ -69,6 +70,7 @@ function saveState(state: LocalNotificationState): void {
 }
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
@@ -115,6 +117,23 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       initServiceWorker();
     }
   }, []);
+
+  // Listen for notification click messages from the service worker
+  // (fallback for iOS where client.navigate() is not available)
+  useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === "NOTIFICATION_CLICK" && event.data.url) {
+        router.push(event.data.url);
+      }
+    };
+
+    navigator.serviceWorker.addEventListener("message", handleMessage);
+    return () => {
+      navigator.serviceWorker.removeEventListener("message", handleMessage);
+    };
+  }, [router]);
 
   // Persist state changes
   useEffect(() => {
